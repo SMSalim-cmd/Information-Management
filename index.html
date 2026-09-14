@@ -1,0 +1,3036 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Innovo Motors · Production Measurement Dashboard</title>
+<style>
+:root{
+  --navy:#0f2438; --navy2:#16344f; --navy3:#1d4265;
+  --bg:#eef2f6; --card:#ffffff; --line:#d9e1ea; --line2:#e8eef4;
+  --txt:#12212e; --txt2:#4d6274; --txt3:#7b8fa1;
+  --blue:#1668c7; --blue2:#e7f0fb;
+  --green:#0f8a4d; --green2:#e3f6ec;
+  --amber:#c47b00; --amber2:#fdf1dc;
+  --red:#c62828; --red2:#fdeaea;
+  --purple:#6a3fb5; --purple2:#efe9fb;
+  --grey:#8395a5;
+  --r:10px; --sh:0 1px 2px rgba(16,40,64,.08), 0 2px 8px rgba(16,40,64,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:"Segoe UI",Roboto,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  background:var(--bg); color:var(--txt); font-size:15px; line-height:1.45;
+  -webkit-text-size-adjust:100%;
+}
+button{font-family:inherit}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em}
+table{border-collapse:collapse;width:100%}
+.mono{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+/* ---------- header ---------- */
+header{background:var(--navy);color:#fff;padding:10px 18px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brand .mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(140deg,#2b7fd4,#0f4c88);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex:none}
+.brand h1{font-size:15px;line-height:1.15}
+.brand span{display:block;font-size:11px;color:#8fb2d4;font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+.runbar{display:flex;align-items:center;gap:16px;margin-left:auto;flex-wrap:wrap}
+.runstat{display:flex;flex-direction:column;line-height:1.15}
+.runstat b{font-size:14px}
+.runstat i{font-style:normal;font-size:10px;color:#8fb2d4;text-transform:uppercase;letter-spacing:.05em}
+.hbtn{background:#24486c;color:#fff;border:1px solid #35597e;padding:8px 13px;border-radius:8px;
+  font-size:13px;font-weight:600;cursor:pointer}
+.hbtn:hover{background:#2d5a85}
+.hbtn.primary{background:var(--blue);border-color:var(--blue)}
+.hbtn.primary:hover{background:#1257a8}
+.hbtn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ---------- nav ---------- */
+nav{background:var(--navy2);display:flex;gap:2px;padding:0 10px;overflow-x:auto;position:sticky;top:0;z-index:40;
+  box-shadow:0 2px 6px rgba(0,0,0,.15)}
+nav button{background:none;border:0;color:#a9c4dd;padding:13px 16px;font-size:12.5px;font-weight:700;
+  letter-spacing:.06em;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+nav button:hover{color:#fff}
+nav button.on{color:#fff;border-bottom-color:#3d97e8;background:rgba(255,255,255,.05)}
+
+main{padding:18px;max-width:1680px;margin:0 auto}
+.page{display:none}
+.page.on{display:block}
+
+/* ---------- generic ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.sec{margin-bottom:18px}
+.sec>h2{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--txt2);margin-bottom:9px}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.hint{font-size:12.5px;color:var(--txt3)}
+.empty{padding:40px 20px;text-align:center;color:var(--txt3);font-size:14px}
+
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:13px 15px;box-shadow:var(--sh)}
+.kpi .lab{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--txt3);font-weight:700}
+.kpi .val{font-size:26px;font-weight:800;margin-top:3px;letter-spacing:-.02em}
+.kpi .sub{font-size:12px;color:var(--txt2);margin-top:1px}
+.kpi.ok .val{color:var(--green)} .kpi.warn .val{color:var(--amber)} .kpi.bad .val{color:var(--red)}
+.kpi.blue .val{color:var(--blue)}
+
+.tbl{width:100%;font-size:13.5px}
+.tbl th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--txt3);
+  padding:9px 10px;border-bottom:2px solid var(--line);white-space:nowrap;background:#f7f9fb}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--line2);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tbody tr:hover{background:#f7fafd}
+.tbl td.r,.tbl th.r{text-align:right}
+.tblwrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--line);background:#fff;box-shadow:var(--sh)}
+
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;
+  letter-spacing:.03em;text-transform:uppercase;white-space:nowrap}
+.p-idle{background:#eceff2;color:#5c6f7e}
+.p-run{background:var(--green2);color:var(--green)}
+.p-wait{background:var(--amber2);color:var(--amber)}
+.p-qc{background:var(--purple2);color:var(--purple)}
+.p-rew{background:var(--red2);color:var(--red)}
+.p-done{background:var(--blue2);color:var(--blue)}
+.p-skip{background:#eceff2;color:#98a7b3}
+.tag{display:inline-block;padding:1px 7px;border-radius:5px;font-size:11px;font-weight:700;background:#eef2f6;color:var(--txt2)}
+.tag.red{background:var(--red2);color:var(--red)} .tag.green{background:var(--green2);color:var(--green)}
+.tag.amber{background:var(--amber2);color:var(--amber)} .tag.blue{background:var(--blue2);color:var(--blue)}
+
+.btn{border:1px solid var(--line);background:#fff;color:var(--txt);padding:9px 14px;border-radius:8px;
+  font-size:13.5px;font-weight:600;cursor:pointer}
+.btn:hover{background:#f3f7fa}
+.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.pri:hover{background:#1257a8}
+.btn.ok{background:var(--green);border-color:var(--green);color:#fff}
+.btn.dgr{background:var(--red);border-color:var(--red);color:#fff}
+.btn.dgr:hover{background:#a81f1f}
+.btn.sm{padding:5px 10px;font-size:12.5px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btnrow{display:flex;gap:9px;flex-wrap:wrap}
+
+input[type=text],input[type=number],input[type=date],select,textarea{
+  width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-size:14px;
+  font-family:inherit;background:#fff;color:var(--txt)}
+input:focus,select:focus,textarea:focus{outline:2px solid #b9d6f5;border-color:var(--blue)}
+label.fld{display:block;margin-bottom:12px}
+label.fld>span{display:block;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--txt2);margin-bottom:4px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+
+/* ---------- production ---------- */
+.stationgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.st{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh);
+  display:flex;flex-direction:column;overflow:hidden;border-top:5px solid var(--grey)}
+.st.s-running{border-top-color:var(--green)} .st.s-waiting{border-top-color:var(--amber)}
+.st.s-rework{border-top-color:var(--red)} .st.s-done{border-top-color:var(--blue)}
+.st-head{padding:12px 14px 9px;border-bottom:1px solid var(--line2)}
+.st-head .w{font-size:19px;font-weight:800;letter-spacing:-.02em}
+.st-head .s{font-size:12.5px;color:var(--txt2)}
+.st-head .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.st-body{padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:10px}
+.st-motor{display:flex;align-items:center;gap:8px}
+.st-motor select{font-weight:700}
+.st-cur{font-size:15px;font-weight:800;background:var(--blue2);color:var(--blue);padding:7px 11px;
+  border-radius:8px;text-align:center;letter-spacing:.02em}
+.bigt{font-size:43px;font-weight:800;text-align:center;letter-spacing:-.03em;line-height:1.05;margin:2px 0}
+.bigt.wait{color:var(--amber)} .bigt.run{color:var(--green)} .bigt.rew{color:var(--red)}
+.bigt.off{color:#c3ced8}
+.subt{display:flex;justify-content:space-around;font-size:12px;color:var(--txt2);text-align:center;
+  border-top:1px dashed var(--line);border-bottom:1px dashed var(--line);padding:6px 0}
+.subt b{display:block;font-size:15px;color:var(--txt);font-weight:800}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.acts button{padding:15px 6px;border-radius:9px;border:1px solid var(--line);background:#fff;
+  font-size:13px;font-weight:800;letter-spacing:.04em;cursor:pointer;text-transform:uppercase;line-height:1.2}
+.acts button:hover:not(:disabled){filter:brightness(.96)}
+.acts button:disabled{opacity:.32;cursor:not-allowed}
+.acts .b-start{background:var(--green);border-color:var(--green);color:#fff}
+.acts .b-pause{background:var(--amber);border-color:var(--amber);color:#fff}
+.acts .b-res{background:var(--blue);border-color:var(--blue);color:#fff}
+.acts .b-done{background:var(--navy2);border-color:var(--navy2);color:#fff}
+.acts .b-qc{background:var(--purple);border-color:var(--purple);color:#fff;grid-column:1/-1}
+.acts .b-skip{grid-column:1/-1;background:#fff;color:var(--txt3);font-size:11.5px;padding:8px}
+.st-foot{padding:8px 14px;background:#f7f9fb;border-top:1px solid var(--line2);font-size:11.5px;color:var(--txt2);
+  display:flex;justify-content:space-between;gap:8px}
+
+.motorstrip{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px}
+.mcard{flex:0 0 auto;min-width:154px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+  box-shadow:var(--sh)}
+.mcard .n{font-weight:800;font-size:14.5px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.mcard .dots{display:flex;gap:4px;margin:7px 0 5px}
+.dot{width:22px;height:7px;border-radius:3px;background:#e3e9ee}
+.dot.run{background:var(--green)} .dot.wait{background:var(--amber)} .dot.done{background:var(--blue)}
+.dot.rew{background:var(--red)} .dot.skip{background:#cfd8e0}
+.mcard .t{font-size:12px;color:var(--txt2)}
+
+.logbox{max-height:280px;overflow:auto;font-size:12.5px;background:#fff;border:1px solid var(--line);
+  border-radius:var(--r);box-shadow:var(--sh)}
+.logline{display:flex;gap:10px;padding:5px 12px;border-bottom:1px solid var(--line2);align-items:baseline}
+.logline:last-child{border-bottom:0}
+.logline .tm{color:var(--txt3);flex:none;font-variant-numeric:tabular-nums}
+.logline .tx{flex:1}
+
+/* ---------- modal ---------- */
+.ovl{position:fixed;inset:0;background:rgba(12,26,40,.55);display:none;align-items:center;justify-content:center;
+  z-index:100;padding:16px}
+.ovl.on{display:flex}
+.mdl{background:#fff;border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.3);width:100%;max-width:560px;
+  max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+.mdl.wide{max-width:760px}
+.mdl-h{padding:15px 20px;border-bottom:1px solid var(--line);font-size:17px;font-weight:800}
+.mdl-h small{display:block;font-size:12.5px;font-weight:500;color:var(--txt2);margin-top:2px}
+.mdl-b{padding:18px 20px;overflow:auto}
+.mdl-f{padding:13px 20px;border-top:1px solid var(--line);display:flex;gap:9px;justify-content:flex-end;
+  background:#f7f9fb;flex-wrap:wrap}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.choice button{padding:15px 12px;border:2px solid var(--line);background:#fff;border-radius:10px;text-align:left;
+  font-size:14px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.choice button:hover{border-color:var(--blue);background:var(--blue2)}
+.choice button.sel{border-color:var(--blue);background:var(--blue2)}
+.choice button small{font-weight:600;color:var(--txt3);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+
+/* ---------- charts ---------- */
+.chartbox{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:var(--sh)}
+.chartbox h3{font-size:14px;margin-bottom:2px}
+.chartbox .hint{margin-bottom:8px}
+.cvwrap{position:relative;width:100%}
+canvas{display:block;width:100%}
+
+.bar{height:9px;background:#eceff2;border-radius:5px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--blue);border-radius:5px}
+.bar>i.g{background:var(--green)} .bar>i.a{background:var(--amber)} .bar>i.r{background:var(--red)}
+
+.banner{padding:13px 16px;border-radius:var(--r);font-size:14px;display:flex;gap:11px;align-items:flex-start;
+  border:1px solid;margin-bottom:14px}
+.banner.info{background:var(--blue2);border-color:#bcd8f5;color:#0d4f9c}
+.banner.warn{background:var(--amber2);border-color:#f2ddb4;color:#8a5a00}
+.banner.red{background:var(--red2);border-color:#f3c9c9;color:#9c1f1f}
+.banner.demo{background:#fff4e5;border-color:#f0c98a;color:#8a5200}
+.banner b{display:block}
+
+details.def{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:0;margin-bottom:14px;box-shadow:var(--sh)}
+details.def summary{padding:12px 16px;font-weight:700;cursor:pointer;font-size:13.5px}
+details.def .dd{padding:0 16px 14px;font-size:13px;color:var(--txt2)}
+details.def .dd b{color:var(--txt)}
+
+.chk{display:flex;align-items:center;gap:9px;padding:8px 11px;border:1px solid var(--line);border-radius:8px;
+  background:#fff;font-size:13.5px;cursor:pointer;font-weight:600}
+.chk input{width:17px;height:17px;flex:none}
+.wrapchk{display:flex;gap:9px;flex-wrap:wrap}
+
+.srow{display:grid;grid-template-columns:26px 1fr 1fr 90px 34px;gap:9px;align-items:center;margin-bottom:9px}
+.tbar{display:flex;height:22px;border-radius:5px;overflow:hidden;background:#eceff2;font-size:10px;font-weight:800;color:#fff}
+.tbar>i{display:flex;align-items:center;justify-content:center;font-style:normal;min-width:0;overflow:hidden}
+
+@media(max-width:1240px){ .stationgrid{grid-template-columns:repeat(2,minmax(0,1fr))} .g4{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media(max-width:900px){ .g3,.g2{grid-template-columns:1fr} .fgrid{grid-template-columns:1fr} }
+@media(max-width:680px){
+  .stationgrid{grid-template-columns:1fr} .g4{grid-template-columns:1fr}
+  main{padding:12px} header{padding:9px 12px} .runbar{gap:10px} .choice{grid-template-columns:1fr}
+  .srow{grid-template-columns:1fr}
+}
+@media print{ nav,header .hbtn{display:none} }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="mark">IM</div>
+    <h1>Innovo Motors<span>Production Measurement Dashboard</span></h1>
+  </div>
+  <div class="runbar">
+    <div class="runstat"><i>Actieve run</i><b id="hRun">—</b></div>
+    <div class="runstat"><i>Verstreken</i><b id="hElapsed" class="mono">00:00:00</b></div>
+    <div class="runstat"><i>Takt time</i><b id="hTakt" class="mono">—</b></div>
+    <div class="runstat"><i>Gereed / WIP</i><b id="hCounts" class="mono">0 / 0</b></div>
+    <button class="hbtn" id="btnUndo" title="Maakt de laatst geregistreerde actie ongedaan">↶ Ongedaan maken</button>
+    <button class="hbtn primary" id="btnNewRun">+ Nieuwe run</button>
+  </div>
+</header>
+
+<nav>
+  <button data-tab="productie" class="on">PRODUCTIE</button>
+  <button data-tab="dashboard">DASHBOARD</button>
+  <button data-tab="kwaliteit">KWALITEIT</button>
+  <button data-tab="verspilling">VERSPILLING</button>
+  <button data-tab="stabiliteit">PROCESSTABILITEIT</button>
+  <button data-tab="vergelijk">VERGELIJK RUNS</button>
+  <button data-tab="data">DATA</button>
+  <button data-tab="instellingen">INSTELLINGEN</button>
+</nav>
+
+<main>
+
+<!-- ============ PRODUCTIE ============ -->
+<section class="page on" id="page-productie">
+  <div id="prodBanner"></div>
+
+  <div class="sec">
+    <h2>Motoren in deze run</h2>
+    <div style="display:flex;gap:12px;align-items:flex-start">
+      <button class="btn pri" id="btnNewMotor" style="padding:14px 16px;font-weight:800;white-space:nowrap">+ NIEUWE MOTOR</button>
+      <div class="motorstrip" id="motorStrip" style="flex:1"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Werkstations</h2>
+    <div class="stationgrid" id="stationGrid"></div>
+  </div>
+
+  <div class="sec">
+    <h2>Live logboek <span class="hint" style="text-transform:none;letter-spacing:0">(alle acties met timestamp)</span></h2>
+    <div class="logbox" id="liveLog"></div>
+  </div>
+
+  <details class="def">
+    <summary>Meetprotocol — zo meten wij elke keer hetzelfde</summary>
+    <div class="dd">
+      <p><b>Cycle time (werkstation)</b> — start zodra de medewerker daadwerkelijk begint met de assemblagehandeling; stop zodra zijn/haar onderdeel volledig klaar is voor overdracht. Dit is de brutotijd: eventuele pauzes binnen de handeling tellen mee.</p>
+      <p><b>Actieve tijd</b> — de tijd waarin daadwerkelijk aan het product gewerkt wordt (cycle time minus de geregistreerde wachttijd).</p>
+      <p><b>Wachttijd</b> — de medewerker is beschikbaar maar kan niet verder werken. Druk direct op PAUZE/WACHTEN en kies een reden.</p>
+      <p><b>Lead time (motor)</b> — vanaf het eerste productiestartmoment van die motor tot het moment dat de volledige motor klaar én goedgekeurd is.</p>
+      <p><b>First Pass Yield</b> — percentage afgeronde motoren dat direct goed was, zonder afkeur en zonder rework.</p>
+      <p><b>Throughput</b> — aantal complete motoren per tijdseenheid (gebaseerd op verstreken runtijd).</p>
+      <p><b>WIP</b> — aantal motoren dat gestart maar nog niet compleet en goedgekeurd is.</p>
+      <p><b>Takt time</b> — beschikbare productietijd gedeeld door de klantvraag.</p>
+      <p><b>Rework-tijd</b> — tijd besteed aan het herstellen van een afgekeurd onderdeel. Wordt apart van de normale cycle time geregistreerd.</p>
+    </div>
+  </details>
+</section>
+
+<!-- ============ DASHBOARD ============ -->
+<section class="page" id="page-dashboard">
+  <div id="dashBanner"></div>
+  <div class="sec"><div class="grid g4" id="dashKpis"></div></div>
+
+  <div class="sec">
+    <h2>Bottleneck &amp; lijnbalans</h2>
+    <div id="dashBottleneck"></div>
+  </div>
+
+  <div class="sec">
+    <h2>Cycle time versus takt time</h2>
+    <div class="chartbox" id="taktBox"></div>
+  </div>
+
+  <div class="sec">
+    <h2>Prestaties per werkstation</h2>
+    <div class="tblwrap"><table class="tbl" id="tblStations"></table></div>
+  </div>
+
+  <div class="sec grid g2">
+    <div class="chartbox">
+      <h3>Bezetting: actief · wachten · vrij</h3>
+      <div class="hint">Aandeel van de verstreken runtijd per werkstation.</div>
+      <div id="occBars"></div>
+    </div>
+    <div class="chartbox">
+      <h3>Gemiddelde cycle time per station</h3>
+      <div class="hint">Rode lijn = takt time.</div>
+      <div class="cvwrap"><canvas id="cvCycle" height="230"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sec grid g2">
+    <div class="chartbox">
+      <h3>Trend: totale productietijd per motor</h3>
+      <div class="hint">Lead time (blauw) en netto actieve tijd (groen) per motor — wordt de lijn sneller?</div>
+      <div class="cvwrap"><canvas id="cvTrend" height="250"></canvas></div>
+    </div>
+    <div class="chartbox">
+      <h3>Actieve tijd versus wachttijd per medewerker</h3>
+      <div class="hint">Totaal over alle motoren in deze run.</div>
+      <div class="cvwrap"><canvas id="cvActWait" height="250"></canvas></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Motoren in deze run</h2>
+    <div class="tblwrap"><table class="tbl" id="tblMotors"></table></div>
+  </div>
+
+  <div class="sec">
+    <h2>Aanvullende analyse</h2>
+    <div class="grid g3" id="dashExtra"></div>
+  </div>
+</section>
+
+<!-- ============ KWALITEIT ============ -->
+<section class="page" id="page-kwaliteit">
+  <div id="qBanner"></div>
+  <div class="sec"><div class="grid g4" id="qKpis"></div></div>
+  <div class="sec grid g2">
+    <div class="chartbox">
+      <h3>Fouten per werkstation</h3>
+      <div class="cvwrap"><canvas id="cvErrStation" height="230"></canvas></div>
+    </div>
+    <div class="chartbox">
+      <h3>Meest voorkomende foutsoorten (pareto)</h3>
+      <div class="cvwrap"><canvas id="cvErrType" height="230"></canvas></div>
+    </div>
+  </div>
+  <div class="sec">
+    <h2>Kwaliteitsoverzicht per station</h2>
+    <div class="tblwrap"><table class="tbl" id="tblQStations"></table></div>
+  </div>
+  <div class="sec">
+    <h2>Alle geregistreerde afkeuringen</h2>
+    <div class="tblwrap"><table class="tbl" id="tblDefects"></table></div>
+  </div>
+  <div class="sec">
+    <h2>First Pass Yield per motor</h2>
+    <div class="tblwrap"><table class="tbl" id="tblFpy"></table></div>
+  </div>
+</section>
+
+<!-- ============ VERSPILLING ============ -->
+<section class="page" id="page-verspilling">
+  <div id="wBanner"></div>
+  <div class="sec"><div class="grid g4" id="wKpis"></div></div>
+  <div class="sec grid g2">
+    <div class="chartbox">
+      <h3>Verspilling per TIMWOOD-categorie</h3>
+      <div class="hint">Minuten gemeten verspilling (wachttijd + rework-tijd).</div>
+      <div class="cvwrap"><canvas id="cvTimwood" height="250"></canvas></div>
+    </div>
+    <div class="chartbox">
+      <h3>Wachttijd per oorzaak (pareto)</h3>
+      <div class="cvwrap"><canvas id="cvReason" height="250"></canvas></div>
+    </div>
+  </div>
+  <div class="sec">
+    <h2>TIMWOOD-overzicht</h2>
+    <div class="tblwrap"><table class="tbl" id="tblTimwood"></table></div>
+  </div>
+  <div class="sec">
+    <h2>Wachttijd per oorzaak en per station</h2>
+    <div class="tblwrap"><table class="tbl" id="tblReasons"></table></div>
+  </div>
+  <div class="sec">
+    <h2>Overdrachtswachttijd tussen werkstations</h2>
+    <div class="hint" style="margin-bottom:8px">Tijd tussen het gereedmelden van het vorige station en de start van het volgende station op dezelfde motor.</div>
+    <div class="tblwrap"><table class="tbl" id="tblHandover"></table></div>
+  </div>
+</section>
+
+<!-- ============ STABILITEIT ============ -->
+<section class="page" id="page-stabiliteit">
+  <div id="sBanner"></div>
+  <div class="sec">
+    <div class="card" style="padding:14px;display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap">
+      <label class="fld" style="margin:0;min-width:280px;flex:1">
+        <span>Meting</span>
+        <select id="spcMetric"></select>
+      </label>
+      <div class="hint" style="flex:2;min-width:240px">Een control chart laat zien of het proces stabiel is. Punten buiten de
+        grenzen (gemiddelde ± 3 standaarddeviaties) zijn bijzondere oorzaken: daar is iets specifieks misgegaan.</div>
+    </div>
+  </div>
+  <div class="sec"><div class="grid g4" id="spcKpis"></div></div>
+  <div class="sec">
+    <div class="chartbox">
+      <h3 id="spcTitle">Control chart</h3>
+      <div class="hint">Blauw = meetpunten · groen = gemiddelde · rood gestippeld = UCL/LCL (±3σ).</div>
+      <div class="cvwrap"><canvas id="cvSpc" height="300"></canvas></div>
+    </div>
+  </div>
+  <div class="sec">
+    <h2>Signalen</h2>
+    <div id="spcSignals"></div>
+  </div>
+  <div class="sec">
+    <h2>Meetpunten</h2>
+    <div class="tblwrap"><table class="tbl" id="tblSpc"></table></div>
+  </div>
+</section>
+
+<!-- ============ VERGELIJK ============ -->
+<section class="page" id="page-vergelijk">
+  <div class="sec">
+    <h2>Selecteer de productieruns die je wilt vergelijken</h2>
+    <div class="card" style="padding:14px"><div class="wrapchk" id="cmpPick"></div></div>
+  </div>
+  <div class="sec">
+    <h2>Vergelijking</h2>
+    <div class="tblwrap"><table class="tbl" id="tblCompare"></table></div>
+  </div>
+  <div class="sec grid g2">
+    <div class="chartbox">
+      <h3>Gemiddelde lead time per motor</h3>
+      <div class="cvwrap"><canvas id="cvCmpLead" height="230"></canvas></div>
+    </div>
+    <div class="chartbox">
+      <h3>Throughput (motoren per uur)</h3>
+      <div class="cvwrap"><canvas id="cvCmpThr" height="230"></canvas></div>
+    </div>
+  </div>
+  <div class="sec grid g2">
+    <div class="chartbox">
+      <h3>First Pass Yield (%)</h3>
+      <div class="cvwrap"><canvas id="cvCmpFpy" height="230"></canvas></div>
+    </div>
+    <div class="chartbox">
+      <h3>Wachttijd als % van beschikbare tijd</h3>
+      <div class="cvwrap"><canvas id="cvCmpWait" height="230"></canvas></div>
+    </div>
+  </div>
+  <div class="sec">
+    <h2>Gemiddelde cycle time per station per run</h2>
+    <div class="tblwrap"><table class="tbl" id="tblCmpStations"></table></div>
+  </div>
+</section>
+
+<!-- ============ DATA ============ -->
+<section class="page" id="page-data">
+  <div class="sec">
+    <h2>Exporteren</h2>
+    <div class="card" style="padding:16px">
+      <div class="hint" style="margin-bottom:10px">Exporteer de ruwe gegevens van de <b>actieve run</b> voor analyse in Excel of Power BI.
+        Alle onderliggende events worden meegenomen, niet alleen de eindtotalen.</div>
+      <div class="btnrow">
+        <button class="btn pri" data-exp="events">CSV · Eventlog</button>
+        <button class="btn" data-exp="tasks">CSV · Taken per station</button>
+        <button class="btn" data-exp="motors">CSV · Motoren</button>
+        <button class="btn" data-exp="defects">CSV · Afkeuringen</button>
+        <button class="btn" data-exp="segments">CSV · Tijdsegmenten</button>
+        <button class="btn" data-exp="kpi">CSV · KPI-samenvatting</button>
+        <button class="btn" data-exp="runs">CSV · Alle runs (vergelijking)</button>
+        <button class="btn" data-exp="json">JSON · Actieve run</button>
+      </div>
+    </div>
+  </div>
+  <div class="sec">
+    <h2>Back-up</h2>
+    <div class="card" style="padding:16px">
+      <div class="hint" style="margin-bottom:10px">De applicatie slaat alles automatisch op in de localStorage van deze browser.
+        Maak regelmatig een back-up, zeker als je op een schoollaptop werkt.</div>
+      <div class="btnrow">
+        <button class="btn pri" id="btnBackupExp">Back-up exporteren (JSON)</button>
+        <button class="btn" id="btnBackupImp">Back-up importeren</button>
+        <input type="file" id="fileImp" accept="application/json,.json" style="display:none">
+      </div>
+      <div class="hint" id="storeInfo" style="margin-top:10px"></div>
+    </div>
+  </div>
+  <div class="sec">
+    <h2>Productieruns beheren</h2>
+    <div class="tblwrap"><table class="tbl" id="tblRuns"></table></div>
+  </div>
+  <div class="sec">
+    <h2>Eventlog van de actieve run</h2>
+    <div class="card" style="padding:12px;margin-bottom:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+      <label class="fld" style="margin:0;min-width:170px"><span>Filter station</span><select id="logStation"></select></label>
+      <label class="fld" style="margin:0;min-width:170px"><span>Filter motor</span><select id="logMotor"></select></label>
+      <label class="fld" style="margin:0;min-width:170px"><span>Filter type</span><select id="logType"></select></label>
+    </div>
+    <div class="tblwrap"><table class="tbl" id="tblEvents"></table></div>
+  </div>
+  <div class="sec">
+    <h2>Gevarenzone</h2>
+    <div class="card" style="padding:16px;border-color:#f3c9c9">
+      <div class="btnrow">
+        <button class="btn dgr" id="btnWipe">Volledige database wissen</button>
+        <button class="btn" id="btnDemo">Demo-data laden</button>
+        <button class="btn" id="btnDemoDel">Alle demo-runs verwijderen</button>
+      </div>
+      <div class="hint" style="margin-top:10px">Demo-data is duidelijk gemarkeerd met een <span class="tag amber">DEMO</span>-label en is
+        géén echte meting. Gebruik het alleen om de werking van het dashboard te laten zien.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INSTELLINGEN ============ -->
+<section class="page" id="page-instellingen">
+  <div class="sec">
+    <h2>Werkstations en medewerkers</h2>
+    <div class="card" style="padding:16px">
+      <div class="hint" style="margin-bottom:12px">Pas namen, werkstations en de volgorde aan. De volgorde bepaalt de berekening van de
+        overdrachtswachttijd tussen stations. Wijzigingen gelden voor <b>nieuwe</b> runs; de actieve run behoudt de namen zoals
+        die bij de start zijn vastgelegd (je kunt de namen van de actieve run hieronder wel bijwerken).</div>
+      <div class="srow" style="font-size:11px;font-weight:800;text-transform:uppercase;color:var(--txt3)">
+        <div>#</div><div>Medewerker</div><div>Werkstation</div><div>Actief</div><div></div>
+      </div>
+      <div id="setStations"></div>
+      <div class="btnrow" style="margin-top:10px">
+        <button class="btn" id="btnAddStation">+ Werkstation toevoegen</button>
+        <button class="btn pri" id="btnSyncStations">Namen ook toepassen op actieve run</button>
+      </div>
+    </div>
+  </div>
+  <div class="sec">
+    <h2>Wachttijd-redenen</h2>
+    <div class="card" style="padding:16px">
+      <div class="hint" style="margin-bottom:12px">Elke reden is gekoppeld aan een TIMWOOD-verspillingscategorie, zodat de verspillingsanalyse
+        automatisch gevuld wordt.</div>
+      <div id="setReasons"></div>
+      <div class="btnrow" style="margin-top:10px"><button class="btn" id="btnAddReason">+ Reden toevoegen</button></div>
+    </div>
+  </div>
+  <div class="sec">
+    <h2>Foutcategorieën</h2>
+    <div class="card" style="padding:16px">
+      <div id="setDefects"></div>
+      <div class="btnrow" style="margin-top:10px"><button class="btn" id="btnAddDefect">+ Foutcategorie toevoegen</button></div>
+    </div>
+  </div>
+  <div class="sec">
+    <h2>Actieve run bijwerken</h2>
+    <div class="card" style="padding:16px" id="setRun"></div>
+  </div>
+  <div class="sec">
+    <h2>Over deze applicatie</h2>
+    <div class="card" style="padding:16px">
+      <div class="hint">
+        Innovo Motors Production Measurement Dashboard · module Information Management, Logistics Management (BUas).<br>
+        Alle metingen worden opgeslagen als events met een echte timestamp. Alle KPI's worden daaruit herberekend, dus je kunt de
+        ruwe data exporteren en de berekening zelf controleren. De applicatie werkt volledig offline en heeft geen internet nodig.
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div class="ovl" id="ovl"><div class="mdl" id="mdl"></div></div>
+<script>
+/* =========================================================================
+   INNOVO MOTORS - PRODUCTION MEASUREMENT DASHBOARD
+   Eén bestand, geen externe libraries. Alle metingen worden opgeslagen als
+   events met een echte timestamp; elke KPI wordt daaruit herberekend.
+   ========================================================================= */
+'use strict';
+
+const LSKEY = 'innovo_pm_v1';
+const APPVER = 1;
+
+/* ---------------------------------------------------------------- helpers */
+const $  = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const now = () => Date.now();
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function pad(n, l) { n = String(Math.floor(n)); while (n.length < (l || 2)) n = '0' + n; return n; }
+
+/** ms -> m:ss  (of h:mm:ss bij >= 1 uur) */
+function dur(ms) {
+  if (ms == null || isNaN(ms)) return '—';
+  if (ms < 0) ms = 0;
+  const t = Math.floor(ms / 1000), h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = t % 60;
+  return h > 0 ? h + ':' + pad(m) + ':' + pad(s) : m + ':' + pad(s);
+}
+/** ms -> h:mm:ss (altijd) */
+function durH(ms) {
+  if (ms == null || isNaN(ms)) return '—';
+  if (ms < 0) ms = 0;
+  const t = Math.floor(ms / 1000);
+  return pad(Math.floor(t / 3600)) + ':' + pad(Math.floor((t % 3600) / 60)) + ':' + pad(t % 60);
+}
+const mins = ms => (ms == null || isNaN(ms)) ? '—' : (ms / 60000).toFixed(1);
+const clock = ts => { const d = new Date(ts); return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()); };
+const stamp = ts => { const d = new Date(ts); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + clock(ts); };
+const pct = (a, b) => (!b || b <= 0) ? '—' : (a / b * 100).toFixed(1) + '%';
+const num = (v, d) => (v == null || isNaN(v) || !isFinite(v)) ? '—' : Number(v).toFixed(d == null ? 1 : d);
+const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+const sum = a => a.reduce((x, y) => x + y, 0);
+function sd(a) {
+  if (a.length < 2) return null;
+  const m = avg(a);
+  return Math.sqrt(a.reduce((t, v) => t + (v - m) * (v - m), 0) / (a.length - 1));
+}
+function isoWeek(d) {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  t.setUTCDate(t.getUTCDate() + 4 - (t.getUTCDay() || 7));
+  return Math.ceil(((t - Date.UTC(t.getUTCFullYear(), 0, 1)) / 86400000 + 1) / 7);
+}
+function todayISO() { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+function motorCode(nr) { return 'Motor ' + pad(nr, 3); }
+
+/* ------------------------------------------------------------ standaarden */
+const TIMWOOD = {
+  Transport: 'Transport — onnodig verplaatsen van producten of onderdelen',
+  Inventory: 'Inventory — voorraad / halffabricaten die liggen te wachten',
+  Motion: 'Motion — onnodige beweging van de medewerker (zoeken, reiken, lopen)',
+  Waiting: 'Waiting — wachten op mensen, machines, onderdelen of informatie',
+  Overproduction: 'Overproduction — meer of eerder produceren dan nodig',
+  Overprocessing: 'Overprocessing — meer werk doen dan de klant vraagt',
+  Defects: 'Defects — fouten, afkeur en herstelwerk',
+  Talent: 'Talent — onbenut talent, slechte werkverdeling, wachten op instructie'
+};
+
+function defaultSettings() {
+  return {
+    stations: [
+      { id: 'st1', worker: 'Viggo', name: 'Voorwiel + stuur', active: true },
+      { id: 'st2', worker: 'Noah', name: 'Achterwiel', active: true },
+      { id: 'st3', worker: 'Stan', name: 'Tank + stoel', active: true },
+      { id: 'st4', worker: 'Pepijn', name: 'Hoofdassemblage / hele motor', active: true }
+    ],
+    reasons: [
+      { id: 'r1', label: 'Wachten op vorige werkstation', tim: 'Waiting' },
+      { id: 'r2', label: 'Wachten op onderdelen', tim: 'Waiting' },
+      { id: 'r3', label: 'Wachten op gereedschap', tim: 'Waiting' },
+      { id: 'r4', label: 'Zoeken naar onderdelen', tim: 'Motion' },
+      { id: 'r5', label: 'Kwaliteitsprobleem', tim: 'Defects' },
+      { id: 'r6', label: 'Fout herstellen / rework', tim: 'Defects' },
+      { id: 'r7', label: 'Overleg / instructie', tim: 'Talent' },
+      { id: 'r8', label: 'Storing', tim: 'Waiting' },
+      { id: 'r9', label: 'Anders', tim: 'Waiting' }
+    ],
+    defectTypes: [
+      { id: 'd1', label: 'Onderdeel vergeten' },
+      { id: 'd2', label: 'Verkeerd onderdeel' },
+      { id: 'd3', label: 'Onderdeel verkeerd gemonteerd' },
+      { id: 'd4', label: 'Verkeerde bout' },
+      { id: 'd5', label: 'Bout niet goed vast' },
+      { id: 'd6', label: 'Onderdeel verkeerd om' },
+      { id: 'd7', label: 'Beschadiging' },
+      { id: 'd8', label: 'Passing klopt niet' },
+      { id: 'd9', label: 'Kwaliteitscontrole mislukt' },
+      { id: 'd10', label: 'Anders' }
+    ]
+  };
+}
+
+/* ----------------------------------------------------------------- opslag */
+let DB = null;
+
+function blankDB() { return { version: APPVER, settings: defaultSettings(), runs: [], activeRunId: null }; }
+
+function loadDB() {
+  let raw = null;
+  try { raw = localStorage.getItem(LSKEY); } catch (e) { raw = null; }
+  if (!raw) { DB = blankDB(); return; }
+  try {
+    const o = JSON.parse(raw);
+    DB = normaliseDB(o);
+  } catch (e) {
+    console.error('Kon opgeslagen data niet lezen', e);
+    DB = blankDB();
+  }
+}
+function normaliseDB(o) {
+  const d = blankDB();
+  if (!o || typeof o !== 'object') return d;
+  if (o.settings) {
+    if (Array.isArray(o.settings.stations) && o.settings.stations.length) d.settings.stations = o.settings.stations;
+    if (Array.isArray(o.settings.reasons) && o.settings.reasons.length) d.settings.reasons = o.settings.reasons;
+    if (Array.isArray(o.settings.defectTypes) && o.settings.defectTypes.length) d.settings.defectTypes = o.settings.defectTypes;
+  }
+  d.runs = Array.isArray(o.runs) ? o.runs.filter(r => r && r.id && Array.isArray(r.events)) : [];
+  d.runs.forEach(r => {
+    r.stations = Array.isArray(r.stations) ? r.stations : [];
+    r.events.sort((a, b) => a.ts - b.ts || (a.seq || 0) - (b.seq || 0));
+  });
+  d.activeRunId = o.activeRunId && d.runs.some(r => r.id === o.activeRunId) ? o.activeRunId : (d.runs.length ? d.runs[d.runs.length - 1].id : null);
+  return d;
+}
+let saveTimer = null, lastSaveOk = true;
+function saveDB(immediate) {
+  clearTimeout(saveTimer);
+  const go = () => {
+    try {
+      localStorage.setItem(LSKEY, JSON.stringify(DB));
+      lastSaveOk = true;
+    } catch (e) {
+      lastSaveOk = false;
+      console.error('Opslaan mislukt', e);
+      toast('Let op: opslaan in localStorage is mislukt (opslag vol of geblokkeerd). Maak een back-up!', true);
+    }
+    updateStoreInfo();
+  };
+  if (immediate) go(); else saveTimer = setTimeout(go, 250);
+}
+
+function activeRun() { return DB.runs.find(r => r.id === DB.activeRunId) || null; }
+
+/* ----------------------------------------------------------------- events */
+let seqCounter = 0;
+function pushEvent(run, type, data) {
+  const ev = Object.assign({ id: uid(), ts: now(), seq: ++seqCounter, type: type }, data || {});
+  run.events.push(ev);
+  saveDB();
+  return ev;
+}
+
+/* =========================================================================
+   DERIVE — bouwt de volledige productiestatus opnieuw op uit de eventlog.
+   Dit is de kern: er wordt niets "live" bijgehouden, alles is herberekenbaar.
+   ========================================================================= */
+function deriveRun(run) {
+  const D = {
+    run: run,
+    stations: run.stations.slice(),
+    stationById: {},
+    tasks: {},         // key m|s
+    motors: {},        // motorId -> motor
+    motorList: [],
+    defects: [],
+    log: [],
+    lastEvent: run.events.length ? run.events[run.events.length - 1] : null
+  };
+  run.stations.forEach((s, i) => { D.stationById[s.id] = Object.assign({ order: i }, s); });
+
+  const K = (m, s) => m + '|' + s;
+  function task(mId, sId) {
+    const k = K(mId, sId);
+    if (!D.tasks[k]) {
+      D.tasks[k] = {
+        key: k, motorId: mId, stationId: sId, status: 'idle',
+        startedAt: null, firstFinishedAt: null, finishedAt: null,
+        segments: [], qc: [], defects: [],
+        manualRework: 0, reworkRounds: 0, qcPass: false, qcFail: 0
+      };
+    }
+    return D.tasks[k];
+  }
+  function openSeg(t, ts, type, extra) {
+    closeSeg(t, ts);
+    t.segments.push(Object.assign({ type: type, start: ts, end: null }, extra || {}));
+  }
+  function closeSeg(t, ts) {
+    for (let i = t.segments.length - 1; i >= 0; i--) {
+      if (t.segments[i].end == null) { t.segments[i].end = ts; break; }
+    }
+  }
+  function mName(id) { const m = D.motors[id]; return m ? m.code : 'Motor ?'; }
+  function sName(id) { const s = D.stationById[id]; return s ? s.worker + ' – ' + s.name : 'Station ?'; }
+  function logit(ev, text) { D.log.push({ ts: ev.ts, id: ev.id, text: text, type: ev.type }); }
+
+  for (const ev of run.events) {
+    switch (ev.type) {
+      case 'run_start':
+        logit(ev, 'Productierun gestart: ' + (run.name || ''));
+        break;
+      case 'run_end':
+        logit(ev, 'Productierun afgesloten');
+        break;
+      case 'motor_create': {
+        const m = {
+          id: ev.motorId, nr: ev.nr, code: motorCode(ev.nr), createdAt: ev.ts,
+          startedAt: null, completedAt: null, defects: [], variant: ev.variant || run.variant || ''
+        };
+        D.motors[m.id] = m; D.motorList.push(m);
+        logit(ev, m.code + ' aangemaakt');
+        break;
+      }
+      case 'start': {
+        const t = task(ev.motorId, ev.stationId);
+        if (t.startedAt == null) t.startedAt = ev.ts;
+        t.status = 'running';
+        openSeg(t, ev.ts, 'work');
+        const m = D.motors[ev.motorId];
+        if (m && m.startedAt == null) m.startedAt = ev.ts;
+        logit(ev, mName(ev.motorId) + ' – ' + sName(ev.stationId) + ' gestart');
+        break;
+      }
+      case 'pause': {
+        const t = task(ev.motorId, ev.stationId);
+        t.status = 'waiting';
+        openSeg(t, ev.ts, 'wait', { reason: ev.reason, reasonId: ev.reasonId, note: ev.note || '', tim: ev.tim || 'Waiting' });
+        logit(ev, mName(ev.motorId) + ' – ' + sName(ev.stationId) + ' WACHT: ' + ev.reason + (ev.note ? ' (' + ev.note + ')' : ''));
+        break;
+      }
+      case 'resume': {
+        const t = task(ev.motorId, ev.stationId);
+        t.status = t.reworkOpen ? 'rework' : 'running';
+        openSeg(t, ev.ts, t.reworkOpen ? 'rework' : 'work');
+        logit(ev, mName(ev.motorId) + ' – ' + sName(ev.stationId) + ' hervat');
+        break;
+      }
+      case 'done': {
+        const t = task(ev.motorId, ev.stationId);
+        closeSeg(t, ev.ts);
+        if (t.firstFinishedAt == null) t.firstFinishedAt = ev.ts;
+        t.finishedAt = ev.ts;
+        t.status = 'done';
+        t.reworkOpen = false;
+        logit(ev, mName(ev.motorId) + ' – ' + sName(ev.stationId) + (t.reworkRounds ? ' gereed na rework' : ' gereed'));
+        break;
+      }
+      case 'skip': {
+        const t = task(ev.motorId, ev.stationId);
+        closeSeg(t, ev.ts);
+        t.status = 'skipped';
+        t.finishedAt = t.finishedAt || ev.ts;
+        logit(ev, mName(ev.motorId) + ' – ' + sName(ev.stationId) + ' overgeslagen (n.v.t.)');
+        break;
+      }
+      case 'qc': {
+        const t = task(ev.motorId, ev.stationId);
+        t.qc.push({ ts: ev.ts, result: ev.result, defectId: ev.defectId || null });
+        if (ev.result === 'pass') {
+          t.qcPass = true;
+          logit(ev, mName(ev.motorId) + ' – ' + sName(ev.stationId) + ' QC GOEDGEKEURD');
+        } else {
+          t.qcPass = false; t.qcFail++;
+          const def = {
+            id: ev.defectId || ev.id, ts: ev.ts, motorId: ev.motorId, stationId: ev.stationId,
+            part: ev.part || '', type: ev.dtype || 'Anders', desc: ev.desc || '',
+            rework: !!ev.rework, reworkSec: Number(ev.reworkSec || 0), measured: !!ev.measured
+          };
+          D.defects.push(def); t.defects.push(def);
+          const m = D.motors[ev.motorId]; if (m) m.defects.push(def);
+          if (!def.measured && def.reworkSec) t.manualRework += def.reworkSec * 1000;
+          logit(ev, mName(ev.motorId) + ' – ' + sName(ev.stationId) + ' QC AFGEKEURD: ' + def.type +
+            (def.part ? ' · ' + def.part : '') + (def.desc ? ' · ' + def.desc : ''));
+        }
+        break;
+      }
+      case 'rework_start': {
+        const t = task(ev.motorId, ev.stationId);
+        t.status = 'rework'; t.reworkOpen = true; t.reworkRounds++;
+        openSeg(t, ev.ts, 'rework');
+        logit(ev, mName(ev.motorId) + ' – ' + sName(ev.stationId) + ' rework gestart');
+        break;
+      }
+      case 'note':
+        logit(ev, 'Notitie: ' + (ev.text || ''));
+        break;
+      default:
+        logit(ev, ev.type);
+    }
+  }
+
+  /* --- afronding per motor: compleet wanneer elk station klaar of n.v.t. is --- */
+  const sIds = run.stations.map(s => s.id);
+  D.motorList.forEach(m => {
+    let allDone = true, last = 0, anyTask = false;
+    sIds.forEach(sid => {
+      const t = D.tasks[K(m.id, sid)];
+      if (!t) { allDone = false; return; }
+      anyTask = true;
+      if (t.status === 'skipped') { last = Math.max(last, t.finishedAt || 0); return; }
+      if (t.status !== 'done') { allDone = false; return; }
+      let end = t.finishedAt || 0;
+      if (t.qc.length) end = Math.max(end, t.qc[t.qc.length - 1].ts);
+      last = Math.max(last, end);
+    });
+    m.completedAt = (allDone && anyTask && last) ? last : null;
+    m.firstPass = m.defects.length === 0;
+    m.tasks = sIds.map(sid => D.tasks[K(m.id, sid)] || null);
+  });
+
+  return D;
+}
+
+/* ---- afgeleide tijden per taak (nowTs zodat lopende timers meetellen) ---- */
+function segDur(seg, nowTs) { return (seg.end == null ? nowTs : seg.end) - seg.start; }
+function taskTimes(t, nowTs) {
+  let work = 0, wait = 0, rew = 0;
+  t.segments.forEach(s => {
+    const d = Math.max(0, segDur(s, nowTs));
+    if (s.type === 'work') work += d; else if (s.type === 'wait') wait += d; else rew += d;
+  });
+  rew += t.manualRework || 0;
+  const running = (t.status === 'running' || t.status === 'waiting' || t.status === 'rework');
+  const cycleEnd = t.firstFinishedAt != null ? t.firstFinishedAt : (running ? nowTs : null);
+  const cycle = (t.startedAt != null && cycleEnd != null) ? cycleEnd - t.startedAt : null;
+  return { work: work, wait: wait, rework: rew, active: work + rew, cycle: cycle, done: t.status === 'done' };
+}
+function openSegOf(t) {
+  for (let i = t.segments.length - 1; i >= 0; i--) if (t.segments[i].end == null) return t.segments[i];
+  return null;
+}
+
+/* =========================================================================
+   METRICS — alle KPI's, herberekend uit de afgeleide status
+   ========================================================================= */
+function computeMetrics(run, nowTs) {
+  nowTs = nowTs || now();
+  const D = deriveRun(run);
+  const M = { run: run, D: D, nowTs: nowTs };
+
+  const firstEv = run.events.length ? run.events[0].ts : null;
+  M.runStart = run.startedAt || firstEv || run.createdAt;
+  M.runEnd = run.endedAt || nowTs;
+  M.elapsed = Math.max(0, M.runEnd - M.runStart);
+  M.closed = !!run.endedAt;
+  M.takt = (run.availableMin > 0 && run.demand > 0) ? (run.availableMin * 60000 / run.demand) : null;
+
+  /* ---------------- per station ---------------- */
+  const stations = D.stations.map((s, i) => ({
+    id: s.id, worker: s.worker, name: s.name, order: i,
+    cycles: [], work: 0, wait: 0, rework: 0, tasksDone: 0, tasksOpen: 0,
+    qcPass: 0, qcFail: 0, defects: 0, wip: 0, queue: 0, reworkRounds: 0
+  }));
+  const sIdx = {}; stations.forEach(s => sIdx[s.id] = s);
+
+  Object.keys(D.tasks).forEach(k => {
+    const t = D.tasks[k], s = sIdx[t.stationId];
+    if (!s) return;
+    const tt = taskTimes(t, nowTs);
+    s.work += tt.work; s.wait += tt.wait; s.rework += tt.rework;
+    s.reworkRounds += t.reworkRounds || 0;
+    s.qcPass += t.qc.filter(q => q.result === 'pass').length;
+    s.qcFail += t.qc.filter(q => q.result === 'fail').length;
+    s.defects += t.defects.length;
+    if (t.status === 'done' && t.firstFinishedAt != null && t.startedAt != null) {
+      s.cycles.push(t.firstFinishedAt - t.startedAt); s.tasksDone++;
+    }
+    if (t.status === 'running' || t.status === 'waiting' || t.status === 'rework') { s.tasksOpen++; s.wip++; }
+  });
+
+  /* wachtrij: motor is klaar bij het vorige station maar dit station is nog niet begonnen */
+  D.motorList.forEach(m => {
+    stations.forEach((s, i) => {
+      const t = D.tasks[m.id + '|' + s.id];
+      if (t && t.status !== 'idle') return;
+      const prev = i > 0 ? D.tasks[m.id + '|' + stations[i - 1].id] : null;
+      const ready = i === 0 ? true : (prev && (prev.status === 'done' || prev.status === 'skipped'));
+      if (ready && m.completedAt == null) s.queue++;
+    });
+  });
+
+  stations.forEach(s => {
+    s.avgCycle = avg(s.cycles);
+    s.minCycle = s.cycles.length ? Math.min.apply(null, s.cycles) : null;
+    s.maxCycle = s.cycles.length ? Math.max.apply(null, s.cycles) : null;
+    s.sdCycle = sd(s.cycles);
+    s.cv = (s.sdCycle != null && s.avgCycle) ? s.sdCycle / s.avgCycle : null;
+    s.active = s.work + s.rework;
+    s.avgWait = s.tasksDone ? s.wait / s.tasksDone : (s.wait || 0);
+    s.occupancy = M.elapsed > 0 ? s.active / M.elapsed : null;
+    s.waitPct = M.elapsed > 0 ? s.wait / M.elapsed : null;
+    s.idle = Math.max(0, M.elapsed - s.active - s.wait);
+    s.overTakt = (M.takt != null && s.avgCycle != null) ? s.avgCycle > M.takt : null;
+    s.fpyTasks = s.tasksDone > 0 ? Math.max(0, s.tasksDone - s.defects) / s.tasksDone : null;
+  });
+  M.stations = stations;
+
+  /* ---------------- per motor ---------------- */
+  const motors = D.motorList.map(m => {
+    let work = 0, wait = 0, rew = 0, cyc = 0, nDone = 0, started = false;
+    D.stations.forEach(s => {
+      const t = D.tasks[m.id + '|' + s.id];
+      if (!t) return;
+      const tt = taskTimes(t, nowTs);
+      work += tt.work; wait += tt.wait; rew += tt.rework;
+      if (t.status !== 'idle') started = true;
+      if (tt.cycle != null && t.status === 'done') { cyc += tt.cycle; nDone++; }
+    });
+    const lead = (m.startedAt != null) ? ((m.completedAt || (started ? nowTs : null)) - m.startedAt) : null;
+    return {
+      m: m, id: m.id, nr: m.nr, code: m.code, started: started,
+      startedAt: m.startedAt, completedAt: m.completedAt,
+      lead: lead, work: work, wait: wait, rework: rew, cycleSum: cyc, stationsDone: nDone,
+      complete: m.completedAt != null, firstPass: m.firstPass, defects: m.defects.length
+    };
+  });
+  M.motors = motors;
+  M.completedMotors = motors.filter(x => x.complete);
+  M.wipMotors = motors.filter(x => x.started && !x.complete);
+  M.notStarted = motors.filter(x => !x.started);
+  M.wip = M.wipMotors.length;
+
+  const leads = M.completedMotors.map(x => x.lead).filter(v => v != null && v > 0);
+  M.leadAvg = avg(leads); M.leadMin = leads.length ? Math.min.apply(null, leads) : null;
+  M.leadMax = leads.length ? Math.max.apply(null, leads) : null; M.leadSd = sd(leads);
+  M.leadCv = (M.leadSd != null && M.leadAvg) ? M.leadSd / M.leadAvg : null;
+
+  /* ---------------- totalen ---------------- */
+  M.totalWork = sum(stations.map(s => s.work));
+  M.totalWait = sum(stations.map(s => s.wait));
+  M.totalRework = sum(stations.map(s => s.rework));
+  M.totalActive = M.totalWork + M.totalRework;
+  M.totalAvailable = M.elapsed * stations.length;
+  M.lineOccupancy = M.totalAvailable > 0 ? M.totalActive / M.totalAvailable : null;
+  M.lineWaitPct = M.totalAvailable > 0 ? M.totalWait / M.totalAvailable : null;
+  M.flowEff = (M.totalWork + M.totalWait + M.totalRework) > 0 ? M.totalWork / (M.totalWork + M.totalWait + M.totalRework) : null;
+
+  const hours = M.elapsed / 3600000;
+  M.throughput = hours > 0 ? M.completedMotors.length / hours : null;
+  const workedHours = M.totalActive / 3600000;
+  M.productivity = workedHours > 0 ? M.completedMotors.length / workedHours : null;
+  M.avgProdTime = M.leadAvg;
+
+  const done = M.completedMotors.length;
+  M.fpy = done > 0 ? M.completedMotors.filter(x => x.firstPass).length / done : null;
+  M.fpyCount = M.completedMotors.filter(x => x.firstPass).length;
+
+  M.defects = D.defects.slice();
+  M.reworkCount = D.defects.filter(d => d.rework).length;
+
+  /* ---------------- bottleneck ---------------- */
+  const withCycle = stations.filter(s => s.avgCycle != null).slice().sort((a, b) => b.avgCycle - a.avgCycle);
+  M.bottleneck = withCycle.length ? withCycle[0] : null;
+  M.bottleneck2 = withCycle.length > 1 ? withCycle[1] : null;
+  M.gainIfFixed = (M.bottleneck && M.bottleneck2 && M.bottleneck2.avgCycle > 0)
+    ? (M.bottleneck.avgCycle / M.bottleneck2.avgCycle - 1) : null;
+  const sumAvg = sum(withCycle.map(s => s.avgCycle));
+  M.lineBalance = (withCycle.length && withCycle[0].avgCycle > 0)
+    ? sumAvg / (withCycle.length * withCycle[0].avgCycle) : null;
+
+  /* werkverdeling: aandeel actieve tijd per station t.o.v. gemiddelde */
+  const acts = stations.map(s => s.active);
+  M.workloadSpread = (avg(acts) > 0) ? (Math.max.apply(null, acts) - Math.min.apply(null, acts)) / avg(acts) : null;
+
+  /* ---------------- leercurve ---------------- */
+  const doneSorted = M.completedMotors.slice().sort((a, b) => a.nr - b.nr);
+  if (doneSorted.length >= 4) {
+    const n = Math.max(1, Math.floor(doneSorted.length / 3));
+    const first = avg(doneSorted.slice(0, n).map(x => x.lead));
+    const last = avg(doneSorted.slice(-n).map(x => x.lead));
+    M.learning = (first && last) ? { first: first, last: last, n: n, delta: (first - last) / first } : null;
+  } else M.learning = null;
+
+  /* ---------------- overdrachtswachttijd ---------------- */
+  const hand = [];
+  for (let i = 1; i < D.stations.length; i++) {
+    const prev = D.stations[i - 1], cur = D.stations[i], gaps = [];
+    D.motorList.forEach(m => {
+      const a = D.tasks[m.id + '|' + prev.id], b = D.tasks[m.id + '|' + cur.id];
+      if (!a || !b || a.firstFinishedAt == null || b.startedAt == null) return;
+      const g = b.startedAt - a.firstFinishedAt;
+      if (g >= 0) gaps.push(g);
+    });
+    hand.push({
+      label: prev.worker + ' → ' + cur.worker, from: prev, to: cur,
+      count: gaps.length, total: sum(gaps), avg: avg(gaps),
+      max: gaps.length ? Math.max.apply(null, gaps) : null
+    });
+  }
+  /* extra: alle voorbereidende stations gereed → start laatste station */
+  if (D.stations.length > 1) {
+    const last = D.stations[D.stations.length - 1], gaps = [];
+    D.motorList.forEach(m => {
+      const b = D.tasks[m.id + '|' + last.id];
+      if (!b || b.startedAt == null) return;
+      let ready = 0, ok = true;
+      for (let i = 0; i < D.stations.length - 1; i++) {
+        const t = D.tasks[m.id + '|' + D.stations[i].id];
+        if (!t || t.firstFinishedAt == null) { ok = false; break; }
+        ready = Math.max(ready, t.firstFinishedAt);
+      }
+      if (ok && ready) { const g = b.startedAt - ready; if (g >= 0) gaps.push(g); }
+    });
+    hand.push({
+      label: 'Alle deelstations gereed → start ' + last.worker, from: null, to: last,
+      count: gaps.length, total: sum(gaps), avg: avg(gaps),
+      max: gaps.length ? Math.max.apply(null, gaps) : null, special: true
+    });
+  }
+  M.handovers = hand;
+
+  /* ---------------- wachtredenen + TIMWOOD ---------------- */
+  const reasons = {}, tim = {};
+  Object.keys(TIMWOOD).forEach(k => tim[k] = 0);
+  Object.keys(D.tasks).forEach(k => {
+    const t = D.tasks[k];
+    t.segments.forEach(sg => {
+      if (sg.type !== 'wait') return;
+      const d = Math.max(0, segDur(sg, nowTs));
+      const lab = sg.reason || 'Onbekend';
+      if (!reasons[lab]) reasons[lab] = { label: lab, ms: 0, count: 0, tim: sg.tim || 'Waiting', byStation: {}, notes: [] };
+      reasons[lab].ms += d; reasons[lab].count++;
+      reasons[lab].byStation[t.stationId] = (reasons[lab].byStation[t.stationId] || 0) + d;
+      if (sg.note) reasons[lab].notes.push(sg.note);
+      tim[sg.tim || 'Waiting'] = (tim[sg.tim || 'Waiting'] || 0) + d;
+    });
+    const tt = taskTimes(t, nowTs);
+    if (tt.rework > 0) tim.Defects += tt.rework;
+  });
+  M.reasons = Object.keys(reasons).map(k => reasons[k]).sort((a, b) => b.ms - a.ms);
+  M.timwood = tim;
+  M.totalWaste = sum(Object.keys(tim).map(k => tim[k]));
+
+  /* ---------------- kwaliteit ---------------- */
+  const byType = {}, byStation = {}, byPart = {};
+  D.defects.forEach(d => {
+    byType[d.type] = (byType[d.type] || 0) + 1;
+    byStation[d.stationId] = (byStation[d.stationId] || 0) + 1;
+    if (d.part) byPart[d.part] = (byPart[d.part] || 0) + 1;
+  });
+  M.defectsByType = Object.keys(byType).map(k => ({ label: k, n: byType[k] })).sort((a, b) => b.n - a.n);
+  M.defectsByStation = stations.map(s => ({ label: s.worker, n: byStation[s.id] || 0, station: s }));
+  M.defectsByPart = Object.keys(byPart).map(k => ({ label: k, n: byPart[k] })).sort((a, b) => b.n - a.n);
+  M.qcTotal = sum(stations.map(s => s.qcPass + s.qcFail));
+  M.qcFailTotal = sum(stations.map(s => s.qcFail));
+
+  return M;
+}
+
+/* ---- snelle samenvatting van een run, voor de vergelijkingspagina ---- */
+function runSummary(run) {
+  const M = computeMetrics(run, run.endedAt || now());
+  return {
+    id: run.id, name: run.name, week: run.week, date: run.date, demo: !!run.demo,
+    motorsDone: M.completedMotors.length, motorsTotal: M.motors.length,
+    elapsed: M.elapsed, leadAvg: M.leadAvg, leadMin: M.leadMin, leadMax: M.leadMax,
+    cycleAvg: avg(M.stations.map(s => s.avgCycle).filter(v => v != null)),
+    throughput: M.throughput, productivity: M.productivity, fpy: M.fpy,
+    wait: M.totalWait, waitPct: M.lineWaitPct, occupancy: M.lineOccupancy,
+    defects: M.defects.length, rework: M.totalRework, takt: M.takt,
+    bottleneck: M.bottleneck ? (M.bottleneck.worker + ' – ' + M.bottleneck.name) : null,
+    bottleneckCycle: M.bottleneck ? M.bottleneck.avgCycle : null,
+    lineBalance: M.lineBalance, flowEff: M.flowEff,
+    stations: M.stations.map(s => ({ id: s.id, worker: s.worker, name: s.name, avgCycle: s.avgCycle, wait: s.wait, occ: s.occupancy })),
+    M: M
+  };
+}
+
+/* =========================================================================
+   UI-BASIS: modals, toast, grafiek-engine (pure canvas)
+   ========================================================================= */
+let modalResolve = null;
+function closeModal(v) {
+  $('#ovl').classList.remove('on');
+  $('#mdl').innerHTML = '';
+  const r = modalResolve; modalResolve = null;
+  if (r) r(v);
+}
+function openModal(opt) {
+  return new Promise(res => {
+    modalResolve = res;
+    const m = $('#mdl');
+    m.className = 'mdl' + (opt.wide ? ' wide' : '');
+    m.innerHTML =
+      '<div class="mdl-h">' + esc(opt.title) + (opt.sub ? '<small>' + esc(opt.sub) + '</small>' : '') + '</div>' +
+      '<div class="mdl-b">' + (opt.body || '') + '</div>' +
+      '<div class="mdl-f">' + (opt.buttons || []).map((b, i) =>
+        '<button class="btn ' + (b.cls || '') + '" data-mb="' + i + '">' + esc(b.label) + '</button>').join('') + '</div>';
+    $('#ovl').classList.add('on');
+    $$('[data-mb]', m).forEach(btn => {
+      btn.onclick = () => {
+        const b = opt.buttons[+btn.dataset.mb];
+        if (b.onClick) { const v = b.onClick(m); if (v === false) return; closeModal(v); }
+        else closeModal(b.value);
+      };
+    });
+    if (opt.onOpen) opt.onOpen(m);
+    const f = m.querySelector('input,select,textarea');
+    if (f && !opt.noFocus) setTimeout(() => f.focus(), 30);
+  });
+}
+function confirmBox(title, text, okLabel, danger) {
+  return openModal({
+    title: title, body: '<div style="font-size:14.5px">' + text + '</div>',
+    buttons: [{ label: 'Annuleren', value: false }, { label: okLabel || 'Bevestigen', cls: danger ? 'dgr' : 'pri', value: true }]
+  });
+}
+function alertBox(title, text) {
+  return openModal({ title: title, body: '<div style="font-size:14.5px">' + text + '</div>', buttons: [{ label: 'OK', cls: 'pri', value: true }] });
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('#ovl').classList.contains('on')) closeModal(false);
+});
+$('#ovl') && ($('#ovl').addEventListener('mousedown', e => { if (e.target.id === 'ovl') closeModal(false); }));
+
+let toastTimer = null;
+function toast(msg, bad) {
+  let el = $('#toast');
+  if (!el) {
+    el = document.createElement('div'); el.id = 'toast';
+    el.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:200;' +
+      'padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);' +
+      'max-width:90vw;text-align:center';
+    document.body.appendChild(el);
+  }
+  el.style.background = bad ? '#c62828' : '#0f2438';
+  el.style.color = '#fff';
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.style.display = 'none'; }, bad ? 6000 : 2600);
+}
+
+/* ------------------------------------------------------------- grafieken */
+const PALETTE = ['#1668c7', '#0f8a4d', '#c47b00', '#6a3fb5', '#c62828', '#0f7a8a', '#8a6d3b', '#4a5f7a'];
+
+function prep(cv, h) {
+  const dpr = window.devicePixelRatio || 1;
+  const w = cv.clientWidth || cv.parentNode.clientWidth || 600;
+  const hh = h || cv.height || 230;
+  cv.width = Math.max(1, Math.round(w * dpr));
+  cv.height = Math.round(hh * dpr);
+  cv.style.height = hh + 'px';
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, hh);
+  ctx.font = '11px Segoe UI, Arial, sans-serif';
+  ctx.textBaseline = 'middle';
+  return { ctx: ctx, w: w, h: hh };
+}
+function fmtVal(v, unit) {
+  if (v == null || isNaN(v)) return '—';
+  if (unit === 'time') return dur(v);
+  if (unit === 'pct') return (v * 100).toFixed(0) + '%';
+  if (unit === 'min') return num(v, 1);
+  if (Math.abs(v - Math.round(v)) < 1e-9) return String(Math.round(v));
+  return num(v, v >= 100 ? 0 : v >= 10 ? 1 : 2);
+}
+function niceMax(v) {
+  if (!v || v <= 0) return 1;
+  const p = Math.pow(10, Math.floor(Math.log10(v)));
+  const n = v / p;
+  const f = n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10;
+  return f * p;
+}
+/** asverdeling: 4 stappen, bij tellingen altijd hele getallen */
+function makeTicks(maxV, integer) {
+  if (integer) {
+    const step = Math.max(1, Math.ceil(Math.max(1, maxV) / 4));
+    return { max: step * 4, vals: [0, step, step * 2, step * 3, step * 4] };
+  }
+  const m = niceMax(maxV);
+  return { max: m, vals: [0, m / 4, m / 2, m * 3 / 4, m] };
+}
+function noData(cv, txt) {
+  const { ctx, w, h } = prep(cv);
+  ctx.fillStyle = '#9aa9b7'; ctx.textAlign = 'center';
+  ctx.font = '13px Segoe UI, Arial, sans-serif';
+  ctx.fillText(txt || 'Nog geen meetgegevens', w / 2, h / 2);
+}
+
+/** Staafdiagram (verticaal). items: [{label, value, color, sub}] */
+function drawBars(cv, o) {
+  const items = (o.items || []).filter(x => x.value != null && !isNaN(x.value));
+  if (!items.length) return noData(cv, o.empty);
+  const { ctx, w, h } = prep(cv, o.height);
+  const padL = 52, padR = 14, padT = 16, padB = o.twoLine ? 42 : 30;
+  const tk = makeTicks(Math.max.apply(null, items.map(i => i.value).concat(o.target ? [o.target] : [])), o.integer);
+  const maxV = tk.max;
+  const cw = w - padL - padR, ch = h - padT - padB;
+  ctx.textAlign = 'right'; ctx.fillStyle = '#8395a5';
+  tk.vals.forEach((tv, i) => {
+    const y = padT + ch - ch * (tv / maxV);
+    ctx.strokeStyle = i === 0 ? '#c7d2dc' : '#eef2f6';
+    ctx.beginPath(); ctx.moveTo(padL, y + .5); ctx.lineTo(w - padR, y + .5); ctx.stroke();
+    ctx.fillStyle = '#8395a5'; ctx.fillText(fmtVal(tv, o.unit), padL - 7, y);
+  });
+  const bw = Math.min(72, cw / items.length * .68), step = cw / items.length;
+  items.forEach((it, i) => {
+    const x = padL + step * i + (step - bw) / 2;
+    const bh = Math.max(1, ch * (it.value / maxV));
+    ctx.fillStyle = it.color || PALETTE[i % PALETTE.length];
+    ctx.fillRect(x, padT + ch - bh, bw, bh);
+    ctx.fillStyle = '#12212e'; ctx.textAlign = 'center';
+    ctx.font = 'bold 11px Segoe UI, Arial, sans-serif';
+    ctx.fillText(fmtVal(it.value, o.unit), x + bw / 2, padT + ch - bh - 9);
+    ctx.font = '11px Segoe UI, Arial, sans-serif'; ctx.fillStyle = '#4d6274';
+    const lab = String(it.label);
+    ctx.fillText(lab.length > 13 ? lab.slice(0, 12) + '…' : lab, x + bw / 2, padT + ch + 12);
+    if (it.sub) { ctx.fillStyle = '#8395a5'; ctx.fillText(it.sub, x + bw / 2, padT + ch + 26); }
+  });
+  if (o.target != null) {
+    const y = padT + ch - ch * (o.target / maxV);
+    ctx.strokeStyle = '#c62828'; ctx.setLineDash([6, 4]); ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+    ctx.setLineDash([]); ctx.lineWidth = 1;
+    ctx.fillStyle = '#c62828'; ctx.textAlign = 'left'; ctx.font = 'bold 10px Segoe UI, Arial, sans-serif';
+    ctx.fillText((o.targetLabel || 'takt') + ' ' + fmtVal(o.target, o.unit), padL + 3, y - 8);
+  }
+}
+
+/** Gestapeld/gegroepeerd staafdiagram. series:[{name,color,values[]}] labels:[] */
+function drawGrouped(cv, o) {
+  const labels = o.labels || [];
+  if (!labels.length) return noData(cv, o.empty);
+  const { ctx, w, h } = prep(cv, o.height);
+  const padL = 52, padR = 14, padT = 22, padB = 30;
+  let maxV = 0;
+  o.series.forEach(s => s.values.forEach(v => { if (v != null && v > maxV) maxV = v; }));
+  const tk = makeTicks(maxV, o.integer);
+  maxV = tk.max;
+  const cw = w - padL - padR, ch = h - padT - padB;
+  ctx.textAlign = 'right';
+  tk.vals.forEach((tv, i) => {
+    const y = padT + ch - ch * (tv / maxV);
+    ctx.strokeStyle = i === 0 ? '#c7d2dc' : '#eef2f6';
+    ctx.beginPath(); ctx.moveTo(padL, y + .5); ctx.lineTo(w - padR, y + .5); ctx.stroke();
+    ctx.fillStyle = '#8395a5'; ctx.fillText(fmtVal(tv, o.unit), padL - 7, y);
+  });
+  const step = cw / labels.length, ns = o.series.length;
+  const bw = Math.min(38, (step * .74) / ns);
+  labels.forEach((lab, i) => {
+    const gx = padL + step * i + (step - bw * ns) / 2;
+    o.series.forEach((s, j) => {
+      const v = s.values[i];
+      if (v == null || isNaN(v)) return;
+      const bh = Math.max(1, ch * (v / maxV));
+      ctx.fillStyle = s.color || PALETTE[j % PALETTE.length];
+      ctx.fillRect(gx + bw * j, padT + ch - bh, bw - 2, bh);
+    });
+    ctx.fillStyle = '#4d6274'; ctx.textAlign = 'center';
+    ctx.fillText(String(lab).length > 14 ? String(lab).slice(0, 13) + '…' : lab, padL + step * i + step / 2, padT + ch + 13);
+  });
+  // legenda
+  let lx = padL;
+  ctx.textAlign = 'left'; ctx.font = '11px Segoe UI, Arial, sans-serif';
+  o.series.forEach((s, j) => {
+    ctx.fillStyle = s.color || PALETTE[j % PALETTE.length];
+    ctx.fillRect(lx, 6, 10, 10);
+    ctx.fillStyle = '#4d6274'; ctx.fillText(s.name, lx + 14, 11);
+    lx += 22 + ctx.measureText(s.name).width;
+  });
+}
+
+/** Lijndiagram met punten. series:[{name,color,values[]}] */
+function drawLines(cv, o) {
+  const labels = o.labels || [];
+  const any = o.series.some(s => s.values.some(v => v != null && !isNaN(v)));
+  if (!labels.length || !any) return noData(cv, o.empty);
+  const { ctx, w, h } = prep(cv, o.height);
+  const padL = 56, padR = 16, padT = 24, padB = 30;
+  let maxV = 0, minV = 0;
+  o.series.forEach(s => s.values.forEach(v => { if (v != null && v > maxV) maxV = v; }));
+  if (o.extraMax != null) maxV = Math.max(maxV, o.extraMax);
+  if (o.minZero === false) {
+    minV = Infinity;
+    o.series.forEach(s => s.values.forEach(v => { if (v != null && v < minV) minV = v; }));
+    if (o.extraMin != null) minV = Math.min(minV, o.extraMin);
+    if (!isFinite(minV)) minV = 0;
+    const pad = (maxV - minV) * .15 || maxV * .1 || 1;
+    minV = Math.max(0, minV - pad); maxV = maxV + pad;
+  } else maxV = niceMax(maxV);
+  const cw = w - padL - padR, ch = h - padT - padB;
+  const X = i => padL + (labels.length === 1 ? cw / 2 : cw * i / (labels.length - 1));
+  const Y = v => padT + ch - ch * ((v - minV) / (maxV - minV || 1));
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) {
+    const val = minV + (maxV - minV) * i / 4, y = Y(val);
+    ctx.strokeStyle = i === 0 ? '#c7d2dc' : '#eef2f6';
+    ctx.beginPath(); ctx.moveTo(padL, y + .5); ctx.lineTo(w - padR, y + .5); ctx.stroke();
+    ctx.fillStyle = '#8395a5'; ctx.fillText(fmtVal(val, o.unit), padL - 7, y);
+  }
+  (o.hlines || []).forEach(hl => {
+    if (hl.value == null || isNaN(hl.value)) return;
+    const y = Y(hl.value);
+    ctx.strokeStyle = hl.color; ctx.setLineDash(hl.dash || [6, 4]); ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+    ctx.setLineDash([]); ctx.lineWidth = 1;
+    ctx.fillStyle = hl.color; ctx.textAlign = 'left'; ctx.font = 'bold 10px Segoe UI, Arial, sans-serif';
+    ctx.fillText(hl.label + ' ' + fmtVal(hl.value, o.unit), padL + 3, y - 8);
+    ctx.font = '11px Segoe UI, Arial, sans-serif';
+  });
+  o.series.forEach((s, j) => {
+    const col = s.color || PALETTE[j % PALETTE.length];
+    ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath();
+    let started = false;
+    s.values.forEach((v, i) => {
+      if (v == null || isNaN(v)) { started = false; return; }
+      if (!started) { ctx.moveTo(X(i), Y(v)); started = true; } else ctx.lineTo(X(i), Y(v));
+    });
+    ctx.stroke(); ctx.lineWidth = 1;
+    s.values.forEach((v, i) => {
+      if (v == null || isNaN(v)) return;
+      const out = o.flagOut && o.flagOut(v, i);
+      ctx.fillStyle = out ? '#c62828' : col;
+      ctx.beginPath(); ctx.arc(X(i), Y(v), out ? 5.5 : 4, 0, 7); ctx.fill();
+      if (out) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.lineWidth = 1; }
+    });
+  });
+  ctx.textAlign = 'center'; ctx.fillStyle = '#4d6274';
+  const skip = Math.ceil(labels.length / Math.max(2, Math.floor(cw / 48)));
+  labels.forEach((l, i) => { if (i % skip === 0) ctx.fillText(l, X(i), padT + ch + 13); });
+  let lx = padL;
+  ctx.textAlign = 'left';
+  o.series.forEach((s, j) => {
+    ctx.fillStyle = s.color || PALETTE[j % PALETTE.length];
+    ctx.fillRect(lx, 8, 10, 10);
+    ctx.fillStyle = '#4d6274'; ctx.fillText(s.name, lx + 14, 13);
+    lx += 22 + ctx.measureText(s.name).width;
+  });
+}
+
+/* ------------------------------------------------------------ navigatie */
+let TAB = 'productie';
+function showTab(t) {
+  TAB = t;
+  $$('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  $$('.page').forEach(p => p.classList.toggle('on', p.id === 'page-' + t));
+  renderAll();
+  window.scrollTo({ top: 0 });
+}
+
+/* =========================================================================
+   PRODUCTIEPAGINA
+   ========================================================================= */
+const UI = { sel: {}, cmp: null, spc: 'lead' };
+
+const STATUS_LABEL = { idle: 'Niet gestart', running: 'Bezig', waiting: 'Wachten', rework: 'Rework', done: 'Gereed', skipped: 'N.v.t.' };
+const STATUS_PILL = { idle: 'p-idle', running: 'p-run', waiting: 'p-wait', rework: 'p-rew', done: 'p-done', skipped: 'p-skip' };
+
+function getTask(D, mId, sId) { return D.tasks[mId + '|' + sId] || null; }
+function taskStatus(D, mId, sId) { const t = getTask(D, mId, sId); return t ? t.status : 'idle'; }
+
+function currentMotorFor(D, st) {
+  const open = D.motorList.find(m => ['running', 'waiting', 'rework'].indexOf(taskStatus(D, m.id, st.id)) >= 0);
+  if (open) return open.id;
+  const sel = UI.sel[st.id];
+  if (sel && D.motors[sel]) return sel;
+  const next = D.motorList.slice().sort((a, b) => a.nr - b.nr).find(m => taskStatus(D, m.id, st.id) === 'idle');
+  if (next) return next.id;
+  return D.motorList.length ? D.motorList[D.motorList.length - 1].id : null;
+}
+
+function renderProduction() {
+  const run = activeRun();
+  const bn = $('#prodBanner');
+  if (!run) {
+    bn.innerHTML = '<div class="banner info"><div><b>Nog geen productierun actief</b>' +
+      'Klik rechtsboven op <b style="display:inline">+ Nieuwe run</b> om een productieronde te starten. ' +
+      'Pas eventueel eerst bij INSTELLINGEN de namen van de medewerkers en werkstations aan.</div></div>';
+    $('#motorStrip').innerHTML = '';
+    $('#btnNewMotor').disabled = true;
+    $('#stationGrid').innerHTML = '<div class="empty card" style="grid-column:1/-1">Start eerst een productierun.</div>';
+    $('#liveLog').innerHTML = '<div class="empty">Nog geen acties geregistreerd.</div>';
+    return;
+  }
+  const M = computeMetrics(run), D = M.D;
+  let banner = '';
+  if (run.demo) banner += '<div class="banner demo"><div><b>DEMO-RUN</b>Dit is gegenereerde voorbeelddata, géén echte meting. ' +
+    'Gebruik deze run niet in je verslag als meetresultaat.</div></div>';
+  if (run.endedAt) banner += '<div class="banner warn"><div><b>Deze run is afgesloten</b>Je kunt geen nieuwe metingen meer registreren. ' +
+    'Heropen de run via DATA → productieruns, of start een nieuwe run.</div></div>';
+  bn.innerHTML = banner;
+
+  /* ---- motorstrip ---- */
+  const strip = D.motorList.slice().sort((a, b) => b.nr - a.nr).map(m => {
+    const dots = D.stations.map(s => {
+      const st = taskStatus(D, m.id, s.id);
+      const cls = st === 'running' ? 'run' : st === 'waiting' ? 'wait' : st === 'rework' ? 'rew'
+        : st === 'done' ? 'done' : st === 'skipped' ? 'skip' : '';
+      return '<span class="dot ' + cls + '" title="' + esc(s.worker + ' – ' + s.name + ': ' + STATUS_LABEL[st]) + '"></span>';
+    }).join('');
+    const mm = M.motors.find(x => x.id === m.id);
+    const state = mm.complete ? '<span class="tag blue">GEREED</span>'
+      : mm.started ? '<span class="tag green">WIP</span>' : '<span class="tag">WACHT</span>';
+    const fp = mm.defects ? '<span class="tag red" title="' + mm.defects + ' afkeur(en)">✕' + mm.defects + '</span>' : '';
+    return '<div class="mcard"><div class="n"><span>' + esc(m.code) + '</span>' + state + fp + '</div>' +
+      '<div class="dots">' + dots + '</div>' +
+      '<div class="t">Lead time <b class="mono" data-mlead="' + m.id + '">' + (mm.lead != null ? dur(mm.lead) : '—') + '</b></div></div>';
+  }).join('');
+  $('#motorStrip').innerHTML = strip || '<div class="hint" style="padding:14px">Nog geen motoren. Maak de eerste motor aan om te beginnen.</div>';
+  $('#btnNewMotor').disabled = !!run.endedAt;
+
+  /* ---- stationkaarten ---- */
+  $('#stationGrid').innerHTML = D.stations.map(st => {
+    const mId = currentMotorFor(D, st);
+    const t = mId ? getTask(D, mId, st.id) : null;
+    const status = t ? t.status : 'idle';
+    const tt = t ? taskTimes(t, M.nowTs) : { work: 0, wait: 0, rework: 0, cycle: null };
+    const sm = M.stations.find(x => x.id === st.id);
+    const locked = ['running', 'waiting', 'rework'].indexOf(status) >= 0;
+    const busyOther = D.motorList.some(m => m.id !== mId && ['running', 'waiting', 'rework'].indexOf(taskStatus(D, m.id, st.id)) >= 0);
+    const dis = !!run.endedAt;
+
+    const bigMs = status === 'waiting'
+      ? (openSegOf(t) ? M.nowTs - openSegOf(t).start : tt.wait)
+      : (t && t.startedAt != null ? (t.firstFinishedAt != null && status === 'done' ? t.firstFinishedAt - t.startedAt : M.nowTs - t.startedAt) : 0);
+    const bigCls = status === 'waiting' ? 'wait' : status === 'running' ? 'run' : status === 'rework' ? 'rew'
+      : status === 'done' ? '' : 'off';
+
+    let motorCtl;
+    if (!D.motorList.length) motorCtl = '<div class="st-cur" style="background:#eceff2;color:#7b8fa1">Maak eerst een motor aan</div>';
+    else if (locked) motorCtl = '<div class="st-cur">' + esc(D.motors[mId].code) + '</div>';
+    else motorCtl = '<select data-selm="' + st.id + '">' + D.motorList.slice().sort((a, b) => a.nr - b.nr).map(m => {
+      const s2 = taskStatus(D, m.id, st.id);
+      return '<option value="' + m.id + '"' + (m.id === mId ? ' selected' : '') + '>' + esc(m.code) +
+        (s2 !== 'idle' ? ' · ' + STATUS_LABEL[s2] : '') + '</option>';
+    }).join('') + '</select>';
+
+    const canStart = !dis && mId && status === 'idle' && !busyOther;
+    const canPause = !dis && (status === 'running' || status === 'rework');
+    const canRes = !dis && status === 'waiting';
+    const canDone = !dis && (status === 'running' || status === 'waiting' || status === 'rework');
+    const canQc = !dis && status === 'done';
+    const canSkip = !dis && mId && status === 'idle';
+
+    return '<div class="st s-' + status + '" data-task="' + (mId ? mId + '|' + st.id : '') + '" data-st="' + st.id + '">' +
+      '<div class="st-head"><div class="top"><div><div class="w">' + esc(st.worker) + '</div>' +
+      '<div class="s">' + esc(st.name) + '</div></div>' +
+      '<span class="pill ' + STATUS_PILL[status] + '">' + STATUS_LABEL[status] + '</span></div></div>' +
+      '<div class="st-body">' + motorCtl +
+      '<div class="bigt ' + bigCls + '" data-big>' + dur(bigMs) + '</div>' +
+      '<div class="subt">' +
+      '<div>Actief<b data-f="work">' + dur(tt.work) + '</b></div>' +
+      '<div>Wachten<b data-f="wait">' + dur(tt.wait) + '</b></div>' +
+      '<div>Rework<b data-f="rework">' + dur(tt.rework) + '</b></div></div>' +
+      '<div class="acts">' +
+      '<button class="b-start" data-a="start"' + (canStart ? '' : ' disabled') + '>▶ Start</button>' +
+      '<button class="b-pause" data-a="pause"' + (canPause ? '' : ' disabled') + '>⏸ Wachten</button>' +
+      '<button class="b-res" data-a="resume"' + (canRes ? '' : ' disabled') + '>↻ Hervatten</button>' +
+      '<button class="b-done" data-a="done"' + (canDone ? '' : ' disabled') + '>✔ Gereed</button>' +
+      '<button class="b-qc" data-a="qc"' + (canQc ? '' : ' disabled') + '>◎ Kwaliteitscontrole</button>' +
+      '<button class="b-skip" data-a="skip"' + (canSkip ? '' : ' disabled') + '>Niet van toepassing voor deze motor</button>' +
+      '</div>' + (busyOther ? '<div class="hint" style="color:var(--amber)">Dit station is nog bezig met een andere motor.</div>' : '') +
+      '</div>' +
+      '<div class="st-foot"><span>Gereed: <b>' + sm.tasksDone + '</b></span>' +
+      '<span>Gem. cycle: <b>' + (sm.avgCycle != null ? dur(sm.avgCycle) : '—') + '</b></span>' +
+      '<span>Wacht: <b>' + dur(sm.wait) + '</b></span></div>' +
+      '</div>';
+  }).join('');
+
+  /* ---- live log ---- */
+  const lg = D.log.slice(-120).reverse();
+  $('#liveLog').innerHTML = lg.length
+    ? lg.map(l => '<div class="logline"><span class="tm">' + clock(l.ts) + '</span><span class="tx">' + esc(l.text) + '</span></div>').join('')
+    : '<div class="empty">Nog geen acties geregistreerd.</div>';
+
+  bindStationEvents();
+}
+
+function bindStationEvents() {
+  $$('[data-selm]').forEach(sel => {
+    sel.onchange = () => { UI.sel[sel.dataset.selm] = sel.value; renderProduction(); };
+  });
+  $$('.st [data-a]').forEach(b => {
+    b.onclick = () => {
+      const card = b.closest('.st');
+      const key = card.dataset.task;
+      if (!key) { toast('Maak eerst een motor aan.', true); return; }
+      const p = key.split('|');
+      handleAction(b.dataset.a, p[0], p[1]);
+    };
+  });
+}
+
+/* --------------------------------------------------------------- acties */
+function handleAction(action, motorId, stationId) {
+  const run = activeRun(); if (!run || run.endedAt) return;
+  const D = deriveRun(run);
+  const t = getTask(D, motorId, stationId);
+  const st = D.stationById[stationId];
+  const status = t ? t.status : 'idle';
+
+  if (action === 'start') {
+    if (status !== 'idle') { toast('Dit station is al gestart met deze motor.', true); return; }
+    const busy = D.motorList.find(m => m.id !== motorId && ['running', 'waiting', 'rework'].indexOf(taskStatus(D, m.id, stationId)) >= 0);
+    if (busy) { toast(st.worker + ' is nog bezig met ' + D.motors[busy.id].code + '.', true); return; }
+    pushEvent(run, 'start', { motorId: motorId, stationId: stationId });
+    afterEvent();
+    return;
+  }
+  if (action === 'resume') {
+    if (status !== 'waiting') return;
+    pushEvent(run, 'resume', { motorId: motorId, stationId: stationId });
+    afterEvent(); return;
+  }
+  if (action === 'done') {
+    if (['running', 'waiting', 'rework'].indexOf(status) < 0) return;
+    pushEvent(run, 'done', { motorId: motorId, stationId: stationId });
+    afterEvent();
+    setTimeout(() => askQC(motorId, stationId, true), 60);
+    return;
+  }
+  if (action === 'pause') { askReason(motorId, stationId); return; }
+  if (action === 'qc') { askQC(motorId, stationId, false); return; }
+  if (action === 'skip') {
+    confirmBox('Station overslaan?',
+      '<b>' + esc(st.worker + ' – ' + st.name) + '</b> wordt voor <b>' + esc(D.motors[motorId].code) +
+      '</b> gemarkeerd als <b>niet van toepassing</b>. Deze stap telt dan niet mee in de cycle time en blokkeert de motor niet.',
+      'Overslaan').then(ok => {
+        if (!ok) return;
+        pushEvent(run, 'skip', { motorId: motorId, stationId: stationId });
+        afterEvent();
+      });
+  }
+}
+
+function askReason(motorId, stationId) {
+  const run = activeRun(); const D = deriveRun(run);
+  const body =
+    '<div class="hint" style="margin-bottom:10px">Waarom kan er nu niet verder gewerkt worden? De wachttijd loopt vanaf nu.</div>' +
+    '<div class="choice" id="rsnGrid">' +
+    DB.settings.reasons.map(r => '<button type="button" data-r="' + r.id + '">' + esc(r.label) +
+      '<small>' + esc(r.tim) + '</small></button>').join('') + '</div>' +
+    '<label class="fld" style="margin-top:14px"><span>Korte notitie (verplicht bij "anders")</span>' +
+    '<input type="text" id="rsnNote" placeholder="bijv. schroevendraaier kwijt"></label>';
+  openModal({
+    title: 'Wachten — wat is de reden?',
+    sub: D.motors[motorId].code + ' · ' + D.stationById[stationId].worker + ' – ' + D.stationById[stationId].name,
+    body: body, noFocus: true,
+    buttons: [{ label: 'Annuleren', value: null }],
+    onOpen: m => {
+      $$('#rsnGrid button', m).forEach(b => {
+        b.onclick = () => {
+          const r = DB.settings.reasons.find(x => x.id === b.dataset.r);
+          const note = ($('#rsnNote', m).value || '').trim();
+          if (/anders/i.test(r.label) && !note) { toast('Vul bij "anders" een korte notitie in.', true); $('#rsnNote', m).focus(); return; }
+          pushEvent(run, 'pause', { motorId: motorId, stationId: stationId, reasonId: r.id, reason: r.label, tim: r.tim, note: note });
+          closeModal(true); afterEvent();
+        };
+      });
+    }
+  });
+}
+
+function askQC(motorId, stationId, auto) {
+  const run = activeRun(); if (!run || run.endedAt) return;
+  const D = deriveRun(run);
+  const t = getTask(D, motorId, stationId);
+  if (!t || t.status !== 'done') return;
+  const stOpts = D.stations.map(s => '<option value="' + s.id + '"' + (s.id === stationId ? ' selected' : '') + '>' +
+    esc(s.worker + ' – ' + s.name) + '</option>').join('');
+  const dtOpts = DB.settings.defectTypes.map(d => '<option>' + esc(d.label) + '</option>').join('');
+
+  const body =
+    '<div id="qcStep1">' +
+    '<div class="hint" style="margin-bottom:12px">Controleer het onderdeel en registreer het resultaat.</div>' +
+    '<div class="choice">' +
+    '<button type="button" id="qcOk" style="border-color:#0f8a4d;background:#e3f6ec;color:#0f8a4d">✔ GOEDGEKEURD<small>direct goed</small></button>' +
+    '<button type="button" id="qcNo" style="border-color:#c62828;background:#fdeaea;color:#c62828">✕ AFGEKEURD<small>fout registreren</small></button>' +
+    '</div></div>' +
+    '<div id="qcStep2" style="display:none">' +
+    '<div class="fgrid">' +
+    '<label class="fld"><span>Welk station</span><select id="qcSt">' + stOpts + '</select></label>' +
+    '<label class="fld"><span>Welk onderdeel</span><input type="text" id="qcPart" placeholder="bijv. voorwiel-as"></label>' +
+    '<label class="fld"><span>Type fout</span><select id="qcType">' + dtOpts + '</select></label>' +
+    '<label class="fld"><span>Moet er rework plaatsvinden?</span><select id="qcRw">' +
+    '<option value="live">Ja — nu herstellen, tijd meten</option>' +
+    '<option value="manual">Ja — rework-tijd zelf invullen</option>' +
+    '<option value="no">Nee — geen rework</option></select></label>' +
+    '</div>' +
+    '<label class="fld"><span>Korte omschrijving</span><textarea id="qcDesc" rows="2" placeholder="wat is er precies mis?"></textarea></label>' +
+    '<label class="fld" id="qcMinWrap" style="display:none"><span>Rework-tijd in minuten</span>' +
+    '<input type="number" id="qcMin" min="0" step="0.1" value="1"></label>' +
+    '<div class="banner red" style="margin:0"><div>Een afkeur telt mee in de First Pass Yield en in de TIMWOOD-categorie <b style="display:inline">Defects</b>.</div></div>' +
+    '</div>';
+
+  openModal({
+    title: 'Kwaliteitscontrole', wide: true, noFocus: true,
+    sub: D.motors[motorId].code + ' · ' + D.stationById[stationId].worker + ' – ' + D.stationById[stationId].name,
+    body: body,
+    buttons: [{ label: auto ? 'Later controleren' : 'Annuleren', value: null }],
+    onOpen: m => {
+      $('#qcOk', m).onclick = () => {
+        pushEvent(run, 'qc', { motorId: motorId, stationId: stationId, result: 'pass' });
+        closeModal(true); afterEvent();
+      };
+      $('#qcNo', m).onclick = () => {
+        $('#qcStep1', m).style.display = 'none';
+        $('#qcStep2', m).style.display = '';
+        const f = $('.mdl-f', m);
+        f.innerHTML = '<button class="btn" id="qcCancel">Annuleren</button><button class="btn dgr" id="qcSave">Afkeur registreren</button>';
+        $('#qcCancel', m).onclick = () => closeModal(null);
+        $('#qcSave', m).onclick = () => {
+          const mode = $('#qcRw', m).value;
+          const sId = $('#qcSt', m).value;
+          const d = {
+            motorId: motorId, stationId: sId, result: 'fail', defectId: uid(),
+            part: ($('#qcPart', m).value || '').trim(),
+            dtype: $('#qcType', m).value,
+            desc: ($('#qcDesc', m).value || '').trim(),
+            rework: mode !== 'no',
+            measured: mode === 'live',
+            reworkSec: mode === 'manual' ? Math.max(0, parseFloat($('#qcMin', m).value || '0')) * 60 : 0
+          };
+          pushEvent(run, 'qc', d);
+          if (mode === 'live') {
+            const tt = getTask(deriveRun(run), motorId, sId);
+            if (tt) pushEvent(run, 'rework_start', { motorId: motorId, stationId: sId });
+            else { pushEvent(run, 'start', { motorId: motorId, stationId: sId }); pushEvent(run, 'rework_start', { motorId: motorId, stationId: sId }); }
+          }
+          closeModal(true); afterEvent();
+          if (mode === 'live') toast('Rework loopt — druk op GEREED zodra het hersteld is.');
+        };
+      };
+      $('#qcRw', m).onchange = () => {
+        $('#qcMinWrap', m).style.display = $('#qcRw', m).value === 'manual' ? '' : 'none';
+      };
+    }
+  });
+}
+
+function newMotor() {
+  const run = activeRun(); if (!run || run.endedAt) return;
+  const D = deriveRun(run);
+  const nr = D.motorList.length ? Math.max.apply(null, D.motorList.map(m => m.nr)) + 1 : 1;
+  pushEvent(run, 'motor_create', { motorId: uid(), nr: nr });
+  toast(motorCode(nr) + ' aangemaakt');
+  afterEvent();
+}
+
+function undoLast() {
+  const run = activeRun();
+  if (!run || !run.events.length) { toast('Er is niets om ongedaan te maken.', true); return; }
+  const D = deriveRun(run);
+  const last = D.log[D.log.length - 1];
+  const ev = run.events[run.events.length - 1];
+  confirmBox('Laatste actie ongedaan maken?',
+    'De volgende registratie wordt definitief verwijderd:<br><br>' +
+    '<b>' + clock(ev.ts) + ' — ' + esc(last ? last.text : ev.type) + '</b><br><br>' +
+    'Alle tijden worden daarna opnieuw berekend.', 'Ongedaan maken', true).then(ok => {
+      if (!ok) return;
+      run.events.pop();
+      saveDB(true); afterEvent();
+      toast('Actie ongedaan gemaakt');
+    });
+}
+
+function afterEvent() { renderAll(); }
+
+/* =========================================================================
+   DASHBOARD
+   ========================================================================= */
+function kpi(lab, val, sub, cls) {
+  return '<div class="kpi ' + (cls || '') + '"><div class="lab">' + esc(lab) + '</div>' +
+    '<div class="val">' + val + '</div><div class="sub">' + (sub || '&nbsp;') + '</div></div>';
+}
+function noRunBanner(id, page) {
+  $(id).innerHTML = '<div class="banner info"><div><b>Nog geen productierun actief</b>' +
+    'Start een run op de PRODUCTIE-pagina; ' + page + ' vult zich dan automatisch tijdens het meten.</div></div>';
+}
+function demoBanner(run) {
+  return run.demo ? '<div class="banner demo"><div><b>DEMO-RUN</b>Voorbeelddata — geen echte meting.</div></div>' : '';
+}
+
+function renderDashboard() {
+  const run = activeRun();
+  if (!run) {
+    noRunBanner('#dashBanner', 'het dashboard');
+    ['dashKpis', 'dashBottleneck', 'taktBox', 'dashExtra'].forEach(i => $('#' + i).innerHTML = '');
+    $('#tblStations').innerHTML = ''; $('#tblMotors').innerHTML = ''; $('#occBars').innerHTML = '';
+    ['cvCycle', 'cvTrend', 'cvActWait'].forEach(i => noData($('#' + i), 'Geen actieve run'));
+    return;
+  }
+  const M = computeMetrics(run);
+  $('#dashBanner').innerHTML = demoBanner(run);
+
+  const cycAll = M.stations.map(s => s.avgCycle).filter(v => v != null);
+  $('#dashKpis').innerHTML =
+    kpi('Gem. productietijd per motor', M.leadAvg != null ? dur(M.leadAvg) : '—',
+      M.completedMotors.length + ' complete motoren', 'blue') +
+    kpi('Gem. cycle time per station', cycAll.length ? dur(avg(cycAll)) : '—',
+      'som van alle stations: ' + (cycAll.length ? dur(sum(cycAll)) : '—')) +
+    kpi('Throughput', M.throughput != null ? num(M.throughput, 1) + ' /uur' : '—',
+      'complete motoren per uur runtijd') +
+    kpi('Productiviteit', M.productivity != null ? num(M.productivity, 2) + ' /gewerkt uur' : '—',
+      'motoren per uur daadwerkelijk gewerkt') +
+    kpi('First Pass Yield', M.fpy != null ? (M.fpy * 100).toFixed(0) + '%' : '—',
+      M.fpyCount + ' van ' + M.completedMotors.length + ' in één keer goed',
+      M.fpy == null ? '' : M.fpy >= 0.9 ? 'ok' : M.fpy >= 0.7 ? 'warn' : 'bad') +
+    kpi('Totale wachttijd lijn', dur(M.totalWait),
+      pct(M.totalWait, M.totalAvailable) + ' van de beschikbare tijd',
+      M.lineWaitPct == null ? '' : M.lineWaitPct < 0.15 ? 'ok' : M.lineWaitPct < 0.3 ? 'warn' : 'bad') +
+    kpi('WIP (onderhanden werk)', M.wip, M.notStarted.length + ' nog niet gestart · ' + M.completedMotors.length + ' gereed') +
+    kpi('Rework', dur(M.totalRework), M.defects.length + ' afkeuren · ' + M.reworkCount + ' met rework',
+      M.defects.length === 0 ? 'ok' : 'warn');
+
+  /* ---- bottleneck ---- */
+  let bhtml;
+  if (!M.bottleneck) {
+    bhtml = '<div class="card hint" style="padding:18px">Nog niet genoeg afgeronde taken om een bottleneck te bepalen. ' +
+      'Rond eerst minimaal één taak per werkstation af.</div>';
+  } else {
+    const b = M.bottleneck;
+    bhtml = '<div class="grid g3">' +
+      '<div class="card" style="padding:16px;border-left:5px solid var(--red)">' +
+      '<div class="lab" style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--red);font-weight:800">Bottleneck</div>' +
+      '<div style="font-size:21px;font-weight:800;margin:4px 0 2px">' + esc(b.worker + ' – ' + b.name) + '</div>' +
+      '<div style="font-size:14px">Gemiddelde cycle time: <b class="mono">' + dur(b.avgCycle) + '</b></div>' +
+      '<div class="hint" style="margin-top:6px">Dit station bepaalt het tempo van de hele lijn. Zolang hier niets verandert, ' +
+      'kan de lijn niet sneller dan ' + dur(b.avgCycle) + ' per motor.</div></div>' +
+      '<div class="card" style="padding:16px">' +
+      '<div class="lab" style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--txt3);font-weight:800">Verbeterpotentieel</div>' +
+      (M.bottleneck2 ? '<div style="font-size:21px;font-weight:800;margin:4px 0 2px;color:var(--green)">+' +
+        num(M.gainIfFixed * 100, 0) + '%</div>' +
+        '<div class="hint">Als ' + esc(b.worker) + ' op het niveau van het op één na traagste station komt (' +
+        esc(M.bottleneck2.worker) + ', ' + dur(M.bottleneck2.avgCycle) + '), kan de lijn theoretisch ' +
+        num(M.gainIfFixed * 100, 0) + '% meer motoren per uur maken.</div>'
+        : '<div class="hint">Nog te weinig stations met data.</div>') + '</div>' +
+      '<div class="card" style="padding:16px">' +
+      '<div class="lab" style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--txt3);font-weight:800">Lijnbalans</div>' +
+      '<div style="font-size:21px;font-weight:800;margin:4px 0 2px">' + (M.lineBalance != null ? num(M.lineBalance * 100, 0) + '%' : '—') + '</div>' +
+      '<div class="hint">Hoe gelijkmatig het werk verdeeld is over de stations. 100% = perfect gebalanceerd; ' +
+      'laag betekent dat sommige mensen structureel meer werk hebben dan anderen.</div></div>' +
+      '</div>';
+  }
+  $('#dashBottleneck').innerHTML = bhtml;
+
+  /* ---- takt ---- */
+  if (M.takt == null) {
+    $('#taktBox').innerHTML = '<div class="hint">Vul bij de run een <b>beschikbare productietijd</b> en een <b>klantvraag</b> in ' +
+      '(INSTELLINGEN → actieve run bijwerken) om de takt time te berekenen en de stations daaraan te toetsen.</div>';
+  } else {
+    const rows = M.stations.map(s => {
+      if (s.avgCycle == null) {
+        return '<div class="srow" style="grid-template-columns:150px 90px 1fr 110px"><b>' + esc(s.worker) + '</b>' +
+          '<span class="mono">—</span><div class="bar"><i style="width:0"></i></div><span class="hint">geen data</span></div>';
+      }
+      const ratio = s.avgCycle / M.takt;
+      const w = Math.min(100, ratio * 100);
+      const ok = s.avgCycle <= M.takt;
+      return '<div class="srow" style="grid-template-columns:150px 90px 1fr 150px;align-items:center">' +
+        '<b>' + esc(s.worker) + '</b>' +
+        '<span class="mono" style="font-weight:800;font-size:15px">' + dur(s.avgCycle) + '</span>' +
+        '<div class="bar" style="height:14px"><i class="' + (ok ? 'g' : 'r') + '" style="width:' + w + '%"></i></div>' +
+        '<span style="font-weight:800;color:' + (ok ? 'var(--green)' : 'var(--red)') + '">' +
+        (ok ? '✓ onder takt' : '✕ boven takt') + ' (' + num(ratio * 100, 0) + '%)</span></div>';
+    }).join('');
+    $('#taktBox').innerHTML =
+      '<div class="hint" style="margin-bottom:12px">Takt time = beschikbare productietijd (' + run.availableMin + ' min) ÷ klantvraag (' +
+      run.demand + ' motoren) = <b>' + dur(M.takt) + '</b> per motor. Elk station moet daaronder blijven.</div>' + rows;
+  }
+
+  /* ---- stationtabel ---- */
+  $('#tblStations').innerHTML =
+    '<thead><tr><th>Medewerker</th><th>Werkstation</th><th class="r">Gereed</th><th class="r">Gem. cycle</th>' +
+    '<th class="r">Snelste</th><th class="r">Langzaamste</th><th class="r">Variatie (CV)</th><th class="r">Actief</th>' +
+    '<th class="r">Wachttijd</th><th class="r">Gem. wacht</th><th class="r">Rework</th><th class="r">Bezetting</th>' +
+    '<th class="r">Wacht%</th><th class="r">WIP</th><th class="r">Wachtrij</th><th class="r">Fouten</th></tr></thead><tbody>' +
+    M.stations.map(s => {
+      const bn = M.bottleneck && M.bottleneck.id === s.id;
+      return '<tr' + (bn ? ' style="background:#fdeaea"' : '') + '>' +
+        '<td><b>' + esc(s.worker) + '</b>' + (bn ? ' <span class="tag red">BOTTLENECK</span>' : '') + '</td>' +
+        '<td>' + esc(s.name) + '</td>' +
+        '<td class="r mono">' + s.tasksDone + '</td>' +
+        '<td class="r mono"><b>' + (s.avgCycle != null ? dur(s.avgCycle) : '—') + '</b></td>' +
+        '<td class="r mono">' + (s.minCycle != null ? dur(s.minCycle) : '—') + '</td>' +
+        '<td class="r mono">' + (s.maxCycle != null ? dur(s.maxCycle) : '—') + '</td>' +
+        '<td class="r mono">' + (s.cv != null ? num(s.cv * 100, 0) + '%' : '—') + '</td>' +
+        '<td class="r mono">' + dur(s.active) + '</td>' +
+        '<td class="r mono">' + dur(s.wait) + '</td>' +
+        '<td class="r mono">' + (s.tasksDone ? dur(s.avgWait) : '—') + '</td>' +
+        '<td class="r mono">' + dur(s.rework) + '</td>' +
+        '<td class="r mono">' + (s.occupancy != null ? num(s.occupancy * 100, 0) + '%' : '—') + '</td>' +
+        '<td class="r mono">' + (s.waitPct != null ? num(s.waitPct * 100, 0) + '%' : '—') + '</td>' +
+        '<td class="r mono">' + s.wip + '</td>' +
+        '<td class="r mono">' + s.queue + '</td>' +
+        '<td class="r mono">' + (s.defects ? '<span class="tag red">' + s.defects + '</span>' : '0') + '</td></tr>';
+    }).join('') + '</tbody>';
+
+  /* ---- bezettingsbalken ---- */
+  $('#occBars').innerHTML = M.stations.map(s => {
+    const tot = M.elapsed || 1;
+    const a = Math.min(100, s.active / tot * 100), wt = Math.min(100 - a, s.wait / tot * 100);
+    const idle = Math.max(0, 100 - a - wt);
+    return '<div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:3px">' +
+      '<b>' + esc(s.worker) + '</b><span class="mono">bezetting ' + num(a, 0) + '% · wachten ' + num(wt, 0) + '%</span></div>' +
+      '<div class="tbar">' +
+      '<i style="width:' + a + '%;background:var(--green)">' + (a > 12 ? num(a, 0) + '%' : '') + '</i>' +
+      '<i style="width:' + wt + '%;background:var(--amber)">' + (wt > 12 ? num(wt, 0) + '%' : '') + '</i>' +
+      '<i style="width:' + idle + '%;background:#dde4ea;color:#7b8fa1">' + (idle > 12 ? num(idle, 0) + '%' : '') + '</i>' +
+      '</div></div>';
+  }).join('') + '<div class="hint" style="margin-top:8px">Groen = actief (incl. rework) · oranje = geregistreerde wachttijd · ' +
+    'grijs = niet gemeten / vrij. Basis: verstreken runtijd ' + durH(M.elapsed) + '.</div>';
+
+  /* ---- grafieken ---- */
+  drawBars($('#cvCycle'), {
+    unit: 'time', target: M.takt, targetLabel: 'takt',
+    items: M.stations.filter(s => s.avgCycle != null).map((s, i) => ({
+      label: s.worker, value: s.avgCycle, sub: s.tasksDone + '×',
+      color: (M.bottleneck && M.bottleneck.id === s.id) ? '#c62828' : PALETTE[i % PALETTE.length]
+    })),
+    empty: 'Nog geen afgeronde cycli'
+  });
+
+  const done = M.motors.slice().sort((a, b) => a.nr - b.nr);
+  drawLines($('#cvTrend'), {
+    unit: 'time', labels: done.map(x => 'M' + pad(x.nr, 2)),
+    series: [
+      { name: 'Lead time', color: '#1668c7', values: done.map(x => x.complete ? x.lead : null) },
+      { name: 'Actieve tijd', color: '#0f8a4d', values: done.map(x => x.complete ? x.work : null) }
+    ],
+    hlines: M.leadAvg != null ? [{ value: M.leadAvg, color: '#8395a5', label: 'gem.' }] : [],
+    empty: 'Nog geen complete motoren'
+  });
+
+  drawGrouped($('#cvActWait'), {
+    unit: 'time', labels: M.stations.map(s => s.worker),
+    series: [
+      { name: 'Actief', color: '#0f8a4d', values: M.stations.map(s => s.active) },
+      { name: 'Wachten', color: '#c47b00', values: M.stations.map(s => s.wait) },
+      { name: 'Rework', color: '#c62828', values: M.stations.map(s => s.rework) }
+    ]
+  });
+
+  /* ---- motortabel ---- */
+  $('#tblMotors').innerHTML =
+    '<thead><tr><th>Motor</th><th>Status</th><th>Start</th><th>Gereed</th><th class="r">Lead time</th>' +
+    '<th class="r">Som cycle</th><th class="r">Actief</th><th class="r">Wachttijd</th><th class="r">Rework</th>' +
+    '<th class="r">Flow-eff.</th><th class="r">Fouten</th><th>1e keer goed</th></tr></thead><tbody>' +
+    (M.motors.length ? M.motors.slice().sort((a, b) => a.nr - b.nr).map(x => {
+      const fe = (x.work + x.wait + x.rework) > 0 ? x.work / (x.work + x.wait + x.rework) : null;
+      return '<tr><td><b>' + esc(x.code) + '</b></td>' +
+        '<td>' + (x.complete ? '<span class="pill p-done">Gereed</span>' : x.started ? '<span class="pill p-run">WIP</span>' : '<span class="pill p-idle">Niet gestart</span>') + '</td>' +
+        '<td class="mono">' + (x.startedAt ? clock(x.startedAt) : '—') + '</td>' +
+        '<td class="mono">' + (x.completedAt ? clock(x.completedAt) : '—') + '</td>' +
+        '<td class="r mono"><b>' + (x.lead != null ? dur(x.lead) : '—') + '</b></td>' +
+        '<td class="r mono">' + dur(x.cycleSum) + '</td>' +
+        '<td class="r mono">' + dur(x.work) + '</td>' +
+        '<td class="r mono">' + dur(x.wait) + '</td>' +
+        '<td class="r mono">' + dur(x.rework) + '</td>' +
+        '<td class="r mono">' + (fe != null ? num(fe * 100, 0) + '%' : '—') + '</td>' +
+        '<td class="r mono">' + (x.defects ? '<span class="tag red">' + x.defects + '</span>' : '0') + '</td>' +
+        '<td>' + (x.complete ? (x.firstPass ? '<span class="tag green">JA</span>' : '<span class="tag red">NEE</span>') : '—') + '</td></tr>';
+    }).join('') : '<tr><td colspan="12" class="empty">Nog geen motoren aangemaakt.</td></tr>') + '</tbody>';
+
+  /* ---- extra analyse ---- */
+  const bal = M.stations.map(s => ({ w: s.worker, a: s.active }));
+  const totAct = sum(bal.map(b => b.a)) || 1;
+  $('#dashExtra').innerHTML =
+    '<div class="card" style="padding:15px"><h3 style="font-size:14px">Werkverdeling</h3>' +
+    '<div class="hint" style="margin-bottom:8px">Aandeel van alle actieve tijd per medewerker. Grote verschillen = oneerlijke verdeling ' +
+    'en verborgen wachttijd.</div>' +
+    bal.map(b => '<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:12.5px">' +
+      '<span>' + esc(b.w) + '</span><b class="mono">' + num(b.a / totAct * 100, 0) + '%</b></div>' +
+      '<div class="bar"><i style="width:' + (b.a / totAct * 100) + '%"></i></div></div>').join('') +
+    '<div class="hint" style="margin-top:8px">Spreiding: <b>' + (M.workloadSpread != null ? num(M.workloadSpread * 100, 0) + '%' : '—') +
+    '</b> verschil tussen drukste en rustigste station.</div></div>' +
+
+    '<div class="card" style="padding:15px"><h3 style="font-size:14px">Flow-efficiëntie</h3>' +
+    '<div style="font-size:28px;font-weight:800;color:var(--blue);margin:4px 0">' +
+    (M.flowEff != null ? num(M.flowEff * 100, 0) + '%' : '—') + '</div>' +
+    '<div class="hint">Aandeel van de gemeten tijd dat écht waarde toevoegt (werk), tegenover wachten en rework. ' +
+    'Actief ' + dur(M.totalWork) + ' · wachten ' + dur(M.totalWait) + ' · rework ' + dur(M.totalRework) + '.</div>' +
+    '<div class="tbar" style="margin-top:10px">' +
+    '<i style="width:' + (M.totalWork / (M.totalWork + M.totalWait + M.totalRework || 1) * 100) + '%;background:var(--green)"></i>' +
+    '<i style="width:' + (M.totalWait / (M.totalWork + M.totalWait + M.totalRework || 1) * 100) + '%;background:var(--amber)"></i>' +
+    '<i style="width:' + (M.totalRework / (M.totalWork + M.totalWait + M.totalRework || 1) * 100) + '%;background:var(--red)"></i>' +
+    '</div></div>' +
+
+    '<div class="card" style="padding:15px"><h3 style="font-size:14px">Leercurve</h3>' +
+    (M.learning
+      ? '<div style="font-size:28px;font-weight:800;margin:4px 0;color:' + (M.learning.delta > 0 ? 'var(--green)' : 'var(--red)') + '">' +
+      (M.learning.delta > 0 ? '−' : '+') + num(Math.abs(M.learning.delta) * 100, 0) + '%</div>' +
+      '<div class="hint">De laatste ' + M.learning.n + ' motoren duurden gemiddeld <b>' + dur(M.learning.last) +
+      '</b> tegenover <b>' + dur(M.learning.first) + '</b> voor de eerste ' + M.learning.n + '. ' +
+      (M.learning.delta > 0 ? 'Jullie worden sneller.' : 'Jullie worden langzamer — zoek uit waarom.') + '</div>'
+      : '<div class="hint">Er zijn minimaal 4 complete motoren nodig om een leercurve te berekenen.</div>') +
+    '<div class="hint" style="margin-top:10px">Variatie lead time (CV): <b>' +
+    (M.leadCv != null ? num(M.leadCv * 100, 0) + '%' : '—') + '</b> · spreiding ' +
+    (M.leadMin != null ? dur(M.leadMin) + ' – ' + dur(M.leadMax) : '—') + '</div></div>';
+}
+
+/* =========================================================================
+   KWALITEIT
+   ========================================================================= */
+function renderQuality() {
+  const run = activeRun();
+  if (!run) {
+    noRunBanner('#qBanner', 'de kwaliteitspagina');
+    $('#qKpis').innerHTML = '';
+    ['tblQStations', 'tblDefects', 'tblFpy'].forEach(i => $('#' + i).innerHTML = '');
+    ['cvErrStation', 'cvErrType'].forEach(i => noData($('#' + i), 'Geen actieve run'));
+    return;
+  }
+  const M = computeMetrics(run);
+  $('#qBanner').innerHTML = demoBanner(run);
+
+  $('#qKpis').innerHTML =
+    kpi('First Pass Yield', M.fpy != null ? (M.fpy * 100).toFixed(0) + '%' : '—',
+      M.fpyCount + ' van ' + M.completedMotors.length + ' motoren direct goed',
+      M.fpy == null ? '' : M.fpy >= 0.9 ? 'ok' : M.fpy >= 0.7 ? 'warn' : 'bad') +
+    kpi('Aantal afkeuren', M.defects.length, M.reworkCount + ' daarvan met rework', M.defects.length ? 'bad' : 'ok') +
+    kpi('Totale rework-tijd', dur(M.totalRework),
+      M.elapsed ? num(M.totalRework / M.elapsed * 100, 1) + '% van de runtijd' : '') +
+    kpi('Kwaliteitscontroles', M.qcTotal, M.qcFailTotal + ' afgekeurd · ' + (M.qcTotal - M.qcFailTotal) + ' goedgekeurd');
+
+  drawBars($('#cvErrStation'), {
+    unit: 'n', integer: true, items: M.defectsByStation.map((d, i) => ({ label: d.label, value: d.n, color: d.n ? '#c62828' : '#cfd8e0' })),
+    empty: 'Nog geen fouten geregistreerd'
+  });
+  drawBars($('#cvErrType'), {
+    unit: 'n', integer: true, items: M.defectsByType.slice(0, 8).map(d => ({ label: d.label, value: d.n, color: '#c47b00' })),
+    empty: 'Nog geen fouten geregistreerd'
+  });
+
+  $('#tblQStations').innerHTML =
+    '<thead><tr><th>Medewerker</th><th>Werkstation</th><th class="r">Controles</th><th class="r">Goedgekeurd</th>' +
+    '<th class="r">Afgekeurd</th><th class="r">Fouten</th><th class="r">Rework-rondes</th><th class="r">Rework-tijd</th>' +
+    '<th class="r">FPY station</th></tr></thead><tbody>' +
+    M.stations.map(s => '<tr><td><b>' + esc(s.worker) + '</b></td><td>' + esc(s.name) + '</td>' +
+      '<td class="r mono">' + (s.qcPass + s.qcFail) + '</td>' +
+      '<td class="r mono">' + s.qcPass + '</td>' +
+      '<td class="r mono">' + (s.qcFail ? '<span class="tag red">' + s.qcFail + '</span>' : '0') + '</td>' +
+      '<td class="r mono">' + s.defects + '</td>' +
+      '<td class="r mono">' + s.reworkRounds + '</td>' +
+      '<td class="r mono">' + dur(s.rework) + '</td>' +
+      '<td class="r mono">' + (s.fpyTasks != null ? num(s.fpyTasks * 100, 0) + '%' : '—') + '</td></tr>').join('') +
+    '</tbody>';
+
+  $('#tblDefects').innerHTML =
+    '<thead><tr><th>Tijd</th><th>Motor</th><th>Station</th><th>Onderdeel</th><th>Type fout</th>' +
+    '<th>Omschrijving</th><th>Rework</th><th class="r">Rework-tijd</th></tr></thead><tbody>' +
+    (M.defects.length ? M.defects.slice().reverse().map(d => {
+      const st = M.D.stationById[d.stationId], mo = M.D.motors[d.motorId];
+      const t = M.D.tasks[d.motorId + '|' + d.stationId];
+      const rw = d.measured && t ? taskTimes(t, M.nowTs).rework : d.reworkSec * 1000;
+      return '<tr><td class="mono">' + clock(d.ts) + '</td>' +
+        '<td>' + esc(mo ? mo.code : '?') + '</td>' +
+        '<td>' + esc(st ? st.worker + ' – ' + st.name : '?') + '</td>' +
+        '<td>' + esc(d.part || '—') + '</td>' +
+        '<td><span class="tag red">' + esc(d.type) + '</span></td>' +
+        '<td>' + esc(d.desc || '—') + '</td>' +
+        '<td>' + (d.rework ? (d.measured ? 'ja (gemeten)' : 'ja (geschat)') : 'nee') + '</td>' +
+        '<td class="r mono">' + (d.rework ? dur(rw) : '—') + '</td></tr>';
+    }).join('') : '<tr><td colspan="8" class="empty">Nog geen afkeuringen geregistreerd — mooi zo.</td></tr>') + '</tbody>';
+
+  $('#tblFpy').innerHTML =
+    '<thead><tr><th>Motor</th><th>Status</th><th class="r">Fouten</th><th>In één keer goed</th><th>Stations met fout</th></tr></thead><tbody>' +
+    (M.motors.length ? M.motors.slice().sort((a, b) => a.nr - b.nr).map(x => {
+      const sts = Array.from(new Set(x.m.defects.map(d => (M.D.stationById[d.stationId] || {}).worker || '?')));
+      return '<tr><td><b>' + esc(x.code) + '</b></td>' +
+        '<td>' + (x.complete ? 'Gereed' : x.started ? 'In productie' : 'Niet gestart') + '</td>' +
+        '<td class="r mono">' + x.defects + '</td>' +
+        '<td>' + (x.complete ? (x.firstPass ? '<span class="tag green">JA</span>' : '<span class="tag red">NEE</span>') : '—') + '</td>' +
+        '<td>' + esc(sts.join(', ') || '—') + '</td></tr>';
+    }).join('') : '<tr><td colspan="5" class="empty">Nog geen motoren.</td></tr>') + '</tbody>';
+}
+
+/* =========================================================================
+   VERSPILLING / TIMWOOD
+   ========================================================================= */
+function renderWaste() {
+  const run = activeRun();
+  if (!run) {
+    noRunBanner('#wBanner', 'de verspillingsanalyse');
+    $('#wKpis').innerHTML = '';
+    ['tblTimwood', 'tblReasons', 'tblHandover'].forEach(i => $('#' + i).innerHTML = '');
+    ['cvTimwood', 'cvReason'].forEach(i => noData($('#' + i), 'Geen actieve run'));
+    return;
+  }
+  const M = computeMetrics(run);
+  $('#wBanner').innerHTML = demoBanner(run);
+  const top = M.reasons[0];
+  const cats = Object.keys(TIMWOOD).map(k => ({ k: k, ms: M.timwood[k] || 0 })).sort((a, b) => b.ms - a.ms);
+
+  $('#wKpis').innerHTML =
+    kpi('Totale verspilling', dur(M.totalWaste), num(M.totalWaste / 60000, 1) + ' minuten gemeten', 'bad') +
+    kpi('Grootste oorzaak', top ? esc(top.label) : '—', top ? dur(top.ms) + ' · ' + top.count + '×' : 'nog niets geregistreerd') +
+    kpi('Grootste TIMWOOD-categorie', cats[0] && cats[0].ms ? cats[0].k : '—',
+      cats[0] && cats[0].ms ? dur(cats[0].ms) : '') +
+    kpi('Verspilling per motor', M.completedMotors.length ? dur(M.totalWaste / M.completedMotors.length) : '—',
+      'gemiddeld per complete motor');
+
+  drawBars($('#cvTimwood'), {
+    unit: 'time', items: cats.filter(c => c.ms > 0).map(c => ({ label: c.k, value: c.ms, color: '#c47b00' })),
+    empty: 'Nog geen verspilling geregistreerd'
+  });
+  drawBars($('#cvReason'), {
+    unit: 'time', items: M.reasons.slice(0, 8).map(r => ({ label: r.label, value: r.ms, sub: r.count + '×', color: '#1668c7' })),
+    empty: 'Nog geen wachttijd geregistreerd'
+  });
+
+  $('#tblTimwood').innerHTML =
+    '<thead><tr><th>Categorie</th><th>Betekenis</th><th class="r">Minuten</th><th class="r">Tijd</th><th class="r">Aandeel</th><th></th></tr></thead><tbody>' +
+    cats.map(c => '<tr><td><b>' + esc(c.k) + '</b></td><td class="hint">' + esc(TIMWOOD[c.k]) + '</td>' +
+      '<td class="r mono">' + num(c.ms / 60000, 1) + '</td>' +
+      '<td class="r mono">' + (c.ms ? dur(c.ms) : '—') + '</td>' +
+      '<td class="r mono">' + (M.totalWaste ? num(c.ms / M.totalWaste * 100, 0) + '%' : '—') + '</td>' +
+      '<td style="width:180px"><div class="bar"><i class="a" style="width:' + (M.totalWaste ? c.ms / M.totalWaste * 100 : 0) + '%"></i></div></td></tr>').join('') +
+    '</tbody>';
+
+  $('#tblReasons').innerHTML =
+    '<thead><tr><th>Reden</th><th>TIMWOOD</th><th class="r">Aantal</th><th class="r">Totaal</th><th class="r">Gemiddeld</th>' +
+    M.stations.map(s => '<th class="r">' + esc(s.worker) + '</th>').join('') + '<th>Notities</th></tr></thead><tbody>' +
+    (M.reasons.length ? M.reasons.map(r => '<tr><td><b>' + esc(r.label) + '</b></td>' +
+      '<td><span class="tag amber">' + esc(r.tim) + '</span></td>' +
+      '<td class="r mono">' + r.count + '</td>' +
+      '<td class="r mono"><b>' + dur(r.ms) + '</b></td>' +
+      '<td class="r mono">' + dur(r.ms / r.count) + '</td>' +
+      M.stations.map(s => '<td class="r mono">' + (r.byStation[s.id] ? dur(r.byStation[s.id]) : '—') + '</td>').join('') +
+      '<td class="hint">' + esc(r.notes.slice(0, 3).join(' · ') || '—') + '</td></tr>').join('')
+      : '<tr><td colspan="' + (6 + M.stations.length) + '" class="empty">Nog geen wachttijd geregistreerd.</td></tr>') + '</tbody>';
+
+  $('#tblHandover').innerHTML =
+    '<thead><tr><th>Overdracht</th><th class="r">Metingen</th><th class="r">Totaal</th><th class="r">Gemiddeld</th><th class="r">Langste</th></tr></thead><tbody>' +
+    (M.handovers.length ? M.handovers.map(h => '<tr' + (h.special ? ' style="background:#f7f9fb"' : '') + '>' +
+      '<td><b>' + esc(h.label) + '</b></td>' +
+      '<td class="r mono">' + h.count + '</td>' +
+      '<td class="r mono">' + (h.count ? dur(h.total) : '—') + '</td>' +
+      '<td class="r mono"><b>' + (h.avg != null ? dur(h.avg) : '—') + '</b></td>' +
+      '<td class="r mono">' + (h.max != null ? dur(h.max) : '—') + '</td></tr>').join('')
+      : '<tr><td colspan="5" class="empty">Nog geen overdrachten gemeten.</td></tr>') + '</tbody>';
+}
+
+/* =========================================================================
+   PROCESSTABILITEIT — control chart (SPC)
+   ========================================================================= */
+function spcSeries(M, key) {
+  if (key === 'lead') {
+    const a = M.completedMotors.slice().sort((x, y) => x.nr - y.nr);
+    return { title: 'Lead time per complete motor', unit: 'time', labels: a.map(x => 'M' + pad(x.nr, 2)), values: a.map(x => x.lead) };
+  }
+  if (key === 'active') {
+    const a = M.completedMotors.slice().sort((x, y) => x.nr - y.nr);
+    return { title: 'Netto actieve tijd per complete motor', unit: 'time', labels: a.map(x => 'M' + pad(x.nr, 2)), values: a.map(x => x.work) };
+  }
+  if (key === 'sumcycle') {
+    const a = M.completedMotors.slice().sort((x, y) => x.nr - y.nr);
+    return { title: 'Totale assemblagetijd (som cycle times) per motor', unit: 'time', labels: a.map(x => 'M' + pad(x.nr, 2)), values: a.map(x => x.cycleSum) };
+  }
+  if (key.indexOf('cycle_') === 0) {
+    const sid = key.slice(6), st = M.D.stationById[sid];
+    const rows = [];
+    M.D.motorList.slice().sort((a, b) => a.nr - b.nr).forEach(m => {
+      const t = M.D.tasks[m.id + '|' + sid];
+      if (t && t.status === 'done' && t.startedAt != null && t.firstFinishedAt != null)
+        rows.push({ label: 'M' + pad(m.nr, 2), v: t.firstFinishedAt - t.startedAt });
+    });
+    return {
+      title: 'Cycle time ' + (st ? st.worker + ' – ' + st.name : ''), unit: 'time',
+      labels: rows.map(r => r.label), values: rows.map(r => r.v)
+    };
+  }
+  return { title: '', unit: 'time', labels: [], values: [] };
+}
+
+function renderSpc() {
+  const run = activeRun();
+  const sel = $('#spcMetric');
+  if (!run) {
+    noRunBanner('#sBanner', 'de processtabiliteit');
+    sel.innerHTML = ''; $('#spcKpis').innerHTML = ''; $('#spcSignals').innerHTML = ''; $('#tblSpc').innerHTML = '';
+    noData($('#cvSpc'), 'Geen actieve run');
+    return;
+  }
+  const M = computeMetrics(run);
+  $('#sBanner').innerHTML = demoBanner(run);
+
+  const opts = [['lead', 'Lead time per motor'], ['sumcycle', 'Totale assemblagetijd per motor'], ['active', 'Netto actieve tijd per motor']]
+    .concat(M.stations.map(s => ['cycle_' + s.id, 'Cycle time · ' + s.worker + ' – ' + s.name]));
+  if (!opts.some(o => o[0] === UI.spc)) UI.spc = 'lead';
+  sel.innerHTML = opts.map(o => '<option value="' + o[0] + '"' + (o[0] === UI.spc ? ' selected' : '') + '>' + esc(o[1]) + '</option>').join('');
+  sel.onchange = () => { UI.spc = sel.value; renderSpc(); };
+
+  const S = spcSeries(M, UI.spc);
+  $('#spcTitle').textContent = 'Control chart — ' + S.title;
+  const v = S.values.filter(x => x != null && !isNaN(x));
+  const mean = avg(v), s = sd(v);
+  const ucl = (mean != null && s != null) ? mean + 3 * s : null;
+  const lcl = (mean != null && s != null) ? Math.max(0, mean - 3 * s) : null;
+  const cv = (s != null && mean) ? s / mean : null;
+
+  $('#spcKpis').innerHTML =
+    kpi('Aantal metingen', v.length, v.length < 5 ? 'minimaal 5 nodig voor een zinvolle analyse' : 'voldoende voor een eerste beeld',
+      v.length < 5 ? 'warn' : 'ok') +
+    kpi('Gemiddelde', mean != null ? dur(mean) : '—', 'centerlijn (CL)') +
+    kpi('Standaarddeviatie', s != null ? dur(s) : '—', cv != null ? 'variatiecoëfficiënt ' + num(cv * 100, 0) + '%' : '') +
+    kpi('Regelgrenzen', (ucl != null ? dur(lcl) + ' – ' + dur(ucl) : '—'), 'gemiddelde ± 3 standaarddeviaties');
+
+  if (v.length < 2) {
+    noData($('#cvSpc'), 'Er zijn minimaal 2 metingen nodig voor een control chart');
+    $('#spcSignals').innerHTML = '<div class="banner info"><div>Nog te weinig metingen. Meet eerst een paar motoren; ' +
+      'vanaf ongeveer 8 tot 10 metingen wordt een control chart echt bruikbaar.</div></div>';
+    $('#tblSpc').innerHTML = '';
+    return;
+  }
+
+  drawLines($('#cvSpc'), {
+    unit: S.unit, labels: S.labels, minZero: false, extraMax: ucl, extraMin: lcl,
+    series: [{ name: S.title, color: '#1668c7', values: S.values }],
+    hlines: [
+      { value: mean, color: '#0f8a4d', label: 'gem.', dash: [] },
+      { value: ucl, color: '#c62828', label: 'UCL +3σ' },
+      { value: lcl, color: '#c62828', label: 'LCL −3σ' }
+    ],
+    flagOut: val => (ucl != null && (val > ucl || val < lcl))
+  });
+
+  /* signalen */
+  const sig = [];
+  S.values.forEach((val, i) => {
+    if (val == null) return;
+    if (val > ucl) sig.push({ bad: true, t: S.labels[i] + ': ' + dur(val) + ' ligt boven de bovengrens (UCL ' + dur(ucl) + '). Zoek uit wat hier misging.' });
+    if (val < lcl) sig.push({ bad: true, t: S.labels[i] + ': ' + dur(val) + ' ligt onder de ondergrens (LCL ' + dur(lcl) + '). Is hier iets overgeslagen of anders gemeten?' });
+  });
+  let runLen = 0, runSide = 0;
+  S.values.forEach((val, i) => {
+    if (val == null) { runLen = 0; return; }
+    const side = val > mean ? 1 : -1;
+    if (side === runSide) runLen++; else { runSide = side; runLen = 1; }
+    if (runLen === 7) sig.push({ bad: false, t: '7 metingen op rij ' + (side > 0 ? 'boven' : 'onder') + ' het gemiddelde (t/m ' + S.labels[i] + '). Dat wijst op een structurele verschuiving — bijvoorbeeld een verbetering die blijft werken.' });
+  });
+  if (cv != null && cv > 0.3) sig.push({ bad: true, t: 'De variatiecoëfficiënt is ' + num(cv * 100, 0) + '%. Dat is hoog: het proces verloopt nog niet stabiel en voorspelbaar.' });
+  if (!sig.length) sig.push({ bad: false, t: 'Alle metingen liggen binnen de regelgrenzen. Het proces is statistisch stabiel — verbeteringen moeten dan uit het proces zelf komen, niet uit incidenten.' });
+  $('#spcSignals').innerHTML = sig.map(x => '<div class="banner ' + (x.bad ? 'red' : 'info') + '"><div>' + esc(x.t) + '</div></div>').join('');
+
+  $('#tblSpc').innerHTML =
+    '<thead><tr><th>#</th><th>Meting</th><th class="r">Waarde</th><th class="r">Afwijking t.o.v. gemiddelde</th><th>Beoordeling</th></tr></thead><tbody>' +
+    S.values.map((val, i) => {
+      if (val == null) return '';
+      const out = val > ucl || val < lcl;
+      const d = val - mean;
+      return '<tr' + (out ? ' style="background:#fdeaea"' : '') + '><td class="mono">' + (i + 1) + '</td>' +
+        '<td><b>' + esc(S.labels[i]) + '</b></td>' +
+        '<td class="r mono">' + dur(val) + '</td>' +
+        '<td class="r mono">' + (d >= 0 ? '+' : '−') + dur(Math.abs(d)) + '</td>' +
+        '<td>' + (out ? '<span class="tag red">BUITEN REGELGRENZEN</span>' : '<span class="tag green">binnen grenzen</span>') + '</td></tr>';
+    }).join('') + '</tbody>';
+}
+
+/* =========================================================================
+   VERGELIJK RUNS
+   ========================================================================= */
+function renderCompare() {
+  const runs = DB.runs.slice();
+  if (!runs.length) {
+    $('#cmpPick').innerHTML = '<div class="hint">Er zijn nog geen productieruns om te vergelijken.</div>';
+    $('#tblCompare').innerHTML = ''; $('#tblCmpStations').innerHTML = '';
+    ['cvCmpLead', 'cvCmpThr', 'cvCmpFpy', 'cvCmpWait'].forEach(i => noData($('#' + i), 'Geen runs'));
+    return;
+  }
+  if (!UI.cmp) UI.cmp = runs.slice(-4).map(r => r.id);
+  UI.cmp = UI.cmp.filter(id => runs.some(r => r.id === id));
+
+  $('#cmpPick').innerHTML = runs.map(r =>
+    '<label class="chk"><input type="checkbox" value="' + r.id + '"' + (UI.cmp.indexOf(r.id) >= 0 ? ' checked' : '') + '>' +
+    esc(r.name) + (r.week ? ' <span class="tag">week ' + esc(r.week) + '</span>' : '') +
+    (r.demo ? ' <span class="tag amber">DEMO</span>' : '') + '</label>').join('');
+  $$('#cmpPick input').forEach(c => c.onchange = () => {
+    UI.cmp = $$('#cmpPick input:checked').map(x => x.value);
+    renderCompare();
+  });
+
+  const sel = runs.filter(r => UI.cmp.indexOf(r.id) >= 0).map(runSummary);
+  if (!sel.length) {
+    $('#tblCompare').innerHTML = '<tbody><tr><td class="empty">Selecteer minimaal één run.</td></tr></tbody>';
+    $('#tblCmpStations').innerHTML = '';
+    ['cvCmpLead', 'cvCmpThr', 'cvCmpFpy', 'cvCmpWait'].forEach(i => noData($('#' + i), 'Geen runs geselecteerd'));
+    return;
+  }
+
+  const rows = [
+    ['Datum', s => s.date || '—'],
+    ['Week', s => s.week || '—'],
+    ['Runtijd', s => durH(s.elapsed)],
+    ['Motoren gereed', s => s.motorsDone + ' / ' + s.motorsTotal],
+    ['Gem. lead time per motor', s => s.leadAvg != null ? dur(s.leadAvg) : '—', 'low'],
+    ['Snelste / langzaamste motor', s => s.leadMin != null ? dur(s.leadMin) + ' / ' + dur(s.leadMax) : '—'],
+    ['Gem. cycle time (alle stations)', s => s.cycleAvg != null ? dur(s.cycleAvg) : '—', 'low'],
+    ['Takt time', s => s.takt != null ? dur(s.takt) : '—'],
+    ['Throughput (motoren/uur)', s => s.throughput != null ? num(s.throughput, 1) : '—', 'high'],
+    ['Productiviteit (motoren/gewerkt uur)', s => s.productivity != null ? num(s.productivity, 2) : '—', 'high'],
+    ['First Pass Yield', s => s.fpy != null ? num(s.fpy * 100, 0) + '%' : '—', 'high'],
+    ['Aantal fouten', s => s.defects, 'low'],
+    ['Rework-tijd', s => dur(s.rework), 'low'],
+    ['Totale wachttijd', s => dur(s.wait), 'low'],
+    ['Wachttijd % van beschikbare tijd', s => s.waitPct != null ? num(s.waitPct * 100, 0) + '%' : '—', 'low'],
+    ['Bezettingsgraad lijn', s => s.occupancy != null ? num(s.occupancy * 100, 0) + '%' : '—', 'high'],
+    ['Flow-efficiëntie', s => s.flowEff != null ? num(s.flowEff * 100, 0) + '%' : '—', 'high'],
+    ['Lijnbalans', s => s.lineBalance != null ? num(s.lineBalance * 100, 0) + '%' : '—', 'high'],
+    ['Bottleneck', s => s.bottleneck ? esc(s.bottleneck) + ' (' + dur(s.bottleneckCycle) + ')' : '—']
+  ];
+  const numeric = {
+    'Gem. lead time per motor': s => s.leadAvg, 'Gem. cycle time (alle stations)': s => s.cycleAvg,
+    'Throughput (motoren/uur)': s => s.throughput, 'Productiviteit (motoren/gewerkt uur)': s => s.productivity,
+    'First Pass Yield': s => s.fpy, 'Aantal fouten': s => s.defects, 'Rework-tijd': s => s.rework,
+    'Totale wachttijd': s => s.wait, 'Wachttijd % van beschikbare tijd': s => s.waitPct,
+    'Bezettingsgraad lijn': s => s.occupancy, 'Flow-efficiëntie': s => s.flowEff, 'Lijnbalans': s => s.lineBalance
+  };
+  $('#tblCompare').innerHTML =
+    '<thead><tr><th>KPI</th>' + sel.map(s => '<th class="r">' + esc(s.name) +
+      (s.demo ? ' <span class="tag amber">DEMO</span>' : '') + '</th>').join('') +
+    (sel.length > 1 ? '<th class="r">Verschil eerste → laatste</th>' : '') + '</tr></thead><tbody>' +
+    rows.map(r => {
+      const dir = r[2];
+      let best = null;
+      if (dir && numeric[r[0]]) {
+        const vals = sel.map(numeric[r[0]]).filter(v => v != null && !isNaN(v));
+        if (vals.length) best = dir === 'high' ? Math.max.apply(null, vals) : Math.min.apply(null, vals);
+      }
+      let delta = '';
+      if (sel.length > 1 && numeric[r[0]]) {
+        const a = numeric[r[0]](sel[0]), b = numeric[r[0]](sel[sel.length - 1]);
+        if (a != null && b != null && a !== 0 && !isNaN(a) && !isNaN(b)) {
+          const p = (b - a) / Math.abs(a) * 100;
+          const good = dir === 'high' ? p > 0 : dir === 'low' ? p < 0 : null;
+          delta = '<td class="r mono" style="font-weight:800;color:' +
+            (good === null ? 'var(--txt2)' : good ? 'var(--green)' : 'var(--red)') + '">' +
+            (p >= 0 ? '+' : '') + num(p, 0) + '%</td>';
+        } else delta = '<td class="r">—</td>';
+      } else if (sel.length > 1) delta = '<td class="r">—</td>';
+      return '<tr><td><b>' + esc(r[0]) + '</b>' +
+        (dir ? ' <span class="hint">(' + (dir === 'high' ? 'hoger is beter' : 'lager is beter') + ')</span>' : '') + '</td>' +
+        sel.map(s => {
+          const v = numeric[r[0]] ? numeric[r[0]](s) : null;
+          const isBest = best != null && v != null && Math.abs(v - best) < 1e-9 && sel.length > 1;
+          return '<td class="r mono"' + (isBest ? ' style="background:#e3f6ec;font-weight:800"' : '') + '>' + r[1](s) + '</td>';
+        }).join('') + delta + '</tr>';
+    }).join('') + '</tbody>';
+
+  const labels = sel.map(s => s.name);
+  drawBars($('#cvCmpLead'), { unit: 'time', items: sel.map((s, i) => ({ label: s.name, value: s.leadAvg, color: PALETTE[i % PALETTE.length] })) });
+  drawBars($('#cvCmpThr'), { unit: 'n', items: sel.map((s, i) => ({ label: s.name, value: s.throughput, color: '#0f8a4d' })) });
+  drawBars($('#cvCmpFpy'), { unit: 'n', items: sel.map(s => ({ label: s.name, value: s.fpy != null ? s.fpy * 100 : null, color: '#6a3fb5' })) });
+  drawBars($('#cvCmpWait'), { unit: 'n', items: sel.map(s => ({ label: s.name, value: s.waitPct != null ? s.waitPct * 100 : null, color: '#c47b00' })) });
+
+  /* cycle time per station per run */
+  const names = [];
+  sel.forEach(s => s.stations.forEach(st => { if (names.indexOf(st.worker) < 0) names.push(st.worker); }));
+  $('#tblCmpStations').innerHTML =
+    '<thead><tr><th>Medewerker</th>' + sel.map(s => '<th class="r">' + esc(s.name) + '</th>').join('') + '</tr></thead><tbody>' +
+    (names.length ? names.map(n => '<tr><td><b>' + esc(n) + '</b></td>' +
+      sel.map(s => {
+        const st = s.stations.find(x => x.worker === n);
+        return '<td class="r mono">' + (st && st.avgCycle != null ? dur(st.avgCycle) : '—') + '</td>';
+      }).join('') + '</tr>').join('')
+      : '<tr><td class="empty">Geen stationsgegevens.</td></tr>') + '</tbody>';
+}
+
+/* =========================================================================
+   RUNBEHEER
+   ========================================================================= */
+function runFormBody(r) {
+  r = r || {};
+  return '<div class="fgrid">' +
+    '<label class="fld"><span>Naam van de run</span><input type="text" id="rfName" value="' + esc(r.name || '') + '" placeholder="bijv. Productieronde week 1"></label>' +
+    '<label class="fld"><span>Datum</span><input type="date" id="rfDate" value="' + esc(r.date || todayISO()) + '"></label>' +
+    '<label class="fld"><span>Weeknummer</span><input type="number" id="rfWeek" min="1" max="53" value="' + esc(r.week || isoWeek(new Date())) + '"></label>' +
+    '<label class="fld"><span>Aantal motoren dat we willen produceren</span><input type="number" id="rfTarget" min="1" value="' + esc(r.target || 8) + '"></label>' +
+    '<label class="fld"><span>Beschikbare productietijd (minuten)</span><input type="number" id="rfAvail" min="1" step="1" value="' + esc(r.availableMin || 60) + '"></label>' +
+    '<label class="fld"><span>Klantvraag (aantal motoren)</span><input type="number" id="rfDemand" min="1" value="' + esc(r.demand || 8) + '"></label>' +
+    '<label class="fld"><span>Motorvariant (optioneel)</span><input type="text" id="rfVariant" value="' + esc(r.variant || '') + '" placeholder="bijv. standaard / sportmodel"></label>' +
+    '<label class="fld"><span>Berekende takt time</span><input type="text" id="rfTakt" readonly style="background:#f3f7fa;font-weight:800"></label>' +
+    '</div>' +
+    '<label class="fld"><span>Opmerkingen</span><textarea id="rfNotes" rows="2" placeholder="bijzonderheden, gewijzigde werkwijze, proefopstelling…">' + esc(r.notes || '') + '</textarea></label>';
+}
+function bindTakt(m) {
+  const upd = () => {
+    const a = parseFloat($('#rfAvail', m).value), d = parseFloat($('#rfDemand', m).value);
+    $('#rfTakt', m).value = (a > 0 && d > 0) ? dur(a * 60000 / d) + ' per motor' : 'vul beide velden in';
+  };
+  $('#rfAvail', m).oninput = upd; $('#rfDemand', m).oninput = upd; upd();
+}
+function readRunForm(m) {
+  return {
+    name: ($('#rfName', m).value || '').trim() || ('Run ' + todayISO()),
+    date: $('#rfDate', m).value || todayISO(),
+    week: parseInt($('#rfWeek', m).value, 10) || isoWeek(new Date()),
+    target: parseInt($('#rfTarget', m).value, 10) || 0,
+    availableMin: parseFloat($('#rfAvail', m).value) || 0,
+    demand: parseInt($('#rfDemand', m).value, 10) || 0,
+    variant: ($('#rfVariant', m).value || '').trim(),
+    notes: ($('#rfNotes', m).value || '').trim()
+  };
+}
+function newRun() {
+  openModal({
+    title: 'Nieuwe productierun starten', wide: true,
+    sub: 'De takt time wordt automatisch berekend uit de beschikbare tijd en de klantvraag.',
+    body: runFormBody(null), onOpen: bindTakt,
+    buttons: [{ label: 'Annuleren', value: false }, {
+      label: 'Run starten', cls: 'pri', onClick: m => {
+        const d = readRunForm(m);
+        const run = Object.assign({
+          id: uid(), createdAt: now(), startedAt: now(), endedAt: null, demo: false,
+          stations: DB.settings.stations.filter(s => s.active !== false).map(s => ({ id: s.id, worker: s.worker, name: s.name })),
+          events: []
+        }, d);
+        if (!run.stations.length) { toast('Er is geen enkel actief werkstation ingesteld.', true); return false; }
+        DB.runs.push(run); DB.activeRunId = run.id;
+        pushEvent(run, 'run_start', {});
+        saveDB(true);
+        UI.sel = {};
+        toast('Run "' + run.name + '" gestart');
+        return true;
+      }
+    }]
+  }).then(v => { if (v) { showTab('productie'); renderAll(); } });
+}
+
+/* =========================================================================
+   EXPORT
+   ========================================================================= */
+function csvEscape(v) {
+  if (v == null) return '';
+  const s = String(v);
+  return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function toCSV(rows) { return '﻿' + rows.map(r => r.map(csvEscape).join(';')).join('\r\n'); }
+function download(name, text, mime) {
+  const blob = new Blob([text], { type: (mime || 'text/csv') + ';charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+  toast('Bestand gedownload: ' + name);
+}
+function slug(s) { return String(s || 'run').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40); }
+
+function exportData(kind) {
+  const run = activeRun();
+  if (!run && kind !== 'runs') { toast('Er is geen actieve run om te exporteren.', true); return; }
+  const base = run ? 'innovo_' + slug(run.name) + '_' : 'innovo_';
+  if (kind === 'json') {
+    download(base + 'ruwe-data.json', JSON.stringify({ exported: new Date().toISOString(), settings: DB.settings, run: run }, null, 2), 'application/json');
+    return;
+  }
+  const M = run ? computeMetrics(run) : null;
+  let rows = [];
+
+  if (kind === 'events') {
+    rows.push(['run', 'event_id', 'volgorde', 'timestamp_iso', 'tijd', 'epoch_ms', 'type', 'motor', 'station_medewerker',
+      'station_naam', 'reden', 'timwood', 'notitie', 'qc_resultaat', 'onderdeel', 'fouttype', 'omschrijving', 'rework', 'rework_sec']);
+    run.events.forEach((e, i) => {
+      const mo = M.D.motors[e.motorId], st = M.D.stationById[e.stationId];
+      rows.push([run.name, e.id, i + 1, new Date(e.ts).toISOString(), stamp(e.ts), e.ts, e.type,
+        mo ? mo.code : '', st ? st.worker : '', st ? st.name : '', e.reason || '', e.tim || '', e.note || '',
+        e.result || '', e.part || '', e.dtype || '', e.desc || '', e.rework ? 'ja' : '', e.reworkSec || '']);
+    });
+    download(base + 'eventlog.csv', toCSV(rows));
+  }
+  else if (kind === 'tasks') {
+    rows.push(['run', 'motor', 'motor_nr', 'medewerker', 'werkstation', 'status', 'start', 'gereed_1e_keer', 'gereed_laatste',
+      'cycle_time_sec', 'actieve_tijd_sec', 'wachttijd_sec', 'rework_tijd_sec', 'aantal_wachtmomenten', 'qc_goed', 'qc_afgekeurd', 'rework_rondes']);
+    M.D.motorList.slice().sort((a, b) => a.nr - b.nr).forEach(m => {
+      M.D.stations.forEach(s => {
+        const t = M.D.tasks[m.id + '|' + s.id]; if (!t) return;
+        const tt = taskTimes(t, M.nowTs);
+        rows.push([run.name, m.code, m.nr, s.worker, s.name, STATUS_LABEL[t.status],
+          t.startedAt ? stamp(t.startedAt) : '', t.firstFinishedAt ? stamp(t.firstFinishedAt) : '', t.finishedAt ? stamp(t.finishedAt) : '',
+          tt.cycle != null ? (tt.cycle / 1000).toFixed(1) : '', (tt.work / 1000).toFixed(1), (tt.wait / 1000).toFixed(1),
+          (tt.rework / 1000).toFixed(1), t.segments.filter(x => x.type === 'wait').length,
+          t.qc.filter(q => q.result === 'pass').length, t.qc.filter(q => q.result === 'fail').length, t.reworkRounds || 0]);
+      });
+    });
+    download(base + 'taken.csv', toCSV(rows));
+  }
+  else if (kind === 'segments') {
+    rows.push(['run', 'motor', 'medewerker', 'werkstation', 'segment_type', 'start', 'eind', 'duur_sec', 'reden', 'timwood', 'notitie']);
+    Object.keys(M.D.tasks).forEach(k => {
+      const t = M.D.tasks[k], m = M.D.motors[t.motorId], s = M.D.stationById[t.stationId];
+      t.segments.forEach(sg => {
+        rows.push([run.name, m ? m.code : '', s ? s.worker : '', s ? s.name : '', sg.type,
+          stamp(sg.start), sg.end ? stamp(sg.end) : '(loopt nog)', (segDur(sg, M.nowTs) / 1000).toFixed(1),
+          sg.reason || '', sg.tim || '', sg.note || '']);
+      });
+    });
+    download(base + 'tijdsegmenten.csv', toCSV(rows));
+  }
+  else if (kind === 'motors') {
+    rows.push(['run', 'motor', 'nr', 'status', 'start', 'gereed', 'lead_time_sec', 'som_cycle_sec', 'actieve_tijd_sec',
+      'wachttijd_sec', 'rework_sec', 'aantal_fouten', 'eerste_keer_goed']);
+    M.motors.slice().sort((a, b) => a.nr - b.nr).forEach(x => {
+      rows.push([run.name, x.code, x.nr, x.complete ? 'gereed' : x.started ? 'wip' : 'niet gestart',
+        x.startedAt ? stamp(x.startedAt) : '', x.completedAt ? stamp(x.completedAt) : '',
+        x.lead != null ? (x.lead / 1000).toFixed(1) : '', (x.cycleSum / 1000).toFixed(1), (x.work / 1000).toFixed(1),
+        (x.wait / 1000).toFixed(1), (x.rework / 1000).toFixed(1), x.defects, x.complete ? (x.firstPass ? 'ja' : 'nee') : '']);
+    });
+    download(base + 'motoren.csv', toCSV(rows));
+  }
+  else if (kind === 'defects') {
+    rows.push(['run', 'tijd', 'motor', 'medewerker', 'werkstation', 'onderdeel', 'fouttype', 'omschrijving', 'rework', 'rework_gemeten', 'rework_sec']);
+    M.defects.forEach(d => {
+      const st = M.D.stationById[d.stationId], mo = M.D.motors[d.motorId];
+      const t = M.D.tasks[d.motorId + '|' + d.stationId];
+      const rw = d.measured && t ? taskTimes(t, M.nowTs).rework / 1000 : d.reworkSec;
+      rows.push([run.name, stamp(d.ts), mo ? mo.code : '', st ? st.worker : '', st ? st.name : '', d.part, d.type, d.desc,
+        d.rework ? 'ja' : 'nee', d.measured ? 'ja' : 'nee', d.rework ? Number(rw).toFixed(1) : '']);
+    });
+    download(base + 'afkeuringen.csv', toCSV(rows));
+  }
+  else if (kind === 'kpi') {
+    rows.push(['KPI', 'waarde', 'eenheid', 'toelichting']);
+    const add = (k, v, u, t) => rows.push([k, v, u || '', t || '']);
+    add('Run', run.name); add('Datum', run.date); add('Week', run.week);
+    add('Demo-data', run.demo ? 'JA' : 'nee', '', 'demo-data is geen echte meting');
+    add('Runtijd', (M.elapsed / 1000).toFixed(0), 'sec', durH(M.elapsed));
+    add('Takt time', M.takt != null ? (M.takt / 1000).toFixed(1) : '', 'sec', 'beschikbare tijd / klantvraag');
+    add('Motoren gereed', M.completedMotors.length, 'stuks');
+    add('WIP', M.wip, 'stuks');
+    add('Gem. lead time', M.leadAvg != null ? (M.leadAvg / 1000).toFixed(1) : '', 'sec');
+    add('Throughput', M.throughput != null ? M.throughput.toFixed(2) : '', 'motoren/uur');
+    add('Productiviteit', M.productivity != null ? M.productivity.toFixed(2) : '', 'motoren/gewerkt uur');
+    add('First Pass Yield', M.fpy != null ? (M.fpy * 100).toFixed(1) : '', '%');
+    add('Totale wachttijd', (M.totalWait / 1000).toFixed(0), 'sec');
+    add('Totale rework-tijd', (M.totalRework / 1000).toFixed(0), 'sec');
+    add('Aantal fouten', M.defects.length, 'stuks');
+    add('Bezettingsgraad lijn', M.lineOccupancy != null ? (M.lineOccupancy * 100).toFixed(1) : '', '%');
+    add('Wachttijdpercentage lijn', M.lineWaitPct != null ? (M.lineWaitPct * 100).toFixed(1) : '', '%');
+    add('Flow-efficiëntie', M.flowEff != null ? (M.flowEff * 100).toFixed(1) : '', '%');
+    add('Lijnbalans', M.lineBalance != null ? (M.lineBalance * 100).toFixed(1) : '', '%');
+    add('Bottleneck', M.bottleneck ? M.bottleneck.worker + ' – ' + M.bottleneck.name : '', '',
+      M.bottleneck ? 'gem. cycle ' + dur(M.bottleneck.avgCycle) : '');
+    rows.push([]);
+    rows.push(['Station', 'medewerker', 'gereed', 'gem_cycle_sec', 'min_cycle_sec', 'max_cycle_sec', 'sd_cycle_sec',
+      'actief_sec', 'wacht_sec', 'rework_sec', 'bezetting_pct', 'wacht_pct', 'fouten']);
+    M.stations.forEach(s => rows.push([s.name, s.worker, s.tasksDone,
+      s.avgCycle != null ? (s.avgCycle / 1000).toFixed(1) : '', s.minCycle != null ? (s.minCycle / 1000).toFixed(1) : '',
+      s.maxCycle != null ? (s.maxCycle / 1000).toFixed(1) : '', s.sdCycle != null ? (s.sdCycle / 1000).toFixed(1) : '',
+      (s.active / 1000).toFixed(0), (s.wait / 1000).toFixed(0), (s.rework / 1000).toFixed(0),
+      s.occupancy != null ? (s.occupancy * 100).toFixed(1) : '', s.waitPct != null ? (s.waitPct * 100).toFixed(1) : '', s.defects]));
+    rows.push([]);
+    rows.push(['TIMWOOD-categorie', 'minuten']);
+    Object.keys(TIMWOOD).forEach(k => rows.push([k, (M.timwood[k] / 60000).toFixed(2)]));
+    download(base + 'kpi-samenvatting.csv', toCSV(rows));
+  }
+  else if (kind === 'runs') {
+    if (!DB.runs.length) { toast('Er zijn nog geen runs.', true); return; }
+    rows.push(['run', 'datum', 'week', 'demo', 'runtijd_sec', 'motoren_gereed', 'gem_lead_sec', 'gem_cycle_sec', 'takt_sec',
+      'throughput_per_uur', 'productiviteit', 'fpy_pct', 'fouten', 'rework_sec', 'wachttijd_sec', 'wacht_pct',
+      'bezetting_pct', 'flow_eff_pct', 'lijnbalans_pct', 'bottleneck']);
+    DB.runs.forEach(r => {
+      const s = runSummary(r);
+      rows.push([s.name, s.date, s.week, r.demo ? 'ja' : 'nee', (s.elapsed / 1000).toFixed(0), s.motorsDone,
+        s.leadAvg != null ? (s.leadAvg / 1000).toFixed(1) : '', s.cycleAvg != null ? (s.cycleAvg / 1000).toFixed(1) : '',
+        s.takt != null ? (s.takt / 1000).toFixed(1) : '', s.throughput != null ? s.throughput.toFixed(2) : '',
+        s.productivity != null ? s.productivity.toFixed(2) : '', s.fpy != null ? (s.fpy * 100).toFixed(1) : '',
+        s.defects, (s.rework / 1000).toFixed(0), (s.wait / 1000).toFixed(0),
+        s.waitPct != null ? (s.waitPct * 100).toFixed(1) : '', s.occupancy != null ? (s.occupancy * 100).toFixed(1) : '',
+        s.flowEff != null ? (s.flowEff * 100).toFixed(1) : '', s.lineBalance != null ? (s.lineBalance * 100).toFixed(1) : '',
+        s.bottleneck || '']);
+    });
+    download('innovo_alle-runs.csv', toCSV(rows));
+  }
+}
+
+/* =========================================================================
+   DATAPAGINA
+   ========================================================================= */
+function updateStoreInfo() {
+  const el = $('#storeInfo'); if (!el) return;
+  let bytes = 0;
+  try { bytes = (localStorage.getItem(LSKEY) || '').length; } catch (e) { }
+  const evs = DB.runs.reduce((t, r) => t + r.events.length, 0);
+  el.innerHTML = (lastSaveOk ? '✔ Automatisch opgeslagen in deze browser' : '⚠ Opslaan mislukt — exporteer direct een back-up!') +
+    ' · ' + DB.runs.length + ' runs · ' + evs + ' events · ' + (bytes / 1024).toFixed(1) + ' kB';
+}
+
+function renderData() {
+  const run = activeRun();
+  updateStoreInfo();
+
+  $('#tblRuns').innerHTML =
+    '<thead><tr><th>Run</th><th>Datum</th><th class="r">Week</th><th class="r">Motoren</th><th class="r">Events</th>' +
+    '<th>Status</th><th>Acties</th></tr></thead><tbody>' +
+    (DB.runs.length ? DB.runs.slice().reverse().map(r => {
+      const s = runSummary(r);
+      return '<tr' + (r.id === DB.activeRunId ? ' style="background:#e7f0fb"' : '') + '>' +
+        '<td><b>' + esc(r.name) + '</b>' + (r.demo ? ' <span class="tag amber">DEMO</span>' : '') +
+        (r.id === DB.activeRunId ? ' <span class="tag blue">ACTIEF</span>' : '') +
+        (r.notes ? '<div class="hint">' + esc(r.notes) + '</div>' : '') + '</td>' +
+        '<td class="mono">' + esc(r.date || '') + '</td>' +
+        '<td class="r mono">' + esc(r.week || '') + '</td>' +
+        '<td class="r mono">' + s.motorsDone + ' / ' + s.motorsTotal + '</td>' +
+        '<td class="r mono">' + r.events.length + '</td>' +
+        '<td>' + (r.endedAt ? '<span class="pill p-done">Afgesloten</span>' : '<span class="pill p-run">Open</span>') + '</td>' +
+        '<td><div class="btnrow">' +
+        (r.id === DB.activeRunId ? '' : '<button class="btn sm" data-run="act" data-id="' + r.id + '">Activeer</button>') +
+        '<button class="btn sm" data-run="' + (r.endedAt ? 'reopen' : 'close') + '" data-id="' + r.id + '">' +
+        (r.endedAt ? 'Heropenen' : 'Afsluiten') + '</button>' +
+        '<button class="btn sm" data-run="edit" data-id="' + r.id + '">Bewerken</button>' +
+        '<button class="btn sm dgr" data-run="del" data-id="' + r.id + '">Verwijderen</button>' +
+        '</div></td></tr>';
+    }).join('') : '<tr><td colspan="7" class="empty">Nog geen productieruns.</td></tr>') + '</tbody>';
+
+  $$('[data-run]').forEach(b => b.onclick = () => runAction(b.dataset.run, b.dataset.id));
+
+  /* eventlog */
+  if (!run) {
+    $('#tblEvents').innerHTML = '<tbody><tr><td class="empty">Geen actieve run.</td></tr></tbody>';
+    ['logStation', 'logMotor', 'logType'].forEach(i => $('#' + i).innerHTML = '<option value="">—</option>');
+    return;
+  }
+  const D = deriveRun(run);
+  const types = Array.from(new Set(run.events.map(e => e.type)));
+  const keep = (sel, html) => { const v = $('#' + sel).value; $('#' + sel).innerHTML = html; $('#' + sel).value = v; };
+  keep('logStation', '<option value="">Alle stations</option>' + D.stations.map(s => '<option value="' + s.id + '">' + esc(s.worker) + '</option>').join(''));
+  keep('logMotor', '<option value="">Alle motoren</option>' + D.motorList.slice().sort((a, b) => a.nr - b.nr).map(m => '<option value="' + m.id + '">' + esc(m.code) + '</option>').join(''));
+  keep('logType', '<option value="">Alle types</option>' + types.map(t => '<option value="' + t + '">' + esc(t) + '</option>').join(''));
+  ['logStation', 'logMotor', 'logType'].forEach(i => $('#' + i).onchange = renderData);
+
+  const fS = $('#logStation').value, fM = $('#logMotor').value, fT = $('#logType').value;
+  const logByEv = {}; D.log.forEach(l => logByEv[l.id] = l.text);
+  const evs = run.events.filter(e => (!fS || e.stationId === fS) && (!fM || e.motorId === fM) && (!fT || e.type === fT));
+  $('#tblEvents').innerHTML =
+    '<thead><tr><th class="r">#</th><th>Tijd</th><th>Type</th><th>Motor</th><th>Station</th><th>Omschrijving</th></tr></thead><tbody>' +
+    (evs.length ? evs.slice().reverse().slice(0, 400).map((e) => {
+      const mo = D.motors[e.motorId], st = D.stationById[e.stationId];
+      return '<tr><td class="r mono">' + (run.events.indexOf(e) + 1) + '</td>' +
+        '<td class="mono">' + stamp(e.ts) + '</td>' +
+        '<td><span class="tag">' + esc(e.type) + '</span></td>' +
+        '<td>' + esc(mo ? mo.code : '—') + '</td>' +
+        '<td>' + esc(st ? st.worker : '—') + '</td>' +
+        '<td>' + esc(logByEv[e.id] || '') + '</td></tr>';
+    }).join('') : '<tr><td colspan="6" class="empty">Geen events met dit filter.</td></tr>') + '</tbody>' +
+    (evs.length > 400 ? '<tfoot><tr><td colspan="6" class="hint" style="padding:8px 10px">Alleen de laatste 400 events worden getoond. Exporteer de CSV voor alles.</td></tr></tfoot>' : '');
+}
+
+function runAction(what, id) {
+  const r = DB.runs.find(x => x.id === id); if (!r) return;
+  if (what === 'act') { DB.activeRunId = id; UI.sel = {}; saveDB(true); toast('Run "' + r.name + '" is nu actief'); renderAll(); return; }
+  if (what === 'close') {
+    confirmBox('Run afsluiten?', 'Na het afsluiten kun je geen metingen meer registreren in <b>' + esc(r.name) +
+      '</b>. De data blijft bewaard en je kunt de run later heropenen.', 'Afsluiten').then(ok => {
+        if (!ok) return; r.endedAt = now(); pushEvent(r, 'run_end', {}); saveDB(true); renderAll();
+      });
+    return;
+  }
+  if (what === 'reopen') { r.endedAt = null; saveDB(true); toast('Run heropend'); renderAll(); return; }
+  if (what === 'edit') {
+    openModal({
+      title: 'Run bewerken', wide: true, body: runFormBody(r),
+      buttons: [{ label: 'Annuleren', value: false }, {
+        label: 'Opslaan', cls: 'pri', onClick: m => { Object.assign(r, readRunForm(m)); saveDB(true); return true; }
+      }],
+      onOpen: bindTakt
+    }).then(v => { if (v) { toast('Run bijgewerkt'); renderAll(); } });
+    return;
+  }
+  if (what === 'del') {
+    confirmBox('Productierun verwijderen?',
+      'Je verwijdert <b>' + esc(r.name) + '</b> met <b>' + r.events.length + ' events</b> definitief. ' +
+      'Dit kan niet ongedaan gemaakt worden. Exporteer eerst een back-up als je de data nog nodig hebt.',
+      'Definitief verwijderen', true).then(ok => {
+        if (!ok) return;
+        DB.runs = DB.runs.filter(x => x.id !== id);
+        if (DB.activeRunId === id) DB.activeRunId = DB.runs.length ? DB.runs[DB.runs.length - 1].id : null;
+        saveDB(true); toast('Run verwijderd'); renderAll();
+      });
+  }
+}
+
+/* =========================================================================
+   INSTELLINGEN
+   ========================================================================= */
+function renderSettings() {
+  $('#setStations').innerHTML = DB.settings.stations.map((s, i) =>
+    '<div class="srow" data-si="' + i + '">' +
+    '<div class="mono" style="color:var(--txt3);font-weight:700">' + (i + 1) + '</div>' +
+    '<input type="text" data-sf="worker" value="' + esc(s.worker) + '" placeholder="naam">' +
+    '<input type="text" data-sf="name" value="' + esc(s.name) + '" placeholder="werkstation">' +
+    '<label class="chk" style="justify-content:center"><input type="checkbox" data-sf="active"' + (s.active !== false ? ' checked' : '') + '></label>' +
+    '<button class="btn sm dgr" data-sdel="' + i + '" title="verwijderen">✕</button>' +
+    '</div>').join('');
+  $$('#setStations [data-sf]').forEach(inp => {
+    inp.onchange = () => {
+      const i = +inp.closest('[data-si]').dataset.si, f = inp.dataset.sf;
+      DB.settings.stations[i][f] = f === 'active' ? inp.checked : inp.value;
+      saveDB(); renderHeader();
+    };
+  });
+  $$('#setStations [data-sdel]').forEach(b => b.onclick = () => {
+    const i = +b.dataset.sdel;
+    confirmBox('Werkstation verwijderen?', 'Verwijder <b>' + esc(DB.settings.stations[i].worker) +
+      '</b>? Bestaande runs behouden hun eigen stations; alleen nieuwe runs veranderen.', 'Verwijderen', true).then(ok => {
+        if (!ok) return;
+        DB.settings.stations.splice(i, 1); saveDB(true); renderSettings();
+      });
+  });
+
+  $('#setReasons').innerHTML = DB.settings.reasons.map((r, i) =>
+    '<div class="srow" style="grid-template-columns:26px 1fr 230px 34px" data-ri="' + i + '">' +
+    '<div class="mono" style="color:var(--txt3);font-weight:700">' + (i + 1) + '</div>' +
+    '<input type="text" data-rf="label" value="' + esc(r.label) + '">' +
+    '<select data-rf="tim">' + Object.keys(TIMWOOD).map(k => '<option' + (k === r.tim ? ' selected' : '') + '>' + k + '</option>').join('') + '</select>' +
+    '<button class="btn sm dgr" data-rdel="' + i + '">✕</button></div>').join('');
+  $$('#setReasons [data-rf]').forEach(inp => inp.onchange = () => {
+    const i = +inp.closest('[data-ri]').dataset.ri;
+    DB.settings.reasons[i][inp.dataset.rf] = inp.value; saveDB();
+  });
+  $$('#setReasons [data-rdel]').forEach(b => b.onclick = () => {
+    DB.settings.reasons.splice(+b.dataset.rdel, 1); saveDB(true); renderSettings();
+  });
+
+  $('#setDefects').innerHTML = DB.settings.defectTypes.map((d, i) =>
+    '<div class="srow" style="grid-template-columns:26px 1fr 34px" data-di="' + i + '">' +
+    '<div class="mono" style="color:var(--txt3);font-weight:700">' + (i + 1) + '</div>' +
+    '<input type="text" data-df="label" value="' + esc(d.label) + '">' +
+    '<button class="btn sm dgr" data-ddel="' + i + '">✕</button></div>').join('');
+  $$('#setDefects [data-df]').forEach(inp => inp.onchange = () => {
+    DB.settings.defectTypes[+inp.closest('[data-di]').dataset.di].label = inp.value; saveDB();
+  });
+  $$('#setDefects [data-ddel]').forEach(b => b.onclick = () => {
+    DB.settings.defectTypes.splice(+b.dataset.ddel, 1); saveDB(true); renderSettings();
+  });
+
+  const run = activeRun();
+  $('#setRun').innerHTML = run
+    ? '<div class="hint" style="margin-bottom:10px">Je past hier de gegevens aan van de actieve run <b>' + esc(run.name) + '</b>.</div>' +
+    runFormBody(run) + '<div class="btnrow"><button class="btn pri" id="btnSaveRun">Opslaan</button>' +
+    '<button class="btn" id="btnCloseRun">' + (run.endedAt ? 'Run heropenen' : 'Run afsluiten') + '</button></div>'
+    : '<div class="hint">Er is geen actieve run.</div>';
+  if (run) {
+    bindTakt(document);
+    $('#btnSaveRun').onclick = () => { Object.assign(run, readRunForm(document)); saveDB(true); toast('Run bijgewerkt'); renderAll(); };
+    $('#btnCloseRun').onclick = () => runAction(run.endedAt ? 'reopen' : 'close', run.id);
+  }
+}
+
+/* =========================================================================
+   DEMO-DATA  (duidelijk gemarkeerd, nooit als echte meting gebruiken)
+   ========================================================================= */
+function makeRng(seed) {
+  let s = seed >>> 0;
+  return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+}
+function buildDemoRun(weekNr, level, seed) {
+  const rnd = makeRng(seed);
+  const stations = DB.settings.stations.filter(s => s.active !== false).map(s => ({ id: s.id, worker: s.worker, name: s.name }));
+  if (stations.length < 2) return null;
+  const nSub = stations.length - 1, last = stations[stations.length - 1];
+  const d = new Date(); d.setDate(d.getDate() - (4 - level) * 7); d.setHours(9, 0, 0, 0);
+  const base = d.getTime();
+  const nMotors = 8;
+  const imp = 1 - (level - 1) * 0.15;          // elke week iets sneller
+  const waitP = 0.50 - (level - 1) * 0.17;     // minder wachtmomenten
+  /* vaste foutenplanning per week: week 1 vier fouten, week 2 twee, week 3 één */
+  const DEFECTS = {
+    1: [[1, 0], [3, 3], [4, 2], [6, 3]],
+    2: [[2, 1], [5, 3]],
+    3: [[4, 3]]
+  }[level] || [];
+  const hasDefect = (mi, sj) => DEFECTS.some(d => d[0] === mi && d[1] === sj);
+  const evs = [];
+  const push = (ts, type, o) => { evs.push(Object.assign({ id: uid(), ts: Math.round(ts), type: type }, o || {})); };
+
+  const free = {}; stations.forEach(s => free[s.id] = base);
+  const baseCycle = [78000, 66000, 71000, 128000];
+  const reasons = DB.settings.reasons;
+
+  push(base, 'run_start', {});
+  for (let i = 0; i < nMotors; i++) {
+    const mId = uid(), nr = i + 1;
+    const created = base + i * 4000;
+    push(created, 'motor_create', { motorId: mId, nr: nr });
+    const subEnds = [];
+    for (let j = 0; j < nSub; j++) {
+      const st = stations[j];
+      let t = Math.max(free[st.id], created) + rnd() * 6000;
+      push(t, 'start', { motorId: mId, stationId: st.id });
+      let cyc = (baseCycle[j % baseCycle.length]) * imp * (0.9 + rnd() * 0.22);
+      let end = t + cyc;
+      if (rnd() < waitP) {
+        const wStart = t + cyc * (0.25 + rnd() * 0.4);
+        const r = reasons[Math.floor(rnd() * Math.min(4, reasons.length))];
+        const wLen = 8000 + rnd() * 32000;
+        push(wStart, 'pause', { motorId: mId, stationId: st.id, reasonId: r.id, reason: r.label, tim: r.tim, note: '' });
+        push(wStart + wLen, 'resume', { motorId: mId, stationId: st.id });
+        end += wLen;
+      }
+      push(end, 'done', { motorId: mId, stationId: st.id });
+      let qcT = end + 3000 + rnd() * 4000;
+      if (hasDefect(i, j)) {
+        const dt = DB.settings.defectTypes[Math.floor(rnd() * DB.settings.defectTypes.length)];
+        push(qcT, 'qc', {
+          motorId: mId, stationId: st.id, result: 'fail', defectId: uid(), part: '', dtype: dt.label,
+          desc: 'gevonden bij controle', rework: true, measured: true, reworkSec: 0
+        });
+        push(qcT + 2000, 'rework_start', { motorId: mId, stationId: st.id });
+        const rw = 15000 + rnd() * 60000;
+        push(qcT + 2000 + rw, 'done', { motorId: mId, stationId: st.id });
+        push(qcT + 5000 + rw, 'qc', { motorId: mId, stationId: st.id, result: 'pass' });
+        qcT = qcT + 5000 + rw;
+      } else {
+        push(qcT, 'qc', { motorId: mId, stationId: st.id, result: 'pass' });
+      }
+      free[st.id] = qcT;
+      subEnds.push(qcT);
+    }
+    /* hoofdassemblage */
+    let t = Math.max(free[last.id], Math.max.apply(null, subEnds)) + 4000 + rnd() * 10000;
+    push(t, 'start', { motorId: mId, stationId: last.id });
+    let cyc = baseCycle[3] * imp * (0.9 + rnd() * 0.22);
+    let end = t + cyc;
+    if (rnd() < waitP + 0.15) {
+      const wStart = t + cyc * (0.3 + rnd() * 0.3);
+      const r = reasons[Math.floor(rnd() * Math.min(4, reasons.length))];
+      const wLen = 10000 + rnd() * 35000;
+      push(wStart, 'pause', { motorId: mId, stationId: last.id, reasonId: r.id, reason: r.label, tim: r.tim, note: '' });
+      push(wStart + wLen, 'resume', { motorId: mId, stationId: last.id });
+      end += wLen;
+    }
+    push(end, 'done', { motorId: mId, stationId: last.id });
+    let qcT = end + 4000 + rnd() * 5000;
+    if (hasDefect(i, stations.length - 1)) {
+      const dt = DB.settings.defectTypes[Math.floor(rnd() * DB.settings.defectTypes.length)];
+      push(qcT, 'qc', {
+        motorId: mId, stationId: last.id, result: 'fail', defectId: uid(), part: '', dtype: dt.label,
+        desc: 'eindcontrole niet akkoord', rework: true, measured: true, reworkSec: 0
+      });
+      push(qcT + 2000, 'rework_start', { motorId: mId, stationId: last.id });
+      const rw = 20000 + rnd() * 70000;
+      push(qcT + 2000 + rw, 'done', { motorId: mId, stationId: last.id });
+      push(qcT + 5000 + rw, 'qc', { motorId: mId, stationId: last.id, result: 'pass' });
+      qcT = qcT + 5000 + rw;
+    } else {
+      push(qcT, 'qc', { motorId: mId, stationId: last.id, result: 'pass' });
+    }
+    free[last.id] = qcT;
+  }
+  evs.sort((a, b) => a.ts - b.ts);
+  evs.forEach((e, i) => e.seq = i + 1);
+  const endTs = evs[evs.length - 1].ts + 30000;
+  push(endTs, 'run_end', {});
+  const availMin = Math.round((endTs - base) / 60000);
+  return {
+    id: uid(), name: 'DEMO week ' + weekNr, date: (new Date(base)).toISOString().slice(0, 10), week: weekNr,
+    target: nMotors, availableMin: availMin, demand: nMotors, variant: 'demo',
+    notes: 'Automatisch gegenereerde voorbeelddata — geen echte meting.',
+    createdAt: base, startedAt: base, endedAt: endTs, demo: true,
+    stations: stations, events: evs
+  };
+}
+function loadDemo() {
+  confirmBox('Demo-data laden?',
+    'Er worden drie <b>DEMO</b>-runs toegevoegd (week 1 t/m 3) met gegenereerde voorbeelddata. ' +
+    'Ze zijn duidelijk gemarkeerd en zijn géén echte meting — gebruik ze alleen om het dashboard te leren kennen. ' +
+    'Je bestaande runs blijven ongewijzigd.', 'Demo laden').then(ok => {
+      if (!ok) return;
+      let added = 0;
+      [1, 2, 3].forEach((w, i) => {
+        const r = buildDemoRun(w, i + 1, 12345 + i * 7919);
+        if (r) { DB.runs.push(r); added++; }
+      });
+      if (!added) { toast('Er zijn minimaal 2 actieve werkstations nodig.', true); return; }
+      DB.activeRunId = DB.runs[DB.runs.length - 1].id;
+      UI.cmp = null;
+      saveDB(true); toast(added + ' demo-runs toegevoegd'); renderAll();
+    });
+}
+function deleteDemo() {
+  const n = DB.runs.filter(r => r.demo).length;
+  if (!n) { toast('Er zijn geen demo-runs.', true); return; }
+  confirmBox('Demo-runs verwijderen?', 'Alle <b>' + n + '</b> demo-runs worden verwijderd. Echte metingen blijven behouden.',
+    'Verwijderen', true).then(ok => {
+      if (!ok) return;
+      DB.runs = DB.runs.filter(r => !r.demo);
+      if (!DB.runs.some(r => r.id === DB.activeRunId)) DB.activeRunId = DB.runs.length ? DB.runs[DB.runs.length - 1].id : null;
+      UI.cmp = null; saveDB(true); toast('Demo-runs verwijderd'); renderAll();
+    });
+}
+
+/* =========================================================================
+   BACK-UP
+   ========================================================================= */
+function exportBackup() {
+  download('innovo_backup_' + todayISO() + '.json',
+    JSON.stringify({ app: 'innovo-pm', version: APPVER, exported: new Date().toISOString(), db: DB }, null, 2),
+    'application/json');
+}
+function importBackup(file) {
+  const fr = new FileReader();
+  fr.onload = () => {
+    let o;
+    try { o = JSON.parse(fr.result); } catch (e) { toast('Dit is geen geldig JSON-bestand.', true); return; }
+    const cand = o && o.db ? o.db : o;
+    if (!cand || !Array.isArray(cand.runs)) { toast('Geen geldige back-up: er zitten geen runs in.', true); return; }
+    confirmBox('Back-up importeren?',
+      'De back-up bevat <b>' + cand.runs.length + ' runs</b>. Kies wat je wilt doen — je huidige data bevat ' +
+      '<b>' + DB.runs.length + ' runs</b>.', 'Vervangen', true).then(ok => {
+        if (!ok) return;
+        DB = normaliseDB(cand);
+        UI.cmp = null; UI.sel = {};
+        saveDB(true); toast('Back-up geïmporteerd'); renderAll();
+      });
+  };
+  fr.readAsText(file);
+}
+function wipeAll() {
+  confirmBox('Volledige database wissen?',
+    'Je verwijdert <b>alle ' + DB.runs.length + ' productieruns</b> en alle metingen definitief uit deze browser. ' +
+    'Dit kan niet ongedaan gemaakt worden.', 'Doorgaan', true).then(ok => {
+      if (!ok) return;
+      confirmBox('Weet je het zeker?', 'Laatste waarschuwing: exporteer eerst een back-up als je de data nog nodig hebt. ' +
+        'Alle metingen worden nu gewist.', 'Ja, alles wissen', true).then(ok2 => {
+          if (!ok2) return;
+          const st = DB.settings;
+          DB = blankDB(); DB.settings = st;
+          UI.cmp = null; UI.sel = {};
+          saveDB(true); toast('Database gewist'); renderAll();
+        });
+    });
+}
+
+/* =========================================================================
+   HEADER + TICK + RENDER
+   ========================================================================= */
+function renderHeader() {
+  const run = activeRun();
+  $('#hRun').textContent = run ? (run.name + (run.demo ? ' (DEMO)' : '')) : '—';
+  $('#hRun').style.color = run && run.demo ? '#ffcf8a' : '';
+  $('#btnUndo').disabled = !run || !run.events.length || !!run.endedAt;
+  if (!run) { $('#hElapsed').textContent = '00:00:00'; $('#hTakt').textContent = '—'; $('#hCounts').textContent = '0 / 0'; return; }
+  const M = computeMetrics(run);
+  $('#hElapsed').textContent = durH(M.elapsed);
+  $('#hTakt').textContent = M.takt != null ? dur(M.takt) : '—';
+  $('#hCounts').textContent = M.completedMotors.length + ' / ' + M.wip;
+}
+
+function renderAll() {
+  renderHeader();
+  if (TAB === 'productie') renderProduction();
+  else if (TAB === 'dashboard') renderDashboard();
+  else if (TAB === 'kwaliteit') renderQuality();
+  else if (TAB === 'verspilling') renderWaste();
+  else if (TAB === 'stabiliteit') renderSpc();
+  else if (TAB === 'vergelijk') renderCompare();
+  else if (TAB === 'data') renderData();
+  else if (TAB === 'instellingen') renderSettings();
+}
+
+function tick() {
+  const run = activeRun(); if (!run) return;
+  const nowTs = now();
+  const M = computeMetrics(run, nowTs);
+  $('#hElapsed').textContent = durH(M.elapsed);
+  $('#hCounts').textContent = M.completedMotors.length + ' / ' + M.wip;
+  if (TAB !== 'productie') return;
+  const D = M.D;
+  $$('.st[data-task]').forEach(card => {
+    const key = card.dataset.task; if (!key) return;
+    const t = D.tasks[key]; if (!t) return;
+    const tt = taskTimes(t, nowTs);
+    const os = openSegOf(t);
+    const big = t.status === 'waiting'
+      ? (os ? nowTs - os.start : tt.wait)
+      : (t.startedAt != null ? ((t.status === 'done' && t.firstFinishedAt != null) ? t.firstFinishedAt - t.startedAt : nowTs - t.startedAt) : 0);
+    const b = $('[data-big]', card); if (b) b.textContent = dur(big);
+    const w = $('[data-f="work"]', card); if (w) w.textContent = dur(tt.work);
+    const q = $('[data-f="wait"]', card); if (q) q.textContent = dur(tt.wait);
+    const r = $('[data-f="rework"]', card); if (r) r.textContent = dur(tt.rework);
+  });
+  $$('[data-mlead]').forEach(el => {
+    const mm = M.motors.find(x => x.id === el.dataset.mlead);
+    if (mm) el.textContent = mm.lead != null ? dur(mm.lead) : '—';
+  });
+}
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+function init() {
+  loadDB();
+  $$('nav button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+  $('#btnNewRun').onclick = newRun;
+  $('#btnUndo').onclick = undoLast;
+  $('#btnNewMotor').onclick = newMotor;
+  $$('[data-exp]').forEach(b => b.onclick = () => exportData(b.dataset.exp));
+  $('#btnBackupExp').onclick = exportBackup;
+  $('#btnBackupImp').onclick = () => $('#fileImp').click();
+  $('#fileImp').onchange = e => { if (e.target.files[0]) importBackup(e.target.files[0]); e.target.value = ''; };
+  $('#btnWipe').onclick = wipeAll;
+  $('#btnDemo').onclick = loadDemo;
+  $('#btnDemoDel').onclick = deleteDemo;
+  $('#btnAddStation').onclick = () => {
+    DB.settings.stations.push({ id: 'st' + uid(), worker: 'Nieuwe medewerker', name: 'Nieuw werkstation', active: true });
+    saveDB(true); renderSettings();
+  };
+  $('#btnAddReason').onclick = () => {
+    DB.settings.reasons.push({ id: 'r' + uid(), label: 'Nieuwe reden', tim: 'Waiting' });
+    saveDB(true); renderSettings();
+  };
+  $('#btnAddDefect').onclick = () => {
+    DB.settings.defectTypes.push({ id: 'd' + uid(), label: 'Nieuwe foutcategorie' });
+    saveDB(true); renderSettings();
+  };
+  $('#btnSyncStations').onclick = () => {
+    const run = activeRun();
+    if (!run) { toast('Er is geen actieve run.', true); return; }
+    run.stations.forEach(rs => {
+      const s = DB.settings.stations.find(x => x.id === rs.id);
+      if (s) { rs.worker = s.worker; rs.name = s.name; }
+    });
+    saveDB(true); toast('Namen bijgewerkt in de actieve run'); renderAll();
+  };
+
+  let rz = null;
+  window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(renderAll, 200); });
+  window.addEventListener('beforeunload', () => saveDB(true));
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) renderAll(); });
+
+  renderAll();
+  setInterval(tick, 500);
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+</script>
+</body>
+</html>
