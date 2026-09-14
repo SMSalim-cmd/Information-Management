@@ -898,7 +898,14 @@ function normaliseDB(o) {
     if (Array.isArray(o.settings.defectTypes) && o.settings.defectTypes.length) d.settings.defectTypes = o.settings.defectTypes;
     if (Array.isArray(o.settings.catalog) && o.settings.catalog.length) d.settings.catalog = o.settings.catalog;
     if (Array.isArray(o.settings.orders) && o.settings.orders.length) d.settings.orders = o.settings.orders;
-    if (o.settings.bom && typeof o.settings.bom === 'object') d.settings.bom = o.settings.bom;
+    if (o.settings.bom && typeof o.settings.bom === 'object') {
+      /* Eerdere versies hadden een uit de productlijst afgeleide BOM (rijen met
+         derived:true) omdat de bijlage van Innovo nog niet beschikbaar was.
+         Die wordt vervangen door de echte Bill of Materials. */
+      const wasDerived = Object.keys(o.settings.bom).some(k =>
+        Array.isArray(o.settings.bom[k]) && o.settings.bom[k].some(r => r && r.derived === true));
+      if (!wasDerived) d.settings.bom = o.settings.bom;
+    }
   }
   d.runs = Array.isArray(o.runs) ? o.runs.filter(r => r && r.id && Array.isArray(r.events)) : [];
   d.runs.forEach(r => {
@@ -1252,41 +1259,131 @@ function defaultOrders() {
 function orderTotal(o) { return sum(o.lines.map(l => l.amount)); }
 
 /* -------------------------------------------------------------------------
-   Bill of Materials.
-   LET OP: de officiële BOM-tabellen van Innovo (bijlage vanaf pagina 107)
-   zaten niet in het aangeleverde bestand. De standaard hieronder is afgeleid
-   uit de geverifieerde producteigenschappen (kleur, Road/Cross banden en
-   zadel, Normal/Wide stuur) en bevat bewust GEEN verzonnen artikelnummers.
-   Vul ze aan bij INSTELLINGEN → Bill of Materials, of importeer een JSON.
+   Bill of Materials — letterlijk overgenomen uit de bijlage van Innovo
+   ("Bijlage: Bill of Materials", pagina 106). De bijlage vermeldt alleen
+   onderdeelnamen, geen artikelnummers; die kolom kun je zelf invullen.
+   De bijlage waarschuwt dat er fouten in kunnen zitten. De gegevens staan
+   hieronder daarom precies zoals aangeleverd; de app controleert ze apart
+   en meldt afwijkingen bij ORDERS & MATERIAAL (zie bomIssues).
    ------------------------------------------------------------------------- */
-const BOM_TEMPLATE = [
-  { key: 'voorband', label: 'Voorwiel + band', by: 'tires', station: 0, qty: 1 },
-  { key: 'stuur', label: 'Stuur', by: 'steering', station: 0, qty: 1 },
-  { key: 'achterband', label: 'Achterwiel + band', by: 'tires', station: 1, qty: 1 },
-  { key: 'zadel', label: 'Zadel', by: 'tires', station: 2, qty: 1 },
-  { key: 'tank', label: 'Tank', by: 'color', station: 2, qty: 1 },
-  { key: 'frame', label: 'Framedelen', by: 'color', station: 3, qty: 1 }
+
+/* De 25 onderdeelkolommen uit de bijlage, met het werkstation waar het
+   onderdeel hoort. De stationtoewijzing is onze eigen indeling en is
+   aanpasbaar bij INSTELLINGEN. */
+const BOM_PARTS = [
+  { part: 'Four-hole bracket - Blue', st: 3 },
+  { part: 'Four-hole bracket - Orange', st: 3 },
+  { part: 'Four-hole bracket - White', st: 3 },
+  { part: 'Five-hole bracket - Blue', st: 3 },
+  { part: 'Five-hole bracket - Orange', st: 3 },
+  { part: 'Five-hole bracket - White', st: 3 },
+  { part: 'Tank - Blue', st: 2 },
+  { part: 'Tank - Orange', st: 2 },
+  { part: 'Tank - White', st: 2 },
+  { part: 'Frontlight - Blue', st: 0 },
+  { part: 'Frontlight - Orange', st: 0 },
+  { part: 'Frontlight - White', st: 0 },
+  { part: 'Rear Off-Road Tire', st: 1 },
+  { part: 'Front Off-Road Tire', st: 0 },
+  { part: 'Rear On-Road Tire', st: 1 },
+  { part: 'Front On-Road Tire', st: 0 },
+  { part: 'Buddyseat Cross', st: 2 },
+  { part: 'Buddyseat Classic', st: 2 },
+  { part: 'Bout M3x6', st: 3 },
+  { part: 'Bout M3x8', st: 3 },
+  { part: 'Bout M3x10', st: 3 },
+  { part: 'Bout M3x12', st: 3 },
+  { part: 'Bout M3x16', st: 3 },
+  { part: 'Bout M3x20', st: 3 },
+  { part: 'Moer M3', st: 3 }
 ];
-function variantAttr(v, by) {
-  if (by === 'color') return COLOR_NL[v.color] || v.color;
-  if (by === 'tires') return TIRE_NL[v.tires] || v.tires;
-  if (by === 'steering') return STEER_NL[v.steering] || v.steering;
-  return '';
-}
+
+/* Per product-ID: [kolomindex, aantal] — exact de cellen uit de bijlage. */
+const BOM_MATRIX = {
+  'M-148030': [[3, 2], [6, 1], [9, 1], [14, 1], [15, 1], [17, 1], [19, 2], [21, 1], [22, 1], [23, 3], [24, 10]],
+  'M-148031': [[0, 2], [3, 2], [6, 1], [9, 1], [14, 1], [15, 1], [17, 1], [20, 2], [21, 1], [22, 1], [23, 3], [24, 10]],
+  'M-148032': [[1, 2], [4, 2], [7, 1], [10, 1], [14, 1], [15, 1], [17, 1], [19, 2], [21, 1], [22, 1], [23, 3], [24, 10]],
+  'M-148033': [[1, 2], [4, 2], [7, 1], [10, 1], [14, 1], [15, 1], [17, 1], [20, 2], [21, 1], [22, 1], [23, 3], [24, 10]],
+  'M-148034': [[2, 2], [5, 2], [8, 1], [11, 1], [14, 1], [15, 1], [17, 1], [19, 2], [21, 1], [22, 1], [23, 3], [24, 10]],
+  'M-148035': [[2, 2], [5, 2], [8, 1], [11, 1], [14, 1], [15, 1], [17, 1], [20, 2], [21, 1], [22, 1], [23, 3], [24, 10]],
+  'M-148036': [[0, 2], [3, 2], [6, 1], [9, 1], [12, 1], [13, 1], [16, 1], [19, 2], [21, 2], [23, 3], [24, 10]],
+  'M-148037': [[0, 2], [3, 2], [6, 1], [9, 1], [12, 1], [13, 1], [16, 1], [20, 2], [21, 2], [23, 3], [24, 10]],
+  'M-148038': [[1, 2], [4, 2], [7, 1], [10, 1], [12, 1], [13, 1], [16, 1], [19, 2], [21, 2], [23, 3], [24, 10]],
+  'M-148039': [[1, 2], [4, 2], [7, 1], [10, 1], [12, 1], [13, 1], [16, 1], [20, 2], [21, 2], [23, 3], [24, 10]],
+  'M-148040': [[2, 2], [5, 2], [8, 1], [11, 1], [12, 1], [13, 1], [16, 1], [19, 2], [21, 2], [23, 3], [24, 10]],
+  'M-148041': [[2, 2], [5, 2], [8, 1], [11, 1], [12, 1], [13, 1], [16, 1], [20, 2], [21, 2], [23, 3], [24, 10]]
+};
+
 function defaultBom() {
   const b = {};
-  CATALOG.forEach(v => {
-    b[v.sku] = BOM_TEMPLATE.map(t => ({
-      id: uid(),
-      part: t.label + ' · ' + variantAttr(v, t.by),
-      code: '',                 // artikelnummer — nog in te vullen
-      qty: t.qty,
-      stationIdx: t.station,
-      derived: true
+  Object.keys(BOM_MATRIX).forEach(sku => {
+    b[sku] = BOM_MATRIX[sku].map(c => ({
+      id: uid(), part: BOM_PARTS[c[0]].part, code: '', qty: c[1],
+      stationIdx: BOM_PARTS[c[0]].st, col: c[0]
     }));
   });
   return b;
 }
+
+/* ---------------------------------------------------------------------------
+   BOM-controle. De bijlage vermeldt zelf dat er fouten in kunnen zitten, dus
+   de app vergelijkt alle varianten met elkaar en meldt wat eruit springt.
+   Er wordt niets automatisch aangepast — jij beslist.
+   --------------------------------------------------------------------------- */
+function bomIssues() {
+  const bom = DB.settings.bom || {};
+  const cat = DB.settings.catalog || CATALOG;
+  const out = [];
+
+  /* 1. onderdeelgroepen die bij bijna elke variant voorkomen, maar bij één niet */
+  const groups = {};                     // grondvorm -> aantal varianten dat hem heeft
+  const groupOf = p => String(p).replace(/\s*-\s*(Blue|Orange|White)$/i, '').trim();
+  cat.forEach(c => {
+    const seen = {};
+    (bom[c.sku] || []).forEach(r => seen[groupOf(r.part)] = true);
+    Object.keys(seen).forEach(g => groups[g] = (groups[g] || 0) + 1);
+  });
+  const total = cat.length;
+  cat.forEach(c => {
+    const have = {};
+    (bom[c.sku] || []).forEach(r => have[groupOf(r.part)] = true);
+    Object.keys(groups).forEach(g => {
+      if (groups[g] >= total - 1 && groups[g] < total && !have[g]) {
+        /* welk onderdeel zou het moeten zijn? kijk naar een variant met dezelfde kleur */
+        const twin = cat.find(x => x.sku !== c.sku && x.color === c.color && (bom[x.sku] || []).some(r => groupOf(r.part) === g));
+        const src = twin ? (bom[twin.sku] || []).find(r => groupOf(r.part) === g) : null;
+        out.push({
+          type: 'missing', sku: c.sku, group: g,
+          text: variantName(c.sku) + ' (' + c.sku + ') heeft geen "' + g + '", terwijl alle ' +
+            groups[g] + ' andere varianten die wél hebben.',
+          fix: src ? { sku: c.sku, part: src.part, qty: src.qty, stationIdx: src.stationIdx } : null,
+          fixText: src ? 'Toevoegen: ' + src.part + ' ×' + src.qty : null
+        });
+      }
+    });
+  });
+
+  /* 2. aantal moeren tegenover het aantal bouten — één melding per patroon */
+  const nutGroups = {};
+  cat.forEach(c => {
+    const rows = bom[c.sku] || [];
+    const bolts = sum(rows.filter(r => /^bout/i.test(r.part)).map(r => r.qty));
+    const nuts = sum(rows.filter(r => /^moer/i.test(r.part)).map(r => r.qty));
+    if (!bolts || !nuts || bolts === nuts) return;
+    const k = bolts + '|' + nuts;
+    (nutGroups[k] = nutGroups[k] || { bolts: bolts, nuts: nuts, skus: [] }).skus.push(c.sku);
+  });
+  Object.keys(nutGroups).forEach(k => {
+    const g = nutGroups[k];
+    out.push({
+      type: 'nuts', skus: g.skus,
+      text: (g.skus.length === cat.length ? 'Alle ' + cat.length + ' varianten hebben' : g.skus.length + ' varianten hebben') +
+        ' ' + g.nuts + ' moeren tegenover ' + g.bolts + ' bouten. Controleer of dat klopt bij het uitpakken van de bakjes.'
+    });
+  });
+  return out;
+}
+
 function bomFor(sku) {
   const b = DB.settings.bom || {};
   return b[sku] || [];
@@ -3373,19 +3470,39 @@ function renderOrders() {
     '<thead><tr><th>Onderdeel</th><th>Artikelnummer</th><th>Werkstation</th><th class="r">Totaal nodig</th>' +
     '<th>Verdeling over varianten</th></tr></thead><tbody>' +
     (rows.length ? rows.map(r => '<tr><td><b>' + esc(r.part) + '</b></td>' +
-      '<td class="mono">' + (r.code ? esc(r.code) : '<span class="tag amber">in te vullen</span>') + '</td>' +
+      '<td class="mono">' + (r.code ? esc(r.code) : '<span class="hint">—</span>') + '</td>' +
       '<td>' + esc(stations[r.stationIdx] ? stations[r.stationIdx].worker + ' – ' + stations[r.stationIdx].name : '—') + '</td>' +
       '<td class="r mono"><b>' + r.total + '</b></td>' +
       '<td class="hint">' + Object.keys(r.per).map(s => esc(s) + ': ' + r.per[s]).join(' · ') + '</td></tr>').join('')
       : '<tr><td colspan="5" class="empty">Nog geen Bill of Materials ingevuld.</td></tr>') + '</tbody>';
 
-  /* ---- assortiment + BOM ---- */
-  const anyCode = Object.keys(DB.settings.bom || {}).some(k => (DB.settings.bom[k] || []).some(b => b.code));
-  $('#bomWarn').innerHTML = anyCode ? '' :
-    '<div class="banner warn"><div><b>De artikelnummers zijn nog niet ingevuld</b>' +
-    'De officiële Bill of Materials van Innovo (bijlage vanaf pagina 107) zat niet bij het aangeleverde bestand. ' +
-    'De onderdelenlijst hieronder is afgeleid uit de productlijst: kleur, Road- of Cross-banden en zadel, en normaal of wide stuur. ' +
-    'Vul de artikelnummers en eventuele extra onderdelen aan bij INSTELLINGEN → Bill of Materials, of importeer ze als JSON.</div></div>';
+  /* ---- assortiment + BOM-controle ---- */
+  const issues = bomIssues();
+  $('#bomWarn').innerHTML =
+    (issues.length
+      ? '<div class="banner warn"><div><b>BOM-controle: ' + issues.length + ' afwijking' + (issues.length > 1 ? 'en' : '') + ' gevonden</b>' +
+      'Innovo waarschuwt zelf dat er fouten in de Bill of Materials kunnen zitten. De gegevens hieronder staan precies zoals ' +
+      'aangeleverd; er is niets automatisch aangepast.' +
+      '<ul style="margin:8px 0 0 18px;padding:0">' +
+      issues.map((x, i) => '<li style="margin-bottom:4px">' + esc(x.text) +
+        (x.fix ? ' <button class="btn sm" data-bomfix="' + i + '">' + esc(x.fixText) + '</button>' : '') + '</li>').join('') +
+      '</ul></div></div>'
+      : '<div class="banner info"><div><b>BOM-controle: geen afwijkingen gevonden</b>' +
+      'Alle varianten hebben dezelfde onderdeelgroepen en het aantal moeren komt overeen met het aantal bouten.</div></div>');
+  $$('[data-bomfix]').forEach(b => b.onclick = () => {
+    const x = issues[+b.dataset.bomfix];
+    if (!x || !x.fix) return;
+    confirmBox('Onderdeel toevoegen aan de BOM?',
+      'Je voegt <b>' + esc(x.fix.part) + ' ×' + x.fix.qty + '</b> toe aan <b>' + esc(variantName(x.fix.sku)) + '</b>. ' +
+      'Dit is een correctie op de aangeleverde Bill of Materials — noteer dat in je verslag.', 'Toevoegen').then(ok => {
+        if (!ok) return;
+        if (!DB.settings.bom[x.fix.sku]) DB.settings.bom[x.fix.sku] = [];
+        DB.settings.bom[x.fix.sku].push({
+          id: uid(), part: x.fix.part, code: '', qty: x.fix.qty, stationIdx: x.fix.stationIdx, corrected: true
+        });
+        saveDB(true); toast('BOM aangevuld'); renderOrders();
+      });
+  });
 
   const cat = DB.settings.catalog || CATALOG;
   $('#tblCatalog').innerHTML =
@@ -3549,8 +3666,9 @@ function renderBomSettings() {
   $('#btnBomExp').onclick = () => download('innovo_bom.json', JSON.stringify({ bom: DB.settings.bom }, null, 2), 'application/json');
   $('#btnBomImp').onclick = () => $('#fileBom').click();
   $('#btnBomReset').onclick = () => {
-    confirmBox('BOM terugzetten?', 'De Bill of Materials wordt teruggezet naar de standaardstructuur die is afgeleid ' +
-      'uit de productlijst. Ingevulde artikelnummers gaan verloren.', 'Terugzetten', true).then(ok => {
+    confirmBox('BOM terugzetten?', 'De Bill of Materials wordt teruggezet naar de lijst zoals Innovo die heeft aangeleverd ' +
+      '(bijlage pagina 106), inclusief de afwijking bij M-148030. Eigen wijzigingen en artikelnummers gaan verloren.',
+      'Terugzetten', true).then(ok => {
         if (!ok) return;
         DB.settings.bom = defaultBom(); saveDB(true); renderBomSettings(); toast('BOM teruggezet');
       });

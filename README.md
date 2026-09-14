@@ -84,16 +84,23 @@ wachtredenen, overdrachtswachttijd · **PROCESSTABILITEIT** control chart ·
 
 ## Orders en Bill of Materials
 
-De orders van Factory 2 voor week 1 tot en met 9 en het volledige assortiment
-(M-148030 t/m M-148041) zitten vast in de applicatie, inclusief de eigenschappen per variant:
-kleur, Road- of Cross-banden en zadel, en normaal of wide stuur.
+De orders van Factory 2 voor week 1 tot en met 9, het volledige assortiment
+(M-148030 t/m M-148041) en de **Bill of Materials van Innovo** zitten vast in de applicatie.
+Uit de BOM worden automatisch berekend: de materiaalbehoefte per week, de picklijst per
+werkstation en de afvinklijst die je op je telefoon naast de timer opent.
 
-> **De artikelnummers in de Bill of Materials moeten nog ingevuld worden.** De officiële
-> BOM-bijlage van Innovo (vanaf pagina 107) zat niet bij het aangeleverde document. De
-> onderdelenlijst per variant is daarom afgeleid uit de productlijst en bevat bewust géén
-> verzonnen artikelnummers. Vul ze aan bij **INSTELLINGEN → Bill of Materials**, of
-> importeer ze in één keer als JSON. Daarna kloppen de materiaalbehoefte en de picklijsten
-> automatisch.
+De BOM staat er precies in zoals aangeleverd. De bijlage waarschuwt zelf dat er fouten in
+kunnen zitten, dus de app vergelijkt alle varianten met elkaar en meldt bij
+**ORDERS & MATERIAAL** wat eruit springt — zonder zelf iets te wijzigen:
+
+1. **M-148030 (Road Rocket – Blue) mist het Four-hole bracket ×2** dat alle elf andere
+   varianten wél hebben. Eén knop zet het erbij als je die correctie wilt doorvoeren.
+2. **Alle varianten hebben 10 moeren tegenover 7 bouten.** Controleer dat bij het uitpakken.
+
+De bijlage vermeldt alleen onderdeelnamen, geen artikelnummers; die kolom kun je zelf
+invullen. De indeling van onderdelen over de vier werkstations is onze eigen keuze
+(voorband en koplamp bij Viggo, achterband bij Noah, tank en zadel bij Stan, brackets en
+bevestigingsmateriaal bij Pepijn) en is met één klik aan te passen.
 
 Orders en BOM zijn volledig aanpasbaar zonder de code te wijzigen: toevoegen, wijzigen,
 verwijderen, importeren en exporteren als JSON.
