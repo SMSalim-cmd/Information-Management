@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Innovo Motors · Production Measurement Dashboard</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f2438">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Innovo PM">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
 <style>
 :root{
   --navy:#0f2438; --navy2:#16344f; --navy3:#1d4265;
@@ -232,6 +240,91 @@ details.def .dd b{color:var(--txt)}
   .srow{grid-template-columns:1fr}
 }
 @media print{ nav,header .hbtn{display:none} }
+
+/* ---------- synchronisatiebalk ---------- */
+.syncbar{display:flex;align-items:center;gap:8px;padding:5px 11px;border-radius:20px;font-size:12px;
+  font-weight:700;background:#24486c;color:#cfe2f4;white-space:nowrap;cursor:pointer;border:1px solid #35597e}
+.syncbar .dot2{width:9px;height:9px;border-radius:50%;background:#8fb2d4;flex:none}
+.syncbar.s-on{background:#0d5c36;border-color:#137a49;color:#d6f5e4}
+.syncbar.s-on .dot2{background:#3ddc84;box-shadow:0 0 0 3px rgba(61,220,132,.25)}
+.syncbar.s-sync{background:#7a5200;border-color:#9a6800;color:#ffe6b8}
+.syncbar.s-sync .dot2{background:#ffc04d;animation:pulse 1.1s infinite}
+.syncbar.s-off2{background:#7a1f1f;border-color:#9c2b2b;color:#ffd9d9}
+.syncbar.s-off2 .dot2{background:#ff6b6b}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.syncbar .code{background:rgba(255,255,255,.16);padding:1px 7px;border-radius:5px;letter-spacing:.06em}
+.syncbar .q,.syncbar .who{opacity:.8;font-weight:600}
+.syncbar .err{background:#c62828;color:#fff;width:16px;height:16px;border-radius:50%;text-align:center;line-height:16px}
+
+/* ---------- mobiele stationsweergave ---------- */
+#mobile{position:fixed;inset:0;background:var(--bg);z-index:60;display:none;flex-direction:column}
+#mobile.on{display:flex}
+.mtop{background:var(--navy);color:#fff;padding:9px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding-top:max(9px,env(safe-area-inset-top))}
+.mtop .nm{font-size:16px;font-weight:800;line-height:1.1}
+.mtop .sn{font-size:11.5px;color:#8fb2d4}
+.mtop .sp{margin-left:auto;display:flex;gap:7px;align-items:center}
+.mbody{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:11px;
+  padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.mcur{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center;box-shadow:var(--sh)}
+.mcur .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);font-weight:800}
+.mcur .mn{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.mcur .vr{font-size:13.5px;color:var(--txt2);margin-top:1px}
+.mtimer{font-size:min(23vw,86px);font-weight:800;line-height:1;letter-spacing:-.035em;text-align:center;margin:4px 0}
+.mtimer.run{color:var(--green)} .mtimer.wait{color:var(--amber)} .mtimer.rew{color:var(--red)}
+.mtimer.off{color:#c3ced8} .mtimer.done{color:var(--blue)}
+.msub{display:flex;justify-content:space-around;font-size:12px;color:var(--txt2);text-align:center}
+.msub b{display:block;font-size:17px;color:var(--txt);font-weight:800}
+.mbtns{display:flex;flex-direction:column;gap:10px}
+.mbtn{min-height:62px;border-radius:14px;border:0;font-size:19px;font-weight:800;letter-spacing:.03em;
+  text-transform:uppercase;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;transition:transform .06s}
+.mbtn:active{transform:scale(.975)}
+.mbtn:disabled{opacity:.28;cursor:not-allowed}
+.mbtn.start{background:var(--green)} .mbtn.pause{background:var(--amber)}
+.mbtn.res{background:var(--blue)} .mbtn.done{background:var(--navy2)}
+.mbtn.qc{background:var(--purple)} .mbtn.sec{background:#fff;color:var(--txt2);border:1px solid var(--line);
+  min-height:48px;font-size:14px;text-transform:none;font-weight:700}
+.mnext{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 13px;display:flex;
+  justify-content:space-between;align-items:center;gap:10px;font-size:13.5px;box-shadow:var(--sh)}
+.mnext b{display:block;font-size:15px}
+.mnext .hint{white-space:nowrap}
+.mnext>div:last-child{flex:none}
+.mstatus{display:flex;justify-content:center}
+.mpill{padding:5px 15px;border-radius:20px;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.reasonlist{display:flex;flex-direction:column;gap:9px}
+.reasonlist button{min-height:56px;border-radius:12px;border:1.5px solid var(--line);background:#fff;
+  font-size:16px;font-weight:700;text-align:left;padding:10px 15px;cursor:pointer;display:flex;
+  justify-content:space-between;align-items:center;gap:10px;touch-action:manipulation}
+.reasonlist button:active{background:var(--blue2);border-color:var(--blue)}
+.reasonlist button small{font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em}
+.pickbig{display:flex;flex-direction:column;gap:10px}
+.pickbig button{min-height:70px;border-radius:14px;border:1.5px solid var(--line);background:#fff;
+  font-size:18px;font-weight:800;cursor:pointer;text-align:left;padding:12px 16px;touch-action:manipulation}
+.pickbig button small{display:block;font-size:13px;font-weight:600;color:var(--txt2);margin-top:2px}
+.pickbig button:active{border-color:var(--blue);background:var(--blue2)}
+
+/* ---------- orders & materiaal ---------- */
+.ordgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:11px}
+.ordcard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:var(--sh);
+  cursor:pointer;border-left:4px solid var(--line)}
+.ordcard.on{border-left-color:var(--blue);background:var(--blue2)}
+.ordcard .w{font-size:15px;font-weight:800}
+.ordcard .t{font-size:12.5px;color:var(--txt2)}
+.ordcard .n{font-size:24px;font-weight:800;color:var(--blue)}
+.swatch{display:inline-block;width:11px;height:11px;border-radius:3px;border:1px solid rgba(0,0,0,.2);
+  vertical-align:-1px;margin-right:5px}
+.chkline{display:flex;align-items:center;gap:11px;padding:11px 13px;border-bottom:1px solid var(--line2);
+  cursor:pointer;font-size:14.5px}
+.chkline:last-child{border-bottom:0}
+.chkline input{width:22px;height:22px;flex:none}
+.chkline.done{opacity:.55;text-decoration:line-through}
+.chkline .qty{margin-left:auto;font-weight:800;font-variant-numeric:tabular-nums}
+
+@media(max-width:680px){
+  .mdl{max-height:96vh} .mdl-f{position:sticky;bottom:0}
+  .fgrid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -245,7 +338,10 @@ details.def .dd b{color:var(--txt)}
     <div class="runstat"><i>Verstreken</i><b id="hElapsed" class="mono">00:00:00</b></div>
     <div class="runstat"><i>Takt time</i><b id="hTakt" class="mono">—</b></div>
     <div class="runstat"><i>Gereed / WIP</i><b id="hCounts" class="mono">0 / 0</b></div>
+    <div class="syncbar s-off" id="syncBar" title="Verbindingsstatus"><span class="dot2"></span><b>Lokaal</b></div>
+    <button class="hbtn" id="btnMobile" title="Alleen mijn eigen werkstation op dit apparaat">📱 Mijn station</button>
     <button class="hbtn" id="btnUndo" title="Maakt de laatst geregistreerde actie ongedaan">↶ Ongedaan maken</button>
+    <button class="hbtn" id="btnJoin">Meedoen</button>
     <button class="hbtn primary" id="btnNewRun">+ Nieuwe run</button>
   </div>
 </header>
@@ -256,6 +352,7 @@ details.def .dd b{color:var(--txt)}
   <button data-tab="kwaliteit">KWALITEIT</button>
   <button data-tab="verspilling">VERSPILLING</button>
   <button data-tab="stabiliteit">PROCESSTABILITEIT</button>
+  <button data-tab="orders">ORDERS &amp; MATERIAAL</button>
   <button data-tab="vergelijk">VERGELIJK RUNS</button>
   <button data-tab="data">DATA</button>
   <button data-tab="instellingen">INSTELLINGEN</button>
@@ -268,9 +365,10 @@ details.def .dd b{color:var(--txt)}
   <div id="prodBanner"></div>
 
   <div class="sec">
-    <h2>Motoren in deze run</h2>
-    <div style="display:flex;gap:12px;align-items:flex-start">
-      <button class="btn pri" id="btnNewMotor" style="padding:14px 16px;font-weight:800;white-space:nowrap">+ NIEUWE MOTOR</button>
+    <h2>Orderwachtrij</h2>
+    <div id="queueProgress"></div>
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-top:10px">
+      <button class="btn pri" id="btnNewMotor" style="padding:14px 16px;font-weight:800;white-space:nowrap">+ MOTOR TOEVOEGEN</button>
       <div class="motorstrip" id="motorStrip" style="flex:1"></div>
     </div>
   </div>
@@ -350,6 +448,11 @@ details.def .dd b{color:var(--txt)}
   <div class="sec">
     <h2>Motoren in deze run</h2>
     <div class="tblwrap"><table class="tbl" id="tblMotors"></table></div>
+  </div>
+
+  <div class="sec">
+    <h2>Uitsplitsing per motorvariant</h2>
+    <div class="tblwrap"><table class="tbl" id="tblVariants"></table></div>
   </div>
 
   <div class="sec">
@@ -447,6 +550,38 @@ details.def .dd b{color:var(--txt)}
   </div>
 </section>
 
+
+<!-- ============ ORDERS & MATERIAAL ============ -->
+<section class="page" id="page-orders">
+  <div class="sec">
+    <h2>Orders per week — Factory 2</h2>
+    <div class="hint" style="margin-bottom:10px">Klik op een week om de orderregels, de materiaalbehoefte en de picklijsten te zien.</div>
+    <div class="ordgrid" id="ordWeeks"></div>
+  </div>
+  <div class="sec">
+    <h2 id="ordTitle">Order</h2>
+    <div class="grid g2">
+      <div class="tblwrap"><table class="tbl" id="tblOrderLines"></table></div>
+      <div class="tblwrap"><table class="tbl" id="tblOrderMix"></table></div>
+    </div>
+  </div>
+  <div class="sec">
+    <h2>Picklijst per werkstation</h2>
+    <div class="hint" style="margin-bottom:10px">Aantal motoren × Bill of Materials. Zet dit klaar vóórdat de run begint —
+      ontbrekende onderdelen zijn de grootste bron van wachttijd.</div>
+    <div class="grid g2" id="pickLists"></div>
+  </div>
+  <div class="sec">
+    <h2>Volledige materiaalbehoefte</h2>
+    <div class="tblwrap"><table class="tbl" id="tblNeed"></table></div>
+  </div>
+  <div class="sec">
+    <h2>Assortiment en Bill of Materials</h2>
+    <div id="bomWarn"></div>
+    <div class="tblwrap"><table class="tbl" id="tblCatalog"></table></div>
+  </div>
+</section>
+
 <!-- ============ VERGELIJK ============ -->
 <section class="page" id="page-vergelijk">
   <div class="sec">
@@ -510,6 +645,7 @@ details.def .dd b{color:var(--txt)}
       <div class="btnrow">
         <button class="btn pri" id="btnBackupExp">Back-up exporteren (JSON)</button>
         <button class="btn" id="btnBackupImp">Back-up importeren</button>
+        <button class="btn" id="btnMigrate">Lokale runs uploaden naar de database</button>
         <input type="file" id="fileImp" accept="application/json,.json" style="display:none">
       </div>
       <div class="hint" id="storeInfo" style="margin-top:10px"></div>
@@ -577,6 +713,28 @@ details.def .dd b{color:var(--txt)}
     </div>
   </div>
   <div class="sec">
+    <h2>Orders per week</h2>
+    <div class="card" style="padding:16px">
+      <div class="hint" style="margin-bottom:12px">De orders van Factory 2 (week 1 t/m 9) staan standaard in de applicatie.
+        Je kunt ze hier aanpassen en zelf latere weken toevoegen — daar is geen aanpassing van de code voor nodig.</div>
+      <div id="setOrders"></div>
+      <input type="file" id="fileOrders" accept="application/json,.json" style="display:none">
+    </div>
+  </div>
+  <div class="sec">
+    <h2>Bill of Materials</h2>
+    <div class="card" style="padding:16px">
+      <div class="hint" style="margin-bottom:12px">Per motorvariant: onderdeel, artikelnummer, aantal per motor en het werkstation
+        waar het onderdeel hoort. Hieruit worden de materiaalbehoefte en de picklijsten berekend.</div>
+      <div id="setBom"></div>
+      <input type="file" id="fileBom" accept="application/json,.json" style="display:none">
+    </div>
+  </div>
+  <div class="sec">
+    <h2>Online samenwerken</h2>
+    <div class="card" style="padding:16px" id="setCloud"></div>
+  </div>
+  <div class="sec">
     <h2>Actieve run bijwerken</h2>
     <div class="card" style="padding:16px" id="setRun"></div>
   </div>
@@ -593,6 +751,21 @@ details.def .dd b{color:var(--txt)}
 </section>
 
 </main>
+
+<div id="mobile">
+  <div class="mtop">
+    <div>
+      <div class="nm" id="mName">—</div>
+      <div class="sn" id="mStation">—</div>
+    </div>
+    <div class="sp">
+      <div class="syncbar s-off" id="syncBarM"><span class="dot2"></span><b>Lokaal</b></div>
+      <button class="hbtn" id="mSwitch">Wissel</button>
+      <button class="hbtn" id="mExit">Lijn</button>
+    </div>
+  </div>
+  <div class="mbody" id="mBody"></div>
+</div>
 
 <div class="ovl" id="ovl"><div class="mdl" id="mdl"></div></div>
 <script>
@@ -681,6 +854,9 @@ function defaultSettings() {
       { id: 'r8', label: 'Storing', tim: 'Waiting' },
       { id: 'r9', label: 'Anders', tim: 'Waiting' }
     ],
+    catalog: CATALOG.map(c => Object.assign({}, c)),
+    orders: defaultOrders(),
+    bom: defaultBom(),
     defectTypes: [
       { id: 'd1', label: 'Onderdeel vergeten' },
       { id: 'd2', label: 'Verkeerd onderdeel' },
@@ -720,10 +896,14 @@ function normaliseDB(o) {
     if (Array.isArray(o.settings.stations) && o.settings.stations.length) d.settings.stations = o.settings.stations;
     if (Array.isArray(o.settings.reasons) && o.settings.reasons.length) d.settings.reasons = o.settings.reasons;
     if (Array.isArray(o.settings.defectTypes) && o.settings.defectTypes.length) d.settings.defectTypes = o.settings.defectTypes;
+    if (Array.isArray(o.settings.catalog) && o.settings.catalog.length) d.settings.catalog = o.settings.catalog;
+    if (Array.isArray(o.settings.orders) && o.settings.orders.length) d.settings.orders = o.settings.orders;
+    if (o.settings.bom && typeof o.settings.bom === 'object') d.settings.bom = o.settings.bom;
   }
   d.runs = Array.isArray(o.runs) ? o.runs.filter(r => r && r.id && Array.isArray(r.events)) : [];
   d.runs.forEach(r => {
     r.stations = Array.isArray(r.stations) ? r.stations : [];
+    r.queue = Array.isArray(r.queue) ? r.queue : [];
     r.events.sort((a, b) => a.ts - b.ts || (a.seq || 0) - (b.seq || 0));
   });
   d.activeRunId = o.activeRunId && d.runs.some(r => r.id === o.activeRunId) ? o.activeRunId : (d.runs.length ? d.runs[d.runs.length - 1].id : null);
@@ -748,13 +928,30 @@ function saveDB(immediate) {
 
 function activeRun() { return DB.runs.find(r => r.id === DB.activeRunId) || null; }
 
-/* ----------------------------------------------------------------- events */
+/* ----------------------------------------------------------------- events
+   Events zijn append-only. Ze krijgen een client-gegenereerde UUID (zodat
+   dubbel verzenden nooit een dubbel event oplevert) en een timestamp die is
+   gecorrigeerd voor de klokafwijking tussen dit apparaat en de server.      */
 let seqCounter = 0;
 function pushEvent(run, type, data) {
-  const ev = Object.assign({ id: uid(), ts: now(), seq: ++seqCounter, type: type }, data || {});
+  const ev = Object.assign({
+    id: uuid(), ts: syncedNow(), seq: ++seqCounter, type: type, actor: deviceName()
+  }, data || {});
   run.events.push(ev);
-  saveDB();
+  run.events.sort((a, b) => a.ts - b.ts || (a.seq || 0) - (b.seq || 0));
+  saveDB(true);      // direct wegschrijven: een meting mag nooit verloren gaan
+  if (run.cloud) SYNC.send(run, ev);
   return ev;
+}
+/** RFC4122-achtige UUID; gebruikt crypto waar beschikbaar. */
+function uuid() {
+  if (window.crypto && crypto.randomUUID) { try { return crypto.randomUUID(); } catch (e) { } }
+  const b = new Uint8Array(16);
+  if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(b);
+  else for (let i = 0; i < 16; i++) b[i] = Math.floor(Math.random() * 256);
+  b[6] = (b[6] & 0x0f) | 0x40; b[8] = (b[8] & 0x3f) | 0x80;
+  const h = Array.prototype.map.call(b, x => ('0' + x.toString(16)).slice(-2)).join('');
+  return h.slice(0, 8) + '-' + h.slice(8, 12) + '-' + h.slice(12, 16) + '-' + h.slice(16, 20) + '-' + h.slice(20);
 }
 
 /* =========================================================================
@@ -774,6 +971,25 @@ function deriveRun(run) {
     lastEvent: run.events.length ? run.events[run.events.length - 1] : null
   };
   run.stations.forEach((s, i) => { D.stationById[s.id] = Object.assign({ order: i }, s); });
+
+  /* --- correctie-events: events die ongedaan zijn gemaakt worden overgeslagen,
+         maar blijven wél in de log staan (append-only, niets wordt gewist). --- */
+  const voided = {};
+  run.events.forEach(e => { if (e.type === 'undo' && e.targetId) voided[e.targetId] = e; });
+  D.voided = voided;
+
+  /* --- motoren uit de orderwachtrij (staan al vast bij de start van de run) --- */
+  let maxPos = -1;
+  (run.queue || []).forEach(q => {
+    const m = {
+      id: q.motorId, nr: q.nr, code: motorCode(q.nr), sku: q.sku || '',
+      variant: q.sku ? variantName(q.sku) : (run.variant || ''),
+      createdAt: run.startedAt || run.createdAt, startedAt: null, completedAt: null,
+      defects: [], pos: q.pos != null ? q.pos : q.nr, hold: false, holdReason: '', cancelled: false, fromQueue: true
+    };
+    maxPos = Math.max(maxPos, m.pos);
+    D.motors[m.id] = m; D.motorList.push(m);
+  });
 
   const K = (m, s) => m + '|' + s;
   function task(mId, sId) {
@@ -799,10 +1015,42 @@ function deriveRun(run) {
   }
   function mName(id) { const m = D.motors[id]; return m ? m.code : 'Motor ?'; }
   function sName(id) { const s = D.stationById[id]; return s ? s.worker + ' – ' + s.name : 'Station ?'; }
-  function logit(ev, text) { D.log.push({ ts: ev.ts, id: ev.id, text: text, type: ev.type }); }
+  function logit(ev, text) {
+    D.log.push({ ts: ev.ts, id: ev.id, text: text, type: ev.type, actor: ev.actor || '' });
+  }
 
   for (const ev of run.events) {
+    if (voided[ev.id]) { D.log.push({ ts: ev.ts, id: ev.id, text: '(ongedaan gemaakt) ' + ev.type, type: 'void', void: true }); continue; }
     switch (ev.type) {
+      case 'undo': {
+        const t = run.events.find(x => x.id === ev.targetId);
+        logit(ev, 'Actie ongedaan gemaakt' + (t ? ' (' + t.type + ')' : '') + (ev.actor ? ' door ' + ev.actor : ''));
+        break;
+      }
+      case 'motor_hold': {
+        const m = D.motors[ev.motorId];
+        if (m) { m.hold = true; m.holdReason = ev.reason || ''; }
+        logit(ev, mName(ev.motorId) + ' geblokkeerd: ' + (ev.reason || '—'));
+        break;
+      }
+      case 'motor_release': {
+        const m = D.motors[ev.motorId];
+        if (m) { m.hold = false; m.holdReason = ''; }
+        logit(ev, mName(ev.motorId) + ' weer vrijgegeven');
+        break;
+      }
+      case 'motor_defer': {
+        const m = D.motors[ev.motorId];
+        if (m) m.pos = ++maxPos;
+        logit(ev, mName(ev.motorId) + ' achteraan de wachtrij gezet' + (ev.reason ? ': ' + ev.reason : ''));
+        break;
+      }
+      case 'motor_cancel': {
+        const m = D.motors[ev.motorId];
+        if (m) m.cancelled = true;
+        logit(ev, mName(ev.motorId) + ' uit de wachtrij gehaald' + (ev.reason ? ': ' + ev.reason : ''));
+        break;
+      }
       case 'run_start':
         logit(ev, 'Productierun gestart: ' + (run.name || ''));
         break;
@@ -810,9 +1058,12 @@ function deriveRun(run) {
         logit(ev, 'Productierun afgesloten');
         break;
       case 'motor_create': {
+        if (D.motors[ev.motorId]) break;
         const m = {
           id: ev.motorId, nr: ev.nr, code: motorCode(ev.nr), createdAt: ev.ts,
-          startedAt: null, completedAt: null, defects: [], variant: ev.variant || run.variant || ''
+          startedAt: null, completedAt: null, defects: [], sku: ev.sku || '',
+          variant: ev.sku ? variantName(ev.sku) : (ev.variant || run.variant || ''),
+          pos: ++maxPos, hold: false, holdReason: '', cancelled: false, fromQueue: false
         };
         D.motors[m.id] = m; D.motorList.push(m);
         logit(ev, m.code + ' aangemaakt');
@@ -820,6 +1071,7 @@ function deriveRun(run) {
       }
       case 'start': {
         const t = task(ev.motorId, ev.stationId);
+        if (t.status !== 'idle') break;          // dubbele start doet niets
         if (t.startedAt == null) t.startedAt = ev.ts;
         t.status = 'running';
         openSeg(t, ev.ts, 'work');
@@ -830,6 +1082,8 @@ function deriveRun(run) {
       }
       case 'pause': {
         const t = task(ev.motorId, ev.stationId);
+        if (t.status !== 'running' && t.status !== 'rework') break;
+        t.wasRework = (t.status === 'rework');
         t.status = 'waiting';
         openSeg(t, ev.ts, 'wait', { reason: ev.reason, reasonId: ev.reasonId, note: ev.note || '', tim: ev.tim || 'Waiting' });
         logit(ev, mName(ev.motorId) + ' – ' + sName(ev.stationId) + ' WACHT: ' + ev.reason + (ev.note ? ' (' + ev.note + ')' : ''));
@@ -837,6 +1091,7 @@ function deriveRun(run) {
       }
       case 'resume': {
         const t = task(ev.motorId, ev.stationId);
+        if (t.status !== 'waiting') break;
         t.status = t.reworkOpen ? 'rework' : 'running';
         openSeg(t, ev.ts, t.reworkOpen ? 'rework' : 'work');
         logit(ev, mName(ev.motorId) + ' – ' + sName(ev.stationId) + ' hervat');
@@ -844,6 +1099,7 @@ function deriveRun(run) {
       }
       case 'done': {
         const t = task(ev.motorId, ev.stationId);
+        if (t.status !== 'running' && t.status !== 'waiting' && t.status !== 'rework') break;
         closeSeg(t, ev.ts);
         if (t.firstFinishedAt == null) t.firstFinishedAt = ev.ts;
         t.finishedAt = ev.ts;
@@ -854,6 +1110,7 @@ function deriveRun(run) {
       }
       case 'skip': {
         const t = task(ev.motorId, ev.stationId);
+        if (t.status === 'done' || t.status === 'skipped') break;
         closeSeg(t, ev.ts);
         t.status = 'skipped';
         t.finishedAt = t.finishedAt || ev.ts;
@@ -862,6 +1119,7 @@ function deriveRun(run) {
       }
       case 'qc': {
         const t = task(ev.motorId, ev.stationId);
+        if (t.status !== 'done') break;
         t.qc.push({ ts: ev.ts, result: ev.result, defectId: ev.defectId || null });
         if (ev.result === 'pass') {
           t.qcPass = true;
@@ -883,6 +1141,7 @@ function deriveRun(run) {
       }
       case 'rework_start': {
         const t = task(ev.motorId, ev.stationId);
+        if (t.status !== 'done') break;
         t.status = 'rework'; t.reworkOpen = true; t.reworkRounds++;
         openSeg(t, ev.ts, 'rework');
         logit(ev, mName(ev.motorId) + ' – ' + sName(ev.stationId) + ' rework gestart');
@@ -910,10 +1169,14 @@ function deriveRun(run) {
       if (t.qc.length) end = Math.max(end, t.qc[t.qc.length - 1].ts);
       last = Math.max(last, end);
     });
-    m.completedAt = (allDone && anyTask && last) ? last : null;
+    m.completedAt = (allDone && anyTask && last && !m.cancelled) ? last : null;
     m.firstPass = m.defects.length === 0;
     m.tasks = sIds.map(sid => D.tasks[K(m.id, sid)] || null);
   });
+
+  /* wachtrijvolgorde: positie in de order, met uitgestelde motoren achteraan */
+  D.queueOrder = D.motorList.slice().sort((a, b) =>
+    (a.pos == null ? a.nr : a.pos) - (b.pos == null ? b.nr : b.pos) || a.nr - b.nr);
 
   return D;
 }
@@ -935,6 +1198,156 @@ function taskTimes(t, nowTs) {
 function openSegOf(t) {
   for (let i = t.segments.length - 1; i >= 0; i--) if (t.segments[i].end == null) return t.segments[i];
   return null;
+}
+
+/* =========================================================================
+   VASTE GEGEVENS — assortiment, orders per week en Bill of Materials
+   Bron: "Order confirmation for Factory 2, Week 1-9" (Rockels B.V.) en
+   "Bijlage: Assortiment motors Innovo / List of Final Products".
+   ========================================================================= */
+
+/* Assortiment: de eigenschappen komen letterlijk uit de productlijst. */
+const CATALOG = [
+  { sku: 'M-148030', name: 'Road Rocket – Blue', color: 'Blue', tires: 'Road', steering: 'Normal' },
+  { sku: 'M-148031', name: 'Wide Road Rocket – Blue', color: 'Blue', tires: 'Road', steering: 'Wide' },
+  { sku: 'M-148032', name: 'Road Rocket – Orange', color: 'Orange', tires: 'Road', steering: 'Normal' },
+  { sku: 'M-148033', name: 'Wide Road Rocket – Orange', color: 'Orange', tires: 'Road', steering: 'Wide' },
+  { sku: 'M-148034', name: 'Road Rocket – White', color: 'White', tires: 'Road', steering: 'Normal' },
+  { sku: 'M-148035', name: 'Wide Road Rocket – White', color: 'White', tires: 'Road', steering: 'Wide' },
+  { sku: 'M-148036', name: 'Aventurage Cross – Blue', color: 'Blue', tires: 'Cross', steering: 'Normal' },
+  { sku: 'M-148037', name: 'Wide Aventurage Cross – Blue', color: 'Blue', tires: 'Cross', steering: 'Wide' },
+  { sku: 'M-148038', name: 'Aventurage Cross – Orange', color: 'Orange', tires: 'Cross', steering: 'Normal' },
+  { sku: 'M-148039', name: 'Wide Aventurage Cross – Orange', color: 'Orange', tires: 'Cross', steering: 'Wide' },
+  { sku: 'M-148040', name: 'Aventurage Cross – White', color: 'White', tires: 'Cross', steering: 'Normal' },
+  { sku: 'M-148041', name: 'Wide Aventurage Cross – White', color: 'White', tires: 'Cross', steering: 'Wide' }
+];
+const COLOR_NL = { Blue: 'Blauw', Orange: 'Oranje', White: 'Wit' };
+const TIRE_NL = { Road: 'Road', Cross: 'Cross' };
+const STEER_NL = { Normal: 'Normaal', Wide: 'Wide' };
+const SKU_ORDER = CATALOG.map(c => c.sku);
+
+/* Orders per week, exact zoals in de orderbevestiging (index = volgorde van CATALOG). */
+const ORDERS = {
+  1: [2, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 3],
+  2: [1, 2, 1, 2, 0, 0, 2, 1, 1, 4, 2, 4],
+  3: [4, 2, 1, 4, 3, 2, 4, 2, 3, 2, 3, 0],
+  4: [4, 4, 0, 4, 1, 3, 4, 3, 0, 0, 3, 4],
+  5: [0, 2, 2, 2, 0, 6, 4, 2, 1, 2, 4, 5],
+  6: [0, 3, 3, 1, 0, 2, 0, 3, 2, 4, 2, 0],
+  7: [2, 3, 1, 1, 2, 3, 3, 1, 2, 1, 1, 0],
+  8: [2, 1, 1, 2, 0, 0, 1, 3, 2, 1, 2, 0],
+  9: [1, 1, 3, 0, 2, 1, 1, 1, 2, 2, 1, 0]
+};
+const ORDER_META = {
+  9: { label: 'Week 9 – Final Game' }
+};
+function defaultOrders() {
+  return Object.keys(ORDERS).map(w => ({
+    week: +w,
+    label: (ORDER_META[w] && ORDER_META[w].label) || ('Week ' + w),
+    orderNr: 'ORD-F2-W' + pad(+w, 2),
+    lines: CATALOG.map((c, i) => ({ sku: c.sku, amount: ORDERS[w][i] })).filter(l => l.amount > 0)
+  }));
+}
+function orderTotal(o) { return sum(o.lines.map(l => l.amount)); }
+
+/* -------------------------------------------------------------------------
+   Bill of Materials.
+   LET OP: de officiële BOM-tabellen van Innovo (bijlage vanaf pagina 107)
+   zaten niet in het aangeleverde bestand. De standaard hieronder is afgeleid
+   uit de geverifieerde producteigenschappen (kleur, Road/Cross banden en
+   zadel, Normal/Wide stuur) en bevat bewust GEEN verzonnen artikelnummers.
+   Vul ze aan bij INSTELLINGEN → Bill of Materials, of importeer een JSON.
+   ------------------------------------------------------------------------- */
+const BOM_TEMPLATE = [
+  { key: 'voorband', label: 'Voorwiel + band', by: 'tires', station: 0, qty: 1 },
+  { key: 'stuur', label: 'Stuur', by: 'steering', station: 0, qty: 1 },
+  { key: 'achterband', label: 'Achterwiel + band', by: 'tires', station: 1, qty: 1 },
+  { key: 'zadel', label: 'Zadel', by: 'tires', station: 2, qty: 1 },
+  { key: 'tank', label: 'Tank', by: 'color', station: 2, qty: 1 },
+  { key: 'frame', label: 'Framedelen', by: 'color', station: 3, qty: 1 }
+];
+function variantAttr(v, by) {
+  if (by === 'color') return COLOR_NL[v.color] || v.color;
+  if (by === 'tires') return TIRE_NL[v.tires] || v.tires;
+  if (by === 'steering') return STEER_NL[v.steering] || v.steering;
+  return '';
+}
+function defaultBom() {
+  const b = {};
+  CATALOG.forEach(v => {
+    b[v.sku] = BOM_TEMPLATE.map(t => ({
+      id: uid(),
+      part: t.label + ' · ' + variantAttr(v, t.by),
+      code: '',                 // artikelnummer — nog in te vullen
+      qty: t.qty,
+      stationIdx: t.station,
+      derived: true
+    }));
+  });
+  return b;
+}
+function bomFor(sku) {
+  const b = DB.settings.bom || {};
+  return b[sku] || [];
+}
+function catalogFor(sku) { return (DB.settings.catalog || CATALOG).find(c => c.sku === sku) || null; }
+function variantName(sku) { const c = catalogFor(sku); return c ? c.name : (sku || '—'); }
+function variantShort(sku) {
+  const c = catalogFor(sku);
+  if (!c) return sku || '—';
+  return c.name.replace(' – ', ' ').replace('Aventurage', 'Avent.');
+}
+function ordersList() { return DB.settings.orders || defaultOrders(); }
+function orderForWeek(w) { return ordersList().find(o => o.week === +w) || null; }
+
+/** Materiaalbehoefte voor een order: [{sku, part, code, qty, stationIdx, total}] */
+function materialNeed(order) {
+  const rows = [];
+  (order.lines || []).forEach(l => {
+    bomFor(l.sku).forEach(b => {
+      rows.push({
+        sku: l.sku, variant: variantName(l.sku), part: b.part, code: b.code,
+        per: b.qty, motors: l.amount, total: b.qty * l.amount, stationIdx: b.stationIdx
+      });
+    });
+  });
+  return rows;
+}
+/** Picklijst per werkstation: onderdelen opgeteld over alle varianten. */
+function pickList(order, stations) {
+  const need = materialNeed(order);
+  const per = (stations || []).map((s, i) => ({ station: s, idx: i, rows: [], total: 0 }));
+  const other = { station: { worker: 'Overig', name: 'niet aan een station gekoppeld' }, idx: -1, rows: [], total: 0 };
+  need.forEach(r => {
+    const bucket = per[r.stationIdx] || other;
+    const key = r.part + '|' + r.code;
+    let row = bucket.rows.find(x => x.key === key);
+    if (!row) { row = { key: key, part: r.part, code: r.code, total: 0, skus: [] }; bucket.rows.push(row); }
+    row.total += r.total;
+    if (row.skus.indexOf(r.sku) < 0) row.skus.push(r.sku);
+    bucket.total += r.total;
+  });
+  per.forEach(b => b.rows.sort((a, c) => c.total - a.total));
+  if (other.rows.length) per.push(other);
+  return per.filter(b => b.rows.length);
+}
+
+/** Bouwt de motorwachtrij voor een week: Motor 001..0NN met de juiste variant. */
+function buildQueue(order, mix) {
+  const items = [];
+  const lines = (order.lines || []).filter(l => l.amount > 0);
+  if (mix === 'mixed') {
+    /* om en om door de varianten heen (gelijkmatige mix) */
+    const left = lines.map(l => ({ sku: l.sku, n: l.amount }));
+    let guard = 0;
+    while (left.some(l => l.n > 0) && guard++ < 1000) {
+      left.forEach(l => { if (l.n > 0) { items.push(l.sku); l.n--; } });
+    }
+  } else {
+    lines.forEach(l => { for (let i = 0; i < l.amount; i++) items.push(l.sku); });
+  }
+  return items.map((sku, i) => ({ motorId: 'q' + uid(), nr: i + 1, sku: sku, pos: i }));
 }
 
 /* =========================================================================
@@ -1151,6 +1564,44 @@ function computeMetrics(run, nowTs) {
   M.qcTotal = sum(stations.map(s => s.qcPass + s.qcFail));
   M.qcFailTotal = sum(stations.map(s => s.qcFail));
 
+  /* ---------------- per motorvariant ---------------- */
+  const byVar = {};
+  motors.forEach(x => {
+    const sku = x.m.sku || '';
+    if (!byVar[sku]) byVar[sku] = {
+      sku: sku, name: sku ? variantName(sku) : (run.variant || 'Zonder variant'),
+      motors: [], leads: [], works: [], defects: 0, complete: 0, fp: 0, rework: 0, wait: 0, stations: {}
+    };
+    const g = byVar[sku];
+    g.motors.push(x); g.defects += x.defects; g.rework += x.rework; g.wait += x.wait;
+    if (x.complete) { g.complete++; if (x.lead != null) g.leads.push(x.lead); g.works.push(x.work); if (x.firstPass) g.fp++; }
+  });
+  Object.keys(D.tasks).forEach(k => {
+    const t = D.tasks[k], m = D.motors[t.motorId];
+    if (!m) return;
+    const g = byVar[m.sku || ''];
+    if (!g) return;
+    if (t.status === 'done' && t.firstFinishedAt != null && t.startedAt != null) {
+      (g.stations[t.stationId] = g.stations[t.stationId] || []).push(t.firstFinishedAt - t.startedAt);
+    }
+  });
+  M.variants = Object.keys(byVar).map(k => {
+    const g = byVar[k];
+    g.leadAvg = avg(g.leads);
+    g.workAvg = avg(g.works);
+    g.fpy = g.complete ? g.fp / g.complete : null;
+    g.stationAvg = {};
+    Object.keys(g.stations).forEach(sid => g.stationAvg[sid] = avg(g.stations[sid]));
+    g.cycleSum = sum(Object.keys(g.stationAvg).map(sid => g.stationAvg[sid]));
+    return g;
+  }).sort((a, b) => b.motors.length - a.motors.length);
+
+  /* ---------------- wachtrij ---------------- */
+  M.queueTotal = D.queueOrder.filter(m => !m.cancelled).length;
+  M.queueLeft = M.queueTotal - M.completedMotors.length;
+  M.queueHold = D.queueOrder.filter(m => m.hold).length;
+  M.order = run.orderWeek ? orderForWeek(run.orderWeek) : null;
+
   return M;
 }
 
@@ -1159,6 +1610,9 @@ function runSummary(run) {
   const M = computeMetrics(run, run.endedAt || now());
   return {
     id: run.id, name: run.name, week: run.week, date: run.date, demo: !!run.demo,
+    orderWeek: run.orderWeek || null, orderNr: M.order ? M.order.orderNr : '',
+    cloudCode: run.cloud ? run.cloud.code : '',
+    variants: M.variants.map(v => ({ sku: v.sku, name: v.name, n: v.motors.length, complete: v.complete, leadAvg: v.leadAvg, fpy: v.fpy })),
     motorsDone: M.completedMotors.length, motorsTotal: M.motors.length,
     elapsed: M.elapsed, leadAvg: M.leadAvg, leadMin: M.leadMin, leadMax: M.leadMax,
     cycleAvg: avg(M.stations.map(s => s.avgCycle).filter(v => v != null)),
@@ -1458,14 +1912,50 @@ const STATUS_PILL = { idle: 'p-idle', running: 'p-run', waiting: 'p-wait', rewor
 function getTask(D, mId, sId) { return D.tasks[mId + '|' + sId] || null; }
 function taskStatus(D, mId, sId) { const t = getTask(D, mId, sId); return t ? t.status : 'idle'; }
 
+/** Mag dit station nu aan deze motor beginnen? */
+function eligibleForStation(D, st, m) {
+  if (!m || m.cancelled || m.hold || m.completedAt) return false;
+  const t = getTask(D, m.id, st.id);
+  if (t && t.status !== 'idle') return false;
+  if (D.run && D.run.strictOrder) {
+    const i = D.stations.findIndex(x => x.id === st.id);
+    if (i > 0) {
+      const prev = getTask(D, m.id, D.stations[i - 1].id);
+      if (!prev || (prev.status !== 'done' && prev.status !== 'skipped')) return false;
+    }
+  }
+  return true;
+}
+/** Elk station houdt zijn eigen positie in de wachtrij bij. */
 function currentMotorFor(D, st) {
   const open = D.motorList.find(m => ['running', 'waiting', 'rework'].indexOf(taskStatus(D, m.id, st.id)) >= 0);
   if (open) return open.id;
   const sel = UI.sel[st.id];
   if (sel && D.motors[sel]) return sel;
-  const next = D.motorList.slice().sort((a, b) => a.nr - b.nr).find(m => taskStatus(D, m.id, st.id) === 'idle');
+  const next = D.queueOrder.find(m => eligibleForStation(D, st, m));
   if (next) return next.id;
-  return D.motorList.length ? D.motorList[D.motorList.length - 1].id : null;
+  const lastDone = D.queueOrder.filter(m => { const t = getTask(D, m.id, st.id); return t && t.status !== 'idle'; }).pop();
+  return lastDone ? lastDone.id : (D.queueOrder.length ? D.queueOrder[D.queueOrder.length - 1].id : null);
+}
+/** De motor die na de huidige aan de beurt is bij dit station. */
+function nextMotorFor(D, st, curId) {
+  return D.queueOrder.find(m => m.id !== curId && eligibleForStation(D, st, m)) || null;
+}
+/** Hoeveel motoren moet dit station nog doen? */
+function remainingFor(D, st) {
+  return D.queueOrder.filter(m => {
+    if (m.cancelled) return false;
+    const t = getTask(D, m.id, st.id);
+    return !t || (t.status !== 'done' && t.status !== 'skipped');
+  }).length;
+}
+/** De grote teller op de kaart: wachttijd als er gewacht wordt, anders cycle time. */
+function bigTime(t, status, nowTs) {
+  if (!t) return 0;
+  if (status === 'waiting') { const o = openSegOf(t); return o ? nowTs - o.start : taskTimes(t, nowTs).wait; }
+  if (t.startedAt == null) return 0;
+  if (status === 'done' && t.firstFinishedAt != null) return t.firstFinishedAt - t.startedAt;
+  return nowTs - t.startedAt;
 }
 
 function renderProduction() {
@@ -1476,6 +1966,7 @@ function renderProduction() {
       'Klik rechtsboven op <b style="display:inline">+ Nieuwe run</b> om een productieronde te starten. ' +
       'Pas eventueel eerst bij INSTELLINGEN de namen van de medewerkers en werkstations aan.</div></div>';
     $('#motorStrip').innerHTML = '';
+    $('#queueProgress').innerHTML = '';
     $('#btnNewMotor').disabled = true;
     $('#stationGrid').innerHTML = '<div class="empty card" style="grid-column:1/-1">Start eerst een productierun.</div>';
     $('#liveLog').innerHTML = '<div class="empty">Nog geen acties geregistreerd.</div>';
@@ -1490,7 +1981,7 @@ function renderProduction() {
   bn.innerHTML = banner;
 
   /* ---- motorstrip ---- */
-  const strip = D.motorList.slice().sort((a, b) => b.nr - a.nr).map(m => {
+  const strip = D.queueOrder.slice().reverse().map(m => {
     const dots = D.stations.map(s => {
       const st = taskStatus(D, m.id, s.id);
       const cls = st === 'running' ? 'run' : st === 'waiting' ? 'wait' : st === 'rework' ? 'rew'
@@ -1498,15 +1989,40 @@ function renderProduction() {
       return '<span class="dot ' + cls + '" title="' + esc(s.worker + ' – ' + s.name + ': ' + STATUS_LABEL[st]) + '"></span>';
     }).join('');
     const mm = M.motors.find(x => x.id === m.id);
-    const state = mm.complete ? '<span class="tag blue">GEREED</span>'
-      : mm.started ? '<span class="tag green">WIP</span>' : '<span class="tag">WACHT</span>';
+    const state = m.cancelled ? '<span class="tag">GEANNULEERD</span>'
+      : m.hold ? '<span class="tag red">GEBLOKKEERD</span>'
+        : mm.complete ? '<span class="tag blue">GEREED</span>'
+          : mm.started ? '<span class="tag green">WIP</span>' : '<span class="tag">WACHT</span>';
     const fp = mm.defects ? '<span class="tag red" title="' + mm.defects + ' afkeur(en)">✕' + mm.defects + '</span>' : '';
-    return '<div class="mcard"><div class="n"><span>' + esc(m.code) + '</span>' + state + fp + '</div>' +
+    return '<div class="mcard" data-mcard="' + m.id + '"><div class="n"><span>' + esc(m.code) + '</span>' + state + fp + '</div>' +
+      (m.sku ? '<div class="t" style="font-size:11px">' + esc(variantShort(m.sku)) + '</div>' : '') +
       '<div class="dots">' + dots + '</div>' +
       '<div class="t">Lead time <b class="mono" data-mlead="' + m.id + '">' + (mm.lead != null ? dur(mm.lead) : '—') + '</b></div></div>';
   }).join('');
-  $('#motorStrip').innerHTML = strip || '<div class="hint" style="padding:14px">Nog geen motoren. Maak de eerste motor aan om te beginnen.</div>';
+  $('#motorStrip').innerHTML = strip || '<div class="hint" style="padding:14px">Nog geen motoren in de wachtrij. Voeg er een toe om te beginnen.</div>';
   $('#btnNewMotor').disabled = !!run.endedAt;
+
+  /* ---- voortgang van de hele orderwachtrij ---- */
+  const tot = D.queueOrder.filter(m => !m.cancelled).length;
+  const dn = M.completedMotors.length;
+  const ord = run.orderWeek ? orderForWeek(run.orderWeek) : null;
+  $('#queueProgress').innerHTML =
+    '<div class="card" style="padding:13px 15px">' +
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">' +
+    '<div><b style="font-size:17px">' + dn + ' van ' + tot + ' motoren compleet</b>' +
+    (ord ? ' <span class="tag blue">' + esc(ord.orderNr) + ' · ' + esc(ord.label) + '</span>' : '') +
+    (run.strictOrder ? ' <span class="tag">strikte volgorde</span>' : ' <span class="tag">parallel werken</span>') +
+    '</div>' +
+    '<div class="hint">' + M.wip + ' onderhanden · ' + (tot - dn - M.wip) + ' nog niet gestart' +
+    (D.queueOrder.some(m => m.hold) ? ' · <b style="color:var(--red)">' + D.queueOrder.filter(m => m.hold).length + ' geblokkeerd</b>' : '') +
+    '</div></div>' +
+    '<div class="bar" style="height:13px;margin-top:8px"><i class="g" style="width:' + (tot ? dn / tot * 100 : 0) + '%"></i></div>' +
+    '<div class="btnrow" style="margin-top:10px">' +
+    '<button class="btn sm" id="btnQueue">Wachtrij beheren</button>' +
+    (ord ? '<button class="btn sm" id="btnPicks">Picklijsten van deze order</button>' : '') +
+    '</div></div>';
+  $('#btnQueue').onclick = showQueueManager;
+  if ($('#btnPicks')) $('#btnPicks').onclick = () => showTab('orders');
 
   /* ---- stationkaarten ---- */
   $('#stationGrid').innerHTML = D.stations.map(st => {
@@ -1519,19 +2035,23 @@ function renderProduction() {
     const busyOther = D.motorList.some(m => m.id !== mId && ['running', 'waiting', 'rework'].indexOf(taskStatus(D, m.id, st.id)) >= 0);
     const dis = !!run.endedAt;
 
-    const bigMs = status === 'waiting'
-      ? (openSegOf(t) ? M.nowTs - openSegOf(t).start : tt.wait)
-      : (t && t.startedAt != null ? (t.firstFinishedAt != null && status === 'done' ? t.firstFinishedAt - t.startedAt : M.nowTs - t.startedAt) : 0);
+    const bigMs = bigTime(t, status, M.nowTs);
+    const nx = nextMotorFor(D, st, mId);
+    const left = remainingFor(D, st);
     const bigCls = status === 'waiting' ? 'wait' : status === 'running' ? 'run' : status === 'rework' ? 'rew'
       : status === 'done' ? '' : 'off';
 
     let motorCtl;
-    if (!D.motorList.length) motorCtl = '<div class="st-cur" style="background:#eceff2;color:#7b8fa1">Maak eerst een motor aan</div>';
-    else if (locked) motorCtl = '<div class="st-cur">' + esc(D.motors[mId].code) + '</div>';
-    else motorCtl = '<select data-selm="' + st.id + '">' + D.motorList.slice().sort((a, b) => a.nr - b.nr).map(m => {
+    const curM = mId ? D.motors[mId] : null;
+    const vLine = curM && curM.sku
+      ? '<div class="hint" style="text-align:center;margin-top:-4px">' + esc(variantName(curM.sku)) + '</div>' : '';
+    if (!D.motorList.length) motorCtl = '<div class="st-cur" style="background:#eceff2;color:#7b8fa1">Nog geen motoren in de wachtrij</div>';
+    else if (locked) motorCtl = '<div class="st-cur">' + esc(curM.code) + '</div>';
+    else motorCtl = '<select data-selm="' + st.id + '">' + D.queueOrder.map(m => {
       const s2 = taskStatus(D, m.id, st.id);
       return '<option value="' + m.id + '"' + (m.id === mId ? ' selected' : '') + '>' + esc(m.code) +
-        (s2 !== 'idle' ? ' · ' + STATUS_LABEL[s2] : '') + '</option>';
+        (m.sku ? ' · ' + esc(variantShort(m.sku)) : '') +
+        (s2 !== 'idle' ? ' · ' + STATUS_LABEL[s2] : '') + (m.hold ? ' · GEBLOKKEERD' : '') + '</option>';
     }).join('') + '</select>';
 
     const canStart = !dis && mId && status === 'idle' && !busyOther;
@@ -1545,7 +2065,7 @@ function renderProduction() {
       '<div class="st-head"><div class="top"><div><div class="w">' + esc(st.worker) + '</div>' +
       '<div class="s">' + esc(st.name) + '</div></div>' +
       '<span class="pill ' + STATUS_PILL[status] + '">' + STATUS_LABEL[status] + '</span></div></div>' +
-      '<div class="st-body">' + motorCtl +
+      '<div class="st-body">' + motorCtl + vLine +
       '<div class="bigt ' + bigCls + '" data-big>' + dur(bigMs) + '</div>' +
       '<div class="subt">' +
       '<div>Actief<b data-f="work">' + dur(tt.work) + '</b></div>' +
@@ -1559,6 +2079,11 @@ function renderProduction() {
       '<button class="b-qc" data-a="qc"' + (canQc ? '' : ' disabled') + '>◎ Kwaliteitscontrole</button>' +
       '<button class="b-skip" data-a="skip"' + (canSkip ? '' : ' disabled') + '>Niet van toepassing voor deze motor</button>' +
       '</div>' + (busyOther ? '<div class="hint" style="color:var(--amber)">Dit station is nog bezig met een andere motor.</div>' : '') +
+      (curM && curM.hold ? '<div class="hint" style="color:var(--red)">Deze motor is geblokkeerd: ' + esc(curM.holdReason) + '</div>' : '') +
+      '<div class="mnext" style="box-shadow:none;padding:7px 10px;font-size:12.5px">' +
+      '<div><span class="hint">Hierna</span><b style="font-size:13px">' +
+      esc(nx ? nx.code + (nx.sku ? ' · ' + variantShort(nx.sku) : '') : '—') + '</b></div>' +
+      '<div style="text-align:right"><span class="hint">Nog te gaan</span><b style="font-size:13px">' + left + '</b></div></div>' +
       '</div>' +
       '<div class="st-foot"><span>Gereed: <b>' + sm.tasksDone + '</b></span>' +
       '<span>Gem. cycle: <b>' + (sm.avgCycle != null ? dur(sm.avgCycle) : '—') + '</b></span>' +
@@ -1600,6 +2125,18 @@ function handleAction(action, motorId, stationId) {
 
   if (action === 'start') {
     if (status !== 'idle') { toast('Dit station is al gestart met deze motor.', true); return; }
+    const mo = D.motors[motorId];
+    if (mo && mo.hold) { toast(mo.code + ' is geblokkeerd: ' + (mo.holdReason || 'zie wachtrij'), true); return; }
+    if (mo && mo.cancelled) { toast(mo.code + ' staat niet meer in de wachtrij.', true); return; }
+    if (D.run && D.run.strictOrder) {
+      const i = D.stations.findIndex(x => x.id === stationId);
+      if (i > 0) {
+        const prev = getTask(D, motorId, D.stations[i - 1].id);
+        if (!prev || (prev.status !== 'done' && prev.status !== 'skipped')) {
+          toast('Strikte volgorde: ' + D.stations[i - 1].worker + ' is nog niet klaar met deze motor.', true); return;
+        }
+      }
+    }
     const busy = D.motorList.find(m => m.id !== motorId && ['running', 'waiting', 'rework'].indexOf(taskStatus(D, m.id, stationId)) >= 0);
     if (busy) { toast(st.worker + ' is nog bezig met ' + D.motors[busy.id].code + '.', true); return; }
     pushEvent(run, 'start', { motorId: motorId, stationId: stationId });
@@ -1636,7 +2173,7 @@ function askReason(motorId, stationId) {
   const run = activeRun(); const D = deriveRun(run);
   const body =
     '<div class="hint" style="margin-bottom:10px">Waarom kan er nu niet verder gewerkt worden? De wachttijd loopt vanaf nu.</div>' +
-    '<div class="choice" id="rsnGrid">' +
+    '<div class="reasonlist" id="rsnGrid">' +
     DB.settings.reasons.map(r => '<button type="button" data-r="' + r.id + '">' + esc(r.label) +
       '<small>' + esc(r.tim) + '</small></button>').join('') + '</div>' +
     '<label class="fld" style="margin-top:14px"><span>Korte notitie (verplicht bij "anders")</span>' +
@@ -1741,29 +2278,390 @@ function newMotor() {
   const run = activeRun(); if (!run || run.endedAt) return;
   const D = deriveRun(run);
   const nr = D.motorList.length ? Math.max.apply(null, D.motorList.map(m => m.nr)) + 1 : 1;
-  pushEvent(run, 'motor_create', { motorId: uid(), nr: nr });
-  toast(motorCode(nr) + ' aangemaakt');
-  afterEvent();
+  const cat = DB.settings.catalog || CATALOG;
+  openModal({
+    title: 'Motor toevoegen aan de wachtrij',
+    sub: motorCode(nr) + ' wordt achteraan de wachtrij gezet.',
+    body: '<label class="fld"><span>Motorvariant</span><select id="nmSku">' +
+      '<option value="">(geen variant)</option>' +
+      cat.map(c => '<option value="' + c.sku + '">' + esc(c.sku + ' · ' + c.name) + '</option>').join('') + '</select></label>',
+    buttons: [{ label: 'Annuleren', value: false }, {
+      label: 'Toevoegen', cls: 'pri', onClick: m => {
+        pushEvent(run, 'motor_create', { motorId: uuid(), nr: nr, sku: $('#nmSku', m).value || '' });
+        return true;
+      }
+    }]
+  }).then(v => { if (v) { toast(motorCode(nr) + ' toegevoegd'); afterEvent(); } });
 }
 
-function undoLast() {
+function undoLast(stationId) {
   const run = activeRun();
-  if (!run || !run.events.length) { toast('Er is niets om ongedaan te maken.', true); return; }
+  if (!run) { toast('Er is geen actieve run.', true); return; }
+  if (run.endedAt) { toast('Deze run is afgesloten.', true); return; }
   const D = deriveRun(run);
-  const last = D.log[D.log.length - 1];
-  const ev = run.events[run.events.length - 1];
+  const cands = run.events.filter(e =>
+    e.type !== 'undo' && e.type !== 'run_start' && !D.voided[e.id] &&
+    (!stationId || e.stationId === stationId));
+  const ev = cands.length ? cands[cands.length - 1] : null;
+  if (!ev) { toast('Er is niets om ongedaan te maken.', true); return; }
+  const line = D.log.find(l => l.id === ev.id);
   confirmBox('Laatste actie ongedaan maken?',
-    'De volgende registratie wordt definitief verwijderd:<br><br>' +
-    '<b>' + clock(ev.ts) + ' — ' + esc(last ? last.text : ev.type) + '</b><br><br>' +
-    'Alle tijden worden daarna opnieuw berekend.', 'Ongedaan maken', true).then(ok => {
+    'De volgende registratie wordt als <b>correctie</b> teruggedraaid:<br><br>' +
+    '<b>' + clock(ev.ts) + ' — ' + esc(line ? line.text : ev.type) + '</b>' +
+    (ev.actor ? '<br><span class="hint">geregistreerd door ' + esc(ev.actor) + '</span>' : '') +
+    '<br><br>Het oorspronkelijke event blijft in de logboekgeschiedenis staan (append-only); ' +
+    'er wordt een correctie-event toegevoegd en alle tijden worden opnieuw berekend.' +
+    (ev.type === 'qc' ? '<br><br><span class="hint">Let op: dit draait alleen de kwaliteitscontrole terug. ' +
+      'Wil je ook het gereedmelden terugdraaien, druk dan daarna nog een keer op ongedaan maken.</span>' : '') +
+    (ev.type === 'done' ? '<br><br><span class="hint">Het station gaat hierna terug naar deze motor; ' +
+      'de wachtrij schuift dus weer een plaats terug.</span>' : ''),
+    'Ongedaan maken', true).then(ok => {
       if (!ok) return;
-      run.events.pop();
-      saveDB(true); afterEvent();
+      pushEvent(run, 'undo', { targetId: ev.id, motorId: ev.motorId, stationId: ev.stationId });
+      afterEvent();
       toast('Actie ongedaan gemaakt');
     });
 }
 
-function afterEvent() { renderAll(); }
+/* ---------------------------------------------------- wachtrij beheren */
+function showQueueManager() {
+  const run = activeRun(); if (!run) return;
+  const D = deriveRun(run);
+  const rows = D.queueOrder.map(m => {
+    const mm = computeMetrics(run).motors.find(x => x.id === m.id);
+    const st = m.cancelled ? 'geannuleerd' : m.hold ? 'geblokkeerd' : mm && mm.complete ? 'gereed' : mm && mm.started ? 'in productie' : 'wacht';
+    return '<tr><td><b>' + esc(m.code) + '</b><div class="hint">' + esc(m.sku ? variantName(m.sku) : '—') + '</div></td>' +
+      '<td>' + st + (m.hold && m.holdReason ? '<div class="hint">' + esc(m.holdReason) + '</div>' : '') + '</td>' +
+      '<td><div class="btnrow">' +
+      (m.hold
+        ? '<button class="btn sm" data-q="release" data-m="' + m.id + '">Vrijgeven</button>'
+        : '<button class="btn sm" data-q="hold" data-m="' + m.id + '">Blokkeren</button>') +
+      '<button class="btn sm" data-q="defer" data-m="' + m.id + '">Achteraan</button>' +
+      (m.cancelled ? '' : '<button class="btn sm dgr" data-q="cancel" data-m="' + m.id + '">Uit de rij</button>') +
+      '</div></td></tr>';
+  }).join('');
+  openModal({
+    title: 'Wachtrij beheren', wide: true, noFocus: true,
+    sub: 'Blokkeer een motor (bijv. ontbrekend onderdeel), zet hem achteraan of haal hem uit de rij.',
+    body: '<div class="tblwrap"><table class="tbl"><thead><tr><th>Motor</th><th>Status</th><th>Actie</th></tr></thead>' +
+      '<tbody>' + (rows || '<tr><td colspan="3" class="empty">Geen motoren.</td></tr>') + '</tbody></table></div>',
+    buttons: [{ label: 'Sluiten', cls: 'pri', value: true }],
+    onOpen: m => {
+      $$('[data-q]', m).forEach(b => b.onclick = () => {
+        const what = b.dataset.q, mid = b.dataset.m;
+        if (what === 'release') { pushEvent(run, 'motor_release', { motorId: mid }); closeModal(true); afterEvent(); return; }
+        askQueueReason(what).then(r => {
+          if (r === null) return;
+          if (what === 'hold') pushEvent(run, 'motor_hold', { motorId: mid, reason: r.label, reasonId: r.id, tim: r.tim });
+          if (what === 'defer') pushEvent(run, 'motor_defer', { motorId: mid, reason: r.label, reasonId: r.id, tim: r.tim });
+          if (what === 'cancel') pushEvent(run, 'motor_cancel', { motorId: mid, reason: r.label, reasonId: r.id, tim: r.tim });
+          closeModal(true); afterEvent();
+        });
+      });
+    }
+  });
+}
+function askQueueReason(what) {
+  const titles = { hold: 'Waarom blokkeer je deze motor?', defer: 'Waarom gaat deze motor achteraan?', cancel: 'Waarom gaat deze motor uit de rij?' };
+  return openModal({
+    title: titles[what] || 'Reden', noFocus: true,
+    body: '<div class="reasonlist" id="qrl">' + DB.settings.reasons.map(r =>
+      '<button type="button" data-r="' + r.id + '">' + esc(r.label) + '<small>' + esc(r.tim) + '</small></button>').join('') + '</div>',
+    buttons: [{ label: 'Annuleren', value: null }],
+    onOpen: m => {
+      $$('#qrl button', m).forEach(b => b.onclick = () => {
+        closeModal(DB.settings.reasons.find(x => x.id === b.dataset.r));
+      });
+    }
+  });
+}
+
+function afterEvent() {
+  if (MOBILE.on) { renderMobile(); renderSyncBar(); }
+  else renderAll();
+}
+
+/* =========================================================================
+   MOBIELE STATIONSWEERGAVE — één station, volledig scherm, duimbediening
+   ========================================================================= */
+const MOBILE = { on: false, stationId: '', lastTap: 0, wake: null };
+
+function isPhone() { return window.matchMedia('(max-width: 720px)').matches; }
+
+/* ---- schermvergrendeling voorkomen tijdens een actieve run ---- */
+async function keepAwake(on) {
+  try {
+    if (on && 'wakeLock' in navigator) {
+      if (MOBILE.wake) return;
+      MOBILE.wake = await navigator.wakeLock.request('screen');
+      MOBILE.wake.addEventListener('release', () => { MOBILE.wake = null; });
+    } else if (!on && MOBILE.wake) {
+      await MOBILE.wake.release(); MOBILE.wake = null;
+    }
+  } catch (e) { MOBILE.wake = null; }   // niet ondersteund: nette melding in de UI
+}
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && MOBILE.on) keepAwake(true);
+});
+
+/* ---- station kiezen (blijft bewaard op dit apparaat) ---- */
+function pickStation(force) {
+  const run = activeRun();
+  const stations = run ? run.stations : DB.settings.stations.filter(s => s.active !== false);
+  if (!stations.length) { toast('Er zijn geen werkstations ingesteld.', true); return Promise.resolve(false); }
+  if (!force && SYNC.device.stationId && stations.some(s => s.id === SYNC.device.stationId)) return Promise.resolve(true);
+  return openModal({
+    title: 'Welk werkstation ben jij?',
+    sub: 'Deze keuze blijft op dit apparaat bewaard. Je kunt later wisselen met de knop "Wissel".',
+    noFocus: true,
+    body: '<div class="pickbig" id="stPick">' + stations.map(s =>
+      '<button type="button" data-s="' + s.id + '"><b>' + esc(s.worker) + '</b><small>' + esc(s.name) + '</small></button>'
+    ).join('') + '</div>',
+    buttons: [{ label: 'Annuleren', value: false }],
+    onOpen: m => {
+      $$('#stPick button', m).forEach(b => b.onclick = () => {
+        const s = stations.find(x => x.id === b.dataset.s);
+        SYNC.device.stationId = s.id;
+        SYNC.device.name = s.worker;
+        saveSyncCfg();
+        closeModal(true);
+      });
+    }
+  });
+}
+
+async function enterMobile() {
+  const ok = await pickStation(false);
+  if (!ok && !SYNC.device.stationId) return;
+  MOBILE.on = true;
+  MOBILE.stationId = SYNC.device.stationId;
+  $('#mobile').classList.add('on');
+  document.body.style.overflow = 'hidden';
+  keepAwake(true);
+  renderMobile();
+}
+function exitMobile() {
+  MOBILE.on = false;
+  $('#mobile').classList.remove('on');
+  document.body.style.overflow = '';
+  keepAwake(false);
+  renderAll();
+}
+
+/* ---- bescherming tegen dubbeltikken ---- */
+function tapGuard() {
+  const t = Date.now();
+  if (t - MOBILE.lastTap < 600) return false;
+  MOBILE.lastTap = t;
+  if (navigator.vibrate) { try { navigator.vibrate(18); } catch (e) { } }
+  return true;
+}
+
+function renderMobile() {
+  if (!MOBILE.on) return;
+  const run = activeRun();
+  const body = $('#mBody');
+  if (!run) {
+    $('#mName').textContent = SYNC.device.name || '—';
+    $('#mStation').textContent = 'geen actieve run';
+    body.innerHTML = '<div class="banner info"><div><b>Nog geen productierun actief</b>' +
+      'Vraag degene die de run start om de runcode, en tik hieronder op "Meedoen met een run".</div></div>' +
+      '<button class="mbtn done" id="mJoin">Meedoen met een run</button>';
+    $('#mJoin').onclick = joinRun;
+    return;
+  }
+  const M = computeMetrics(run), D = M.D;
+  const st = D.stationById[MOBILE.stationId] || D.stations[0];
+  if (!st) { body.innerHTML = '<div class="banner red"><div>Dit werkstation staat niet in de actieve run. Tik op "Wissel".</div></div>'; return; }
+  MOBILE.stationId = st.id;
+  $('#mName').textContent = st.worker;
+  $('#mStation').textContent = st.name;
+
+  const mId = currentMotorFor(D, st);
+  const t = mId ? getTask(D, mId, st.id) : null;
+  const status = t ? t.status : 'idle';
+  const tt = t ? taskTimes(t, M.nowTs) : { work: 0, wait: 0, rework: 0 };
+  const mo = mId ? D.motors[mId] : null;
+  const nx = nextMotorFor(D, st, mId);
+  const left = remainingFor(D, st);
+  const dis = !!run.endedAt;
+
+  const big = bigTime(t, status, M.nowTs);
+  const cls = status === 'waiting' ? 'wait' : status === 'running' ? 'run' : status === 'rework' ? 'rew'
+    : status === 'done' ? 'done' : 'off';
+  const sm = M.stations.find(x => x.id === st.id) || {};
+
+  const canStart = !dis && mId && status === 'idle';
+  const canPause = !dis && (status === 'running' || status === 'rework');
+  const canRes = !dis && status === 'waiting';
+  const canDone = !dis && (status === 'running' || status === 'waiting' || status === 'rework');
+  const canQc = !dis && status === 'done';
+
+  body.innerHTML =
+    (run.endedAt ? '<div class="banner warn"><div><b>Run afgesloten</b>Je kunt niets meer registreren.</div></div>' : '') +
+    (run.demo ? '<div class="banner demo"><div><b>DEMO-RUN</b>Geen echte meting.</div></div>' : '') +
+    '<div class="mcur">' +
+    '<div class="lbl">Huidige motor</div>' +
+    '<div class="mn">' + esc(mo ? mo.code : 'geen motor') + '</div>' +
+    '<div class="vr">' + esc(mo && mo.sku ? variantName(mo.sku) + ' · ' + mo.sku : (run.variant || '—')) + '</div>' +
+    '<div class="mtimer ' + cls + '" data-mbig>' + dur(big) + '</div>' +
+    '<div class="mstatus"><span class="mpill ' + STATUS_PILL[status] + '">' + STATUS_LABEL[status] + '</span></div>' +
+    '<div class="msub" style="margin-top:10px">' +
+    '<div>Actief<b data-mf="work">' + dur(tt.work) + '</b></div>' +
+    '<div>Wachten<b data-mf="wait">' + dur(tt.wait) + '</b></div>' +
+    '<div>Rework<b data-mf="rework">' + dur(tt.rework) + '</b></div></div>' +
+    '</div>' +
+
+    '<div class="mbtns">' +
+    '<button class="mbtn start" data-ma="start"' + (canStart ? '' : ' disabled') + '>▶ START</button>' +
+    '<button class="mbtn pause" data-ma="pause"' + (canPause ? '' : ' disabled') + '>⏸ WACHTEN</button>' +
+    '<button class="mbtn res" data-ma="resume"' + (canRes ? '' : ' disabled') + '>↻ HERVATTEN</button>' +
+    '<button class="mbtn done" data-ma="done"' + (canDone ? '' : ' disabled') + '>✔ GEREED</button>' +
+    '<button class="mbtn qc" data-ma="qc"' + (canQc ? '' : ' disabled') + '>◎ KWALITEITSCONTROLE</button>' +
+    '</div>' +
+
+    '<div class="mnext"><div><span class="hint">Hierna</span><b>' +
+    esc(nx ? nx.code + (nx.sku ? ' · ' + variantShort(nx.sku) : '') : 'niets meer in de wachtrij') + '</b></div>' +
+    '<div style="text-align:right"><span class="hint">Nog te gaan</span><b>' + left + '</b></div></div>' +
+
+    '<div class="mnext"><div><span class="hint">Mijn run tot nu toe</span><b>' + (sm.tasksDone || 0) + ' gereed · gem. ' +
+    (sm.avgCycle != null ? dur(sm.avgCycle) : '—') + '</b></div>' +
+    '<div style="text-align:right"><span class="hint">Wachttijd</span><b>' + dur(sm.wait || 0) + '</b></div></div>' +
+
+    '<div class="mbtns">' +
+    '<button class="mbtn sec" data-ma="pick">Materiaal-checklist van mijn station</button>' +
+    '<button class="mbtn sec" data-ma="queue">Wachtrij en motor blokkeren / overslaan</button>' +
+    '<button class="mbtn sec" data-ma="undo"' + (dis ? ' disabled' : '') + '>↶ Mijn laatste actie ongedaan maken</button>' +
+    '</div>' +
+    (!('wakeLock' in navigator) ? '<div class="hint" style="text-align:center">Tip: zet de schermtime-out van je telefoon langer, ' +
+      'deze browser ondersteunt automatisch wakker houden niet.</div>' : '');
+
+  $$('[data-ma]', body).forEach(b => b.onclick = () => {
+    if (!tapGuard()) return;
+    const a = b.dataset.ma;
+    if (a === 'undo') { undoLast(st.id); return; }
+    if (a === 'pick') { showStationPicklist(st); return; }
+    if (a === 'queue') { showQueueManager(); return; }
+    if (!mId) { toast('Er staat geen motor klaar voor dit station.', true); return; }
+    handleAction(a, mId, st.id);
+  });
+}
+
+/* ---- checklist met de onderdelen voor dit station ---- */
+function showStationPicklist(st) {
+  const run = activeRun();
+  const order = run && run.orderWeek ? orderForWeek(run.orderWeek) : null;
+  if (!order) {
+    alertBox('Geen order gekoppeld', 'Deze run is niet aan een weekorder gekoppeld, dus er is geen picklijst. ' +
+      'Kies bij het starten van een run een week uit de orderlijst.');
+    return;
+  }
+  const idx = run.stations.findIndex(s => s.id === st.id);
+  const lists = pickList(order, run.stations);
+  const mine = lists.find(l => l.idx === idx);
+  const key = 'chk_' + run.id + '_' + st.id;
+  let checked = {};
+  try { checked = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { }
+  const body = !mine ? '<div class="hint">Voor dit station staan geen onderdelen in de Bill of Materials.</div>'
+    : '<div class="hint" style="margin-bottom:10px">Vink af wat je hebt klaarliggen voor de hele week-order ' +
+    '(' + orderTotal(order) + ' motoren).</div>' +
+    '<div class="card" id="pl">' + mine.rows.map(r =>
+      '<label class="chkline' + (checked[r.key] ? ' done' : '') + '"><input type="checkbox" data-k="' + esc(r.key) + '"' +
+      (checked[r.key] ? ' checked' : '') + '><span>' + esc(r.part) + (r.code ? ' <span class="tag">' + esc(r.code) + '</span>' : '') +
+      '</span><span class="qty">' + r.total + '×</span></label>').join('') + '</div>';
+  openModal({
+    title: 'Materiaal-checklist', sub: st.worker + ' – ' + st.name, body: body, noFocus: true,
+    buttons: [{ label: 'Sluiten', cls: 'pri', value: true }],
+    onOpen: m => {
+      $$('#pl input', m).forEach(c => c.onchange = () => {
+        checked[c.dataset.k] = c.checked;
+        c.closest('.chkline').classList.toggle('done', c.checked);
+        try { localStorage.setItem(key, JSON.stringify(checked)); } catch (e) { }
+      });
+    }
+  });
+}
+
+/* =========================================================================
+   MEEDOEN MET EEN RUN (runcode) + database-instellingen
+   ========================================================================= */
+function joinRun() {
+  if (!syncConfigured()) { setupCloud(); return; }
+  openModal({
+    title: 'Meedoen met een productierun',
+    sub: 'Vul de runcode in die je van je groepsgenoot hebt gekregen.',
+    body: '<label class="fld"><span>Runcode</span><input type="text" id="jCode" placeholder="INNOVO-4821" ' +
+      'style="font-size:22px;font-weight:800;letter-spacing:.08em;text-align:center" autocapitalize="characters"></label>' +
+      '<label class="fld"><span>Jouw naam (voor in het logboek)</span>' +
+      '<input type="text" id="jName" value="' + esc(SYNC.device.name) + '" placeholder="bijv. Noah"></label>' +
+      '<div class="hint">Je komt daarna direct in dezelfde run als de rest van de groep.</div>',
+    buttons: [{ label: 'Annuleren', value: false }, {
+      label: 'Meedoen', cls: 'pri', onClick: async m => {
+        const code = ($('#jCode', m).value || '').trim();
+        const nm = ($('#jName', m).value || '').trim();
+        if (!code) { toast('Vul een runcode in.', true); return false; }
+        if (nm) { SYNC.device.name = nm; saveSyncCfg(); }
+        const btn = $('.mdl-f .btn.pri', m); btn.disabled = true; btn.textContent = 'Verbinden…';
+        try {
+          const run = await cloudJoin(code);
+          closeModal(true);
+          await connectRun(run);
+          toast('Je doet mee met "' + run.name + '"');
+          if (isPhone()) enterMobile(); else renderAll();
+        } catch (e) {
+          btn.disabled = false; btn.textContent = 'Meedoen';
+          toast(e.message || 'Meedoen mislukt', true);
+        }
+        return false;
+      }
+    }]
+  });
+}
+
+function setupCloud() {
+  openModal({
+    title: 'Online samenwerken instellen', wide: true,
+    sub: 'Eenmalig per apparaat. De gegevens staan in het bestand SETUP.md.',
+    body:
+      '<div class="banner info" style="margin-bottom:14px"><div>Nog geen database? Volg de stappen in <b>SETUP.md</b>: ' +
+      'gratis Supabase-project aanmaken, het SQL-script draaien, en hieronder de project-URL en de anon key plakken. ' +
+      'Duurt ongeveer tien minuten en hoeft maar één keer.</div></div>' +
+      '<label class="fld"><span>Project-URL</span><input type="text" id="cUrl" placeholder="https://xxxxxxxx.supabase.co" value="' + esc(SYNC.cfg.url) + '"></label>' +
+      '<label class="fld"><span>Anon public key</span><textarea id="cKey" rows="3" placeholder="eyJhbGciOi...">' + esc(SYNC.cfg.key) + '</textarea></label>' +
+      '<label class="fld"><span>Jouw naam op dit apparaat</span><input type="text" id="cName" value="' + esc(SYNC.device.name) + '" placeholder="bijv. Viggo"></label>' +
+      '<div class="hint">De anon key is een publieke sleutel. De beveiliging zit in de Row Level Security-regels uit het SQL-script: ' +
+      'zonder runcode kun je geen enkele run lezen of wijzigen.</div>',
+    buttons: [
+      { label: 'Annuleren', value: false },
+      {
+        label: 'Verbinding testen en opslaan', cls: 'pri', onClick: async m => {
+          const url = ($('#cUrl', m).value || '').trim().replace(/\/+$/, '');
+          const key = ($('#cKey', m).value || '').trim();
+          const nm = ($('#cName', m).value || '').trim();
+          if (!/^https?:\/\//.test(url) || !key) { toast('Vul een geldige URL en key in.', true); return false; }
+          const btn = $('.mdl-f .btn.pri', m); btn.disabled = true; btn.textContent = 'Testen…';
+          const old = { url: SYNC.cfg.url, key: SYNC.cfg.key };
+          SYNC.cfg = { url: url, key: key };
+          try {
+            const ok = await measureClockOffset();
+            if (!ok) throw new Error('De functie server_now() reageert niet. Is het SQL-script gedraaid?');
+            if (nm) SYNC.device.name = nm;
+            saveSyncCfg();
+            closeModal(true);
+            alertBox('Verbonden', 'De database werkt. Klokafwijking van dit apparaat: <b>' +
+              (SYNC.offset >= 0 ? '+' : '') + (SYNC.offset / 1000).toFixed(1) + ' seconden</b> — ' +
+              'alle metingen worden hiervoor gecorrigeerd.');
+            renderSyncBar(); renderAll();
+          } catch (e) {
+            SYNC.cfg = old;
+            btn.disabled = false; btn.textContent = 'Verbinding testen en opslaan';
+            toast(e.message || 'Verbinden mislukt', true);
+          }
+          return false;
+        }
+      }]
+  });
+}
 
 /* =========================================================================
    DASHBOARD
@@ -1786,6 +2684,7 @@ function renderDashboard() {
     noRunBanner('#dashBanner', 'het dashboard');
     ['dashKpis', 'dashBottleneck', 'taktBox', 'dashExtra'].forEach(i => $('#' + i).innerHTML = '');
     $('#tblStations').innerHTML = ''; $('#tblMotors').innerHTML = ''; $('#occBars').innerHTML = '';
+    $('#tblVariants').innerHTML = '';
     ['cvCycle', 'cvTrend', 'cvActWait'].forEach(i => noData($('#' + i), 'Geen actieve run'));
     return;
   }
@@ -1960,6 +2859,29 @@ function renderDashboard() {
         '<td class="r mono">' + (x.defects ? '<span class="tag red">' + x.defects + '</span>' : '0') + '</td>' +
         '<td>' + (x.complete ? (x.firstPass ? '<span class="tag green">JA</span>' : '<span class="tag red">NEE</span>') : '—') + '</td></tr>';
     }).join('') : '<tr><td colspan="12" class="empty">Nog geen motoren aangemaakt.</td></tr>') + '</tbody>';
+
+  /* ---- uitsplitsing per motorvariant ---- */
+  const vs = M.variants.filter(v => v.motors.length);
+  $('#tblVariants').innerHTML =
+    '<thead><tr><th>Variant</th><th>Product-ID</th><th class="r">In de run</th><th class="r">Gereed</th>' +
+    '<th class="r">Gem. lead time</th><th class="r">Som cycle</th>' +
+    M.stations.map(s => '<th class="r">' + esc(s.worker) + '</th>').join('') +
+    '<th class="r">FPY</th><th class="r">Fouten</th><th class="r">Rework</th></tr></thead><tbody>' +
+    (vs.length ? vs.map(v => '<tr><td><b>' + esc(v.name) + '</b></td>' +
+      '<td class="mono">' + esc(v.sku || '—') + '</td>' +
+      '<td class="r mono">' + v.motors.length + '</td>' +
+      '<td class="r mono">' + v.complete + '</td>' +
+      '<td class="r mono"><b>' + (v.leadAvg != null ? dur(v.leadAvg) : '—') + '</b></td>' +
+      '<td class="r mono">' + (v.cycleSum ? dur(v.cycleSum) : '—') + '</td>' +
+      M.stations.map(s => '<td class="r mono">' + (v.stationAvg[s.id] != null ? dur(v.stationAvg[s.id]) : '—') + '</td>').join('') +
+      '<td class="r mono">' + (v.fpy != null ? num(v.fpy * 100, 0) + '%' : '—') + '</td>' +
+      '<td class="r mono">' + (v.defects ? '<span class="tag red">' + v.defects + '</span>' : '0') + '</td>' +
+      '<td class="r mono">' + (v.rework ? dur(v.rework) : '—') + '</td></tr>').join('')
+      : '<tr><td colspan="' + (9 + M.stations.length) + '" class="empty">Nog geen motoren met een variant.</td></tr>') +
+    '</tbody>' +
+    (vs.length > 1 ? '<tfoot><tr><td colspan="' + (9 + M.stations.length) + '" class="hint" style="padding:8px 10px">' +
+      'Vergelijk hier of bepaalde varianten structureel langer duren of meer fouten geven — bijvoorbeeld wide stuur tegenover normaal.' +
+      '</td></tr></tfoot>' : '');
 
   /* ---- extra analyse ---- */
   const bal = M.stations.map(s => ({ w: s.worker, a: s.active }));
@@ -2366,6 +3288,298 @@ function renderCompare() {
 }
 
 /* =========================================================================
+   ORDERS & MATERIAAL
+   ========================================================================= */
+const COLOR_HEX = { Blue: '#1668c7', Orange: '#e07b00', White: '#f4f6f8' };
+
+function renderOrders() {
+  const orders = ordersList();
+  const run = activeRun();
+  if (UI.ordWeek == null) UI.ordWeek = (run && run.orderWeek) || (orders[0] && orders[0].week) || 1;
+  if (!orders.some(o => o.week === UI.ordWeek)) UI.ordWeek = orders[0] ? orders[0].week : null;
+
+  $('#ordWeeks').innerHTML = orders.map(o =>
+    '<div class="ordcard' + (o.week === UI.ordWeek ? ' on' : '') + '" data-ow="' + o.week + '">' +
+    '<div class="w">' + esc(o.label) + '</div>' +
+    '<div class="n">' + orderTotal(o) + '</div>' +
+    '<div class="t">motoren · ' + o.lines.length + ' varianten<br><span class="hint">' + esc(o.orderNr) + '</span></div>' +
+    '</div>').join('') || '<div class="hint">Nog geen orders ingevoerd.</div>';
+  $$('[data-ow]').forEach(c => c.onclick = () => { UI.ordWeek = +c.dataset.ow; renderOrders(); });
+
+  const o = orderForWeek(UI.ordWeek);
+  if (!o) { ['tblOrderLines', 'tblOrderMix', 'tblNeed', 'tblCatalog'].forEach(i => $('#' + i).innerHTML = ''); $('#pickLists').innerHTML = ''; return; }
+  $('#ordTitle').textContent = o.label + ' — ' + o.orderNr + ' — ' + orderTotal(o) + ' motoren';
+
+  /* ---- orderregels ---- */
+  $('#tblOrderLines').innerHTML =
+    '<thead><tr><th>Product-ID</th><th>Variant</th><th class="r">Aantal</th><th class="r">Aandeel</th></tr></thead><tbody>' +
+    o.lines.map(l => {
+      const c = catalogFor(l.sku);
+      return '<tr><td class="mono"><b>' + esc(l.sku) + '</b></td>' +
+        '<td>' + (c ? '<span class="swatch" style="background:' + (COLOR_HEX[c.color] || '#ccc') + '"></span>' : '') +
+        esc(variantName(l.sku)) + '</td>' +
+        '<td class="r mono"><b>' + l.amount + '</b></td>' +
+        '<td class="r mono">' + num(l.amount / orderTotal(o) * 100, 0) + '%</td></tr>';
+    }).join('') +
+    '<tr style="background:#f7f9fb"><td colspan="2"><b>Totaal</b></td><td class="r mono"><b>' + orderTotal(o) +
+    '</b></td><td></td></tr></tbody>';
+
+  /* ---- samenstelling van de order ---- */
+  const cnt = (key) => {
+    const g = {};
+    o.lines.forEach(l => { const c = catalogFor(l.sku); if (!c) return; g[c[key]] = (g[c[key]] || 0) + l.amount; });
+    return g;
+  };
+  const groups = [['color', 'Kleur', COLOR_NL], ['tires', 'Banden en zadel', TIRE_NL], ['steering', 'Stuur', STEER_NL]];
+  $('#tblOrderMix').innerHTML =
+    '<thead><tr><th>Kenmerk</th><th>Variant</th><th class="r">Motoren</th><th></th></tr></thead><tbody>' +
+    groups.map(g => {
+      const c = cnt(g[0]);
+      return Object.keys(c).map((k, i) =>
+        '<tr>' + (i === 0 ? '<td rowspan="' + Object.keys(c).length + '"><b>' + g[1] + '</b></td>' : '') +
+        '<td>' + (g[0] === 'color' ? '<span class="swatch" style="background:' + (COLOR_HEX[k] || '#ccc') + '"></span>' : '') +
+        esc((g[2] && g[2][k]) || k) + '</td>' +
+        '<td class="r mono">' + c[k] + '</td>' +
+        '<td style="width:120px"><div class="bar"><i style="width:' + (c[k] / orderTotal(o) * 100) + '%"></i></div></td></tr>').join('');
+    }).join('') + '</tbody>';
+
+  /* ---- picklijsten per station ---- */
+  const stations = (run && run.stations.length) ? run.stations : DB.settings.stations.filter(s => s.active !== false);
+  const lists = pickList(o, stations);
+  $('#pickLists').innerHTML = lists.length ? lists.map(b =>
+    '<div class="card" style="padding:0;overflow:hidden">' +
+    '<div style="padding:12px 15px;border-bottom:1px solid var(--line2);display:flex;justify-content:space-between;align-items:baseline">' +
+    '<div><b style="font-size:15px">' + esc(b.station.worker) + '</b>' +
+    '<div class="hint">' + esc(b.station.name) + '</div></div>' +
+    '<div class="mono" style="font-weight:800">' + b.total + ' stuks</div></div>' +
+    b.rows.map(r => '<div class="chkline" style="cursor:default"><span>' + esc(r.part) +
+      (r.code ? ' <span class="tag">' + esc(r.code) + '</span>' : '') +
+      '<div class="hint">' + esc(r.skus.join(', ')) + '</div></span>' +
+      '<span class="qty">' + r.total + '×</span></div>').join('') +
+    '</div>').join('')
+    : '<div class="hint">Er is nog geen Bill of Materials ingevuld, dus er kan geen picklijst berekend worden.</div>';
+
+  /* ---- volledige materiaalbehoefte ---- */
+  const need = materialNeed(o);
+  const agg = {};
+  need.forEach(r => {
+    const k = r.part + '|' + r.code;
+    if (!agg[k]) agg[k] = { part: r.part, code: r.code, stationIdx: r.stationIdx, total: 0, per: {} };
+    agg[k].total += r.total;
+    agg[k].per[r.sku] = (agg[k].per[r.sku] || 0) + r.total;
+  });
+  const rows = Object.keys(agg).map(k => agg[k]).sort((a, b) => b.total - a.total);
+  $('#tblNeed').innerHTML =
+    '<thead><tr><th>Onderdeel</th><th>Artikelnummer</th><th>Werkstation</th><th class="r">Totaal nodig</th>' +
+    '<th>Verdeling over varianten</th></tr></thead><tbody>' +
+    (rows.length ? rows.map(r => '<tr><td><b>' + esc(r.part) + '</b></td>' +
+      '<td class="mono">' + (r.code ? esc(r.code) : '<span class="tag amber">in te vullen</span>') + '</td>' +
+      '<td>' + esc(stations[r.stationIdx] ? stations[r.stationIdx].worker + ' – ' + stations[r.stationIdx].name : '—') + '</td>' +
+      '<td class="r mono"><b>' + r.total + '</b></td>' +
+      '<td class="hint">' + Object.keys(r.per).map(s => esc(s) + ': ' + r.per[s]).join(' · ') + '</td></tr>').join('')
+      : '<tr><td colspan="5" class="empty">Nog geen Bill of Materials ingevuld.</td></tr>') + '</tbody>';
+
+  /* ---- assortiment + BOM ---- */
+  const anyCode = Object.keys(DB.settings.bom || {}).some(k => (DB.settings.bom[k] || []).some(b => b.code));
+  $('#bomWarn').innerHTML = anyCode ? '' :
+    '<div class="banner warn"><div><b>De artikelnummers zijn nog niet ingevuld</b>' +
+    'De officiële Bill of Materials van Innovo (bijlage vanaf pagina 107) zat niet bij het aangeleverde bestand. ' +
+    'De onderdelenlijst hieronder is afgeleid uit de productlijst: kleur, Road- of Cross-banden en zadel, en normaal of wide stuur. ' +
+    'Vul de artikelnummers en eventuele extra onderdelen aan bij INSTELLINGEN → Bill of Materials, of importeer ze als JSON.</div></div>';
+
+  const cat = DB.settings.catalog || CATALOG;
+  $('#tblCatalog').innerHTML =
+    '<thead><tr><th>Product-ID</th><th>Variant</th><th>Kleur</th><th>Banden / zadel</th><th>Stuur</th>' +
+    '<th>Bill of Materials</th><th class="r">W' + UI.ordWeek + '</th></tr></thead><tbody>' +
+    cat.map(c => {
+      const line = o.lines.find(l => l.sku === c.sku);
+      const bom = bomFor(c.sku);
+      return '<tr><td class="mono"><b>' + esc(c.sku) + '</b></td>' +
+        '<td>' + esc(c.name) + '</td>' +
+        '<td><span class="swatch" style="background:' + (COLOR_HEX[c.color] || '#ccc') + '"></span>' + esc(COLOR_NL[c.color] || c.color) + '</td>' +
+        '<td>' + esc(TIRE_NL[c.tires] || c.tires) + '</td>' +
+        '<td>' + esc(STEER_NL[c.steering] || c.steering) + '</td>' +
+        '<td>' + (bom.length ? bom.map(b => '<div style="font-size:12.5px">' + esc(b.part) +
+          ' <span class="hint">×' + b.qty + (b.code ? ' · ' + esc(b.code) : '') + ' · ' +
+          esc(stations[b.stationIdx] ? stations[b.stationIdx].worker : '?') + '</span></div>').join('')
+          : '<span class="hint">nog niet ingevuld</span>') + '</td>' +
+        '<td class="r mono">' + (line ? '<b>' + line.amount + '</b>' : '0') + '</td></tr>';
+    }).join('') + '</tbody>';
+}
+
+/* =========================================================================
+   INSTELLINGEN — orders en Bill of Materials beheren
+   ========================================================================= */
+function renderOrderSettings() {
+  const wrap = $('#setOrders'); if (!wrap) return;
+  const orders = ordersList();
+  wrap.innerHTML =
+    '<div class="tblwrap" style="margin-bottom:10px"><table class="tbl"><thead><tr><th>Week</th><th>Omschrijving</th>' +
+    '<th>Ordernummer</th><th class="r">Motoren</th><th></th></tr></thead><tbody>' +
+    orders.map((o, i) => '<tr><td class="mono"><b>' + o.week + '</b></td>' +
+      '<td><input type="text" data-of="label" data-oi="' + i + '" value="' + esc(o.label) + '"></td>' +
+      '<td><input type="text" data-of="orderNr" data-oi="' + i + '" value="' + esc(o.orderNr) + '"></td>' +
+      '<td class="r mono">' + orderTotal(o) + '</td>' +
+      '<td><div class="btnrow"><button class="btn sm" data-oedit="' + i + '">Regels</button>' +
+      '<button class="btn sm dgr" data-odel="' + i + '">✕</button></div></td></tr>').join('') +
+    '</tbody></table></div>' +
+    '<div class="btnrow"><button class="btn" id="btnAddOrder">+ Week toevoegen</button>' +
+    '<button class="btn" id="btnImpOrders">Orders importeren (JSON)</button>' +
+    '<button class="btn" id="btnExpOrders">Orders exporteren (JSON)</button>' +
+    '<button class="btn" id="btnResetOrders">Terugzetten naar de originele order</button></div>';
+
+  $$('[data-of]', wrap).forEach(inp => inp.onchange = () => {
+    ordersList()[+inp.dataset.oi][inp.dataset.of] = inp.value;
+    DB.settings.orders = ordersList(); saveDB(true);
+  });
+  $$('[data-oedit]', wrap).forEach(b => b.onclick = () => editOrderLines(+b.dataset.oedit));
+  $$('[data-odel]', wrap).forEach(b => b.onclick = () => {
+    const i = +b.dataset.odel, o = ordersList()[i];
+    confirmBox('Week verwijderen?', 'Order <b>' + esc(o.label) + '</b> wordt verwijderd.', 'Verwijderen', true).then(ok => {
+      if (!ok) return;
+      DB.settings.orders = ordersList().filter((x, j) => j !== i);
+      saveDB(true); renderSettings();
+    });
+  });
+  $('#btnAddOrder').onclick = () => {
+    const wks = ordersList().map(o => o.week);
+    const w = (wks.length ? Math.max.apply(null, wks) : 0) + 1;
+    DB.settings.orders = ordersList().concat([{ week: w, label: 'Week ' + w, orderNr: 'ORD-F2-W' + pad(w, 2), lines: [] }]);
+    saveDB(true); renderSettings();
+  };
+  $('#btnExpOrders').onclick = () => download('innovo_orders.json',
+    JSON.stringify({ orders: ordersList(), catalog: DB.settings.catalog, bom: DB.settings.bom }, null, 2), 'application/json');
+  $('#btnImpOrders').onclick = () => $('#fileOrders').click();
+  $('#btnResetOrders').onclick = () => {
+    confirmBox('Orders terugzetten?', 'De orders worden teruggezet naar de originele orderbevestiging van Rockels B.V. ' +
+      '(week 1 t/m 9). Eigen wijzigingen gaan verloren.', 'Terugzetten', true).then(ok => {
+        if (!ok) return;
+        DB.settings.orders = defaultOrders(); saveDB(true); renderSettings(); toast('Orders teruggezet');
+      });
+  };
+}
+
+function editOrderLines(i) {
+  const o = ordersList()[i];
+  const cat = DB.settings.catalog || CATALOG;
+  openModal({
+    title: 'Orderregels — ' + o.label, wide: true, noFocus: true,
+    body: '<div class="hint" style="margin-bottom:10px">Vul per product-ID het aantal motoren in dat die week besteld is.</div>' +
+      '<div class="tblwrap"><table class="tbl"><thead><tr><th>Product-ID</th><th>Variant</th><th class="r" style="width:110px">Aantal</th></tr></thead><tbody>' +
+      cat.map(c => {
+        const l = (o.lines || []).find(x => x.sku === c.sku);
+        return '<tr><td class="mono">' + esc(c.sku) + '</td><td>' + esc(c.name) + '</td>' +
+          '<td><input type="number" min="0" data-sku="' + c.sku + '" value="' + (l ? l.amount : 0) + '" style="text-align:right"></td></tr>';
+      }).join('') + '</tbody></table></div>',
+    buttons: [{ label: 'Annuleren', value: false }, {
+      label: 'Opslaan', cls: 'pri', onClick: m => {
+        const lines = [];
+        $$('[data-sku]', m).forEach(inp => {
+          const n = parseInt(inp.value, 10) || 0;
+          if (n > 0) lines.push({ sku: inp.dataset.sku, amount: n });
+        });
+        o.lines = lines;
+        DB.settings.orders = ordersList();
+        saveDB(true);
+        return true;
+      }
+    }]
+  }).then(v => { if (v) { renderSettings(); toast('Orderregels opgeslagen'); } });
+}
+
+function renderBomSettings() {
+  const wrap = $('#setBom'); if (!wrap) return;
+  const cat = DB.settings.catalog || CATALOG;
+  const stations = DB.settings.stations.filter(s => s.active !== false);
+  if (UI.bomSku == null || !cat.some(c => c.sku === UI.bomSku)) UI.bomSku = cat[0] ? cat[0].sku : null;
+  const rows = bomFor(UI.bomSku);
+  wrap.innerHTML =
+    '<div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px">' +
+    '<label class="fld" style="margin:0;min-width:300px;flex:1"><span>Motorvariant</span><select id="bomPick">' +
+    cat.map(c => '<option value="' + c.sku + '"' + (c.sku === UI.bomSku ? ' selected' : '') + '>' +
+      esc(c.sku + ' · ' + c.name) + '</option>').join('') + '</select></label>' +
+    '<button class="btn" id="btnBomCopy">Naar alle varianten kopiëren</button>' +
+    '</div>' +
+    '<div class="tblwrap"><table class="tbl"><thead><tr><th>Onderdeel</th><th style="width:150px">Artikelnummer</th>' +
+    '<th class="r" style="width:90px">Aantal</th><th style="width:210px">Werkstation</th><th style="width:40px"></th></tr></thead><tbody>' +
+    (rows.length ? rows.map((b, i) =>
+      '<tr><td><input type="text" data-bf="part" data-bi="' + i + '" value="' + esc(b.part) + '"></td>' +
+      '<td><input type="text" data-bf="code" data-bi="' + i + '" value="' + esc(b.code || '') + '" placeholder="nog invullen"></td>' +
+      '<td><input type="number" min="0" step="1" data-bf="qty" data-bi="' + i + '" value="' + b.qty + '" style="text-align:right"></td>' +
+      '<td><select data-bf="stationIdx" data-bi="' + i + '">' + stations.map((s, j) =>
+        '<option value="' + j + '"' + (j === b.stationIdx ? ' selected' : '') + '>' + esc(s.worker + ' – ' + s.name) + '</option>').join('') +
+      '</select></td>' +
+      '<td><button class="btn sm dgr" data-bdel="' + i + '">✕</button></td></tr>').join('')
+      : '<tr><td colspan="5" class="empty">Nog geen onderdelen voor deze variant.</td></tr>') + '</tbody></table></div>' +
+    '<div class="btnrow" style="margin-top:10px"><button class="btn" id="btnBomAdd">+ Onderdeel toevoegen</button>' +
+    '<button class="btn" id="btnBomImp">BOM importeren (JSON)</button>' +
+    '<button class="btn" id="btnBomExp">BOM exporteren (JSON)</button>' +
+    '<button class="btn" id="btnBomReset">Terugzetten naar de standaardstructuur</button></div>';
+
+  $('#bomPick').onchange = () => { UI.bomSku = $('#bomPick').value; renderBomSettings(); };
+  $$('[data-bf]', wrap).forEach(inp => inp.onchange = () => {
+    const i = +inp.dataset.bi, f = inp.dataset.bf;
+    const list = DB.settings.bom[UI.bomSku];
+    if (!list || !list[i]) return;
+    list[i][f] = (f === 'qty' || f === 'stationIdx') ? (parseInt(inp.value, 10) || 0) : inp.value;
+    list[i].derived = false;
+    saveDB(true);
+  });
+  $$('[data-bdel]', wrap).forEach(b => b.onclick = () => {
+    DB.settings.bom[UI.bomSku].splice(+b.dataset.bdel, 1); saveDB(true); renderBomSettings();
+  });
+  $('#btnBomAdd').onclick = () => {
+    if (!DB.settings.bom[UI.bomSku]) DB.settings.bom[UI.bomSku] = [];
+    DB.settings.bom[UI.bomSku].push({ id: uid(), part: 'Nieuw onderdeel', code: '', qty: 1, stationIdx: 0, derived: false });
+    saveDB(true); renderBomSettings();
+  };
+  $('#btnBomCopy').onclick = () => {
+    confirmBox('Naar alle varianten kopiëren?',
+      'De onderdelenlijst van <b>' + esc(variantName(UI.bomSku)) + '</b> wordt naar alle andere varianten gekopieerd. ' +
+      'Variantspecifieke onderdelen (kleur, banden, stuur) moet je daarna per variant nalopen.', 'Kopiëren', true).then(ok => {
+        if (!ok) return;
+        const src = bomFor(UI.bomSku);
+        cat.forEach(c => {
+          if (c.sku === UI.bomSku) return;
+          DB.settings.bom[c.sku] = src.map(b => Object.assign({}, b, { id: uid() }));
+        });
+        saveDB(true); toast('BOM gekopieerd'); renderBomSettings();
+      });
+  };
+  $('#btnBomExp').onclick = () => download('innovo_bom.json', JSON.stringify({ bom: DB.settings.bom }, null, 2), 'application/json');
+  $('#btnBomImp').onclick = () => $('#fileBom').click();
+  $('#btnBomReset').onclick = () => {
+    confirmBox('BOM terugzetten?', 'De Bill of Materials wordt teruggezet naar de standaardstructuur die is afgeleid ' +
+      'uit de productlijst. Ingevulde artikelnummers gaan verloren.', 'Terugzetten', true).then(ok => {
+        if (!ok) return;
+        DB.settings.bom = defaultBom(); saveDB(true); renderBomSettings(); toast('BOM teruggezet');
+      });
+  };
+}
+
+function importJsonFile(file, kind) {
+  const fr = new FileReader();
+  fr.onload = () => {
+    let o;
+    try { o = JSON.parse(fr.result); } catch (e) { toast('Geen geldig JSON-bestand.', true); return; }
+    if (kind === 'orders') {
+      const orders = Array.isArray(o) ? o : o.orders;
+      if (!Array.isArray(orders)) { toast('Geen orders gevonden in dit bestand.', true); return; }
+      DB.settings.orders = orders;
+      if (o.catalog && Array.isArray(o.catalog)) DB.settings.catalog = o.catalog;
+      if (o.bom && typeof o.bom === 'object') DB.settings.bom = o.bom;
+      saveDB(true); toast(orders.length + ' weekorders geïmporteerd'); renderSettings();
+    } else {
+      const bom = o.bom && typeof o.bom === 'object' ? o.bom : o;
+      if (!bom || typeof bom !== 'object') { toast('Geen BOM gevonden in dit bestand.', true); return; }
+      DB.settings.bom = bom;
+      saveDB(true); toast('Bill of Materials geïmporteerd'); renderSettings();
+    }
+  };
+  fr.readAsText(file);
+}
+
+/* =========================================================================
    RUNBEHEER
    ========================================================================= */
 function runFormBody(r) {
@@ -2377,8 +3591,20 @@ function runFormBody(r) {
     '<label class="fld"><span>Aantal motoren dat we willen produceren</span><input type="number" id="rfTarget" min="1" value="' + esc(r.target || 8) + '"></label>' +
     '<label class="fld"><span>Beschikbare productietijd (minuten)</span><input type="number" id="rfAvail" min="1" step="1" value="' + esc(r.availableMin || 60) + '"></label>' +
     '<label class="fld"><span>Klantvraag (aantal motoren)</span><input type="number" id="rfDemand" min="1" value="' + esc(r.demand || 8) + '"></label>' +
-    '<label class="fld"><span>Motorvariant (optioneel)</span><input type="text" id="rfVariant" value="' + esc(r.variant || '') + '" placeholder="bijv. standaard / sportmodel"></label>' +
+    '<label class="fld"><span>Order van week</span><select id="rfWeekOrder">' +
+    '<option value="">Geen order — motoren zelf toevoegen</option>' +
+    ordersList().map(o => '<option value="' + o.week + '"' + ((r.orderWeek == o.week) ? ' selected' : '') + '>' +
+      esc(o.label + ' · ' + o.orderNr + ' · ' + orderTotal(o) + ' motoren') + '</option>').join('') + '</select></label>' +
+    '<label class="fld"><span>Volgorde in de wachtrij</span><select id="rfMix">' +
+    '<option value="mixed"' + (r.queueMix !== 'grouped' ? ' selected' : '') + '>Gemengd — varianten om en om</option>' +
+    '<option value="grouped"' + (r.queueMix === 'grouped' ? ' selected' : '') + '>Gegroepeerd — per variant achter elkaar</option>' +
+    '</select></label>' +
+    '<label class="fld"><span>Werkwijze op de lijn</span><select id="rfStrict">' +
+    '<option value="0"' + (!r.strictOrder ? ' selected' : '') + '>Parallel — elk station werkt zelfstandig door</option>' +
+    '<option value="1"' + (r.strictOrder ? ' selected' : '') + '>Strikte volgorde — pas starten als het vorige station klaar is</option>' +
+    '</select></label>' +
     '<label class="fld"><span>Berekende takt time</span><input type="text" id="rfTakt" readonly style="background:#f3f7fa;font-weight:800"></label>' +
+    '<label class="fld"><span>Motoren in de wachtrij</span><input type="text" id="rfQueue" readonly style="background:#f3f7fa;font-weight:800"></label>' +
     '</div>' +
     '<label class="fld"><span>Opmerkingen</span><textarea id="rfNotes" rows="2" placeholder="bijzonderheden, gewijzigde werkwijze, proefopstelling…">' + esc(r.notes || '') + '</textarea></label>';
 }
@@ -2386,8 +3612,24 @@ function bindTakt(m) {
   const upd = () => {
     const a = parseFloat($('#rfAvail', m).value), d = parseFloat($('#rfDemand', m).value);
     $('#rfTakt', m).value = (a > 0 && d > 0) ? dur(a * 60000 / d) + ' per motor' : 'vul beide velden in';
+    const w = $('#rfWeekOrder', m) ? $('#rfWeekOrder', m).value : '';
+    const o = w ? orderForWeek(w) : null;
+    if ($('#rfQueue', m)) $('#rfQueue', m).value = o ? orderTotal(o) + ' motoren uit ' + o.orderNr : 'geen order gekozen';
   };
-  $('#rfAvail', m).oninput = upd; $('#rfDemand', m).oninput = upd; upd();
+  $('#rfAvail', m).oninput = upd; $('#rfDemand', m).oninput = upd;
+  const wo = $('#rfWeekOrder', m);
+  if (wo) wo.onchange = () => {
+    const o = wo.value ? orderForWeek(wo.value) : null;
+    if (o) {
+      $('#rfTarget', m).value = orderTotal(o);
+      $('#rfDemand', m).value = orderTotal(o);
+      if (!$('#rfName', m).value || /^Run |^Productieronde/.test($('#rfName', m).value))
+        $('#rfName', m).value = 'Productieronde ' + o.label;
+      $('#rfWeek', m).value = o.week;
+    }
+    upd();
+  };
+  upd();
 }
 function readRunForm(m) {
   return {
@@ -2397,33 +3639,66 @@ function readRunForm(m) {
     target: parseInt($('#rfTarget', m).value, 10) || 0,
     availableMin: parseFloat($('#rfAvail', m).value) || 0,
     demand: parseInt($('#rfDemand', m).value, 10) || 0,
-    variant: ($('#rfVariant', m).value || '').trim(),
+    variant: '',
+    orderWeek: $('#rfWeekOrder', m) && $('#rfWeekOrder', m).value ? +$('#rfWeekOrder', m).value : null,
+    queueMix: $('#rfMix', m) ? $('#rfMix', m).value : 'mixed',
+    strictOrder: $('#rfStrict', m) ? $('#rfStrict', m).value === '1' : false,
     notes: ($('#rfNotes', m).value || '').trim()
   };
 }
 function newRun() {
   openModal({
     title: 'Nieuwe productierun starten', wide: true,
-    sub: 'De takt time wordt automatisch berekend uit de beschikbare tijd en de klantvraag.',
-    body: runFormBody(null), onOpen: bindTakt,
+    sub: 'Kies de week uit de orderlijst; de motorwachtrij en de takt time worden automatisch berekend.',
+    body: runFormBody(null) +
+      (syncConfigured()
+        ? '<label class="chk" style="margin-top:4px"><input type="checkbox" id="rfCloud" checked>' +
+        'Online run — mijn groepsgenoten kunnen met een runcode meedoen</label>'
+        : '<div class="hint">Deze run staat alleen op dit apparaat. Wil je met de hele groep tegelijk meten? ' +
+        'Stel dan eerst bij INSTELLINGEN de online database in.</div>'),
+    onOpen: bindTakt,
     buttons: [{ label: 'Annuleren', value: false }, {
-      label: 'Run starten', cls: 'pri', onClick: m => {
+      label: 'Run starten', cls: 'pri', onClick: async m => {
         const d = readRunForm(m);
+        const order = d.orderWeek ? orderForWeek(d.orderWeek) : null;
         const run = Object.assign({
-          id: uid(), createdAt: now(), startedAt: now(), endedAt: null, demo: false,
+          id: uid(), createdAt: now(), startedAt: syncedNow(), endedAt: null, demo: false,
           stations: DB.settings.stations.filter(s => s.active !== false).map(s => ({ id: s.id, worker: s.worker, name: s.name })),
+          queue: order ? buildQueue(order, d.queueMix) : [],
           events: []
         }, d);
         if (!run.stations.length) { toast('Er is geen enkel actief werkstation ingesteld.', true); return false; }
+        const wantCloud = $('#rfCloud', m) && $('#rfCloud', m).checked;
+        const btn = $('.mdl-f .btn.pri', m);
+        if (wantCloud) {
+          btn.disabled = true; btn.textContent = 'Run online zetten…';
+          try {
+            if (!SYNC.device.name) SYNC.device.name = run.stations[0].worker;
+            await cloudCreateRun(run);
+          } catch (e) {
+            btn.disabled = false; btn.textContent = 'Run starten';
+            toast('Online zetten mislukt: ' + (e.message || e), true);
+            return false;
+          }
+        }
         DB.runs.push(run); DB.activeRunId = run.id;
         pushEvent(run, 'run_start', {});
         saveDB(true);
         UI.sel = {};
-        toast('Run "' + run.name + '" gestart');
-        return true;
+        closeModal(true);
+        if (run.cloud) {
+          await connectRun(run);
+          alertBox('Run gestart — runcode <b>' + esc(run.cloud.code) + '</b>',
+            'Geef deze code aan je groepsgenoten. Zij openen dezelfde pagina op hun telefoon, tikken op ' +
+            '<b>Meedoen</b> en vullen de code in. Alles wat jullie registreren komt in dezelfde run terecht.');
+        } else {
+          toast('Run "' + run.name + '" gestart');
+        }
+        showTab('productie'); renderAll();
+        return false;
       }
     }]
-  }).then(v => { if (v) { showTab('productie'); renderAll(); } });
+  });
 }
 
 /* =========================================================================
@@ -2454,27 +3729,31 @@ function exportData(kind) {
     return;
   }
   const M = run ? computeMetrics(run) : null;
+  const ordNr = M && M.order ? M.order.orderNr : '';
+  const vOf = mid => { const m = M.D.motors[mid]; return m ? [m.sku || '', m.sku ? variantName(m.sku) : ''] : ['', '']; };
   let rows = [];
 
   if (kind === 'events') {
-    rows.push(['run', 'event_id', 'volgorde', 'timestamp_iso', 'tijd', 'epoch_ms', 'type', 'motor', 'station_medewerker',
-      'station_naam', 'reden', 'timwood', 'notitie', 'qc_resultaat', 'onderdeel', 'fouttype', 'omschrijving', 'rework', 'rework_sec']);
+    rows.push(['run', 'ordernummer', 'event_id', 'volgorde', 'timestamp_iso', 'tijd', 'epoch_ms', 'type', 'motor',
+      'product_id', 'variant', 'station_medewerker', 'station_naam', 'geregistreerd_door', 'ongedaan_gemaakt',
+      'reden', 'timwood', 'notitie', 'qc_resultaat', 'onderdeel', 'fouttype', 'omschrijving', 'rework', 'rework_sec']);
     run.events.forEach((e, i) => {
-      const mo = M.D.motors[e.motorId], st = M.D.stationById[e.stationId];
-      rows.push([run.name, e.id, i + 1, new Date(e.ts).toISOString(), stamp(e.ts), e.ts, e.type,
-        mo ? mo.code : '', st ? st.worker : '', st ? st.name : '', e.reason || '', e.tim || '', e.note || '',
+      const mo = M.D.motors[e.motorId], st = M.D.stationById[e.stationId], v = vOf(e.motorId);
+      rows.push([run.name, ordNr, e.id, i + 1, new Date(e.ts).toISOString(), stamp(e.ts), e.ts, e.type,
+        mo ? mo.code : '', v[0], v[1], st ? st.worker : '', st ? st.name : '', e.actor || '',
+        M.D.voided[e.id] ? 'ja' : '', e.reason || '', e.tim || '', e.note || '',
         e.result || '', e.part || '', e.dtype || '', e.desc || '', e.rework ? 'ja' : '', e.reworkSec || '']);
     });
     download(base + 'eventlog.csv', toCSV(rows));
   }
   else if (kind === 'tasks') {
-    rows.push(['run', 'motor', 'motor_nr', 'medewerker', 'werkstation', 'status', 'start', 'gereed_1e_keer', 'gereed_laatste',
+    rows.push(['run', 'ordernummer', 'motor', 'product_id', 'variant', 'motor_nr', 'medewerker', 'werkstation', 'status', 'start', 'gereed_1e_keer', 'gereed_laatste',
       'cycle_time_sec', 'actieve_tijd_sec', 'wachttijd_sec', 'rework_tijd_sec', 'aantal_wachtmomenten', 'qc_goed', 'qc_afgekeurd', 'rework_rondes']);
     M.D.motorList.slice().sort((a, b) => a.nr - b.nr).forEach(m => {
       M.D.stations.forEach(s => {
         const t = M.D.tasks[m.id + '|' + s.id]; if (!t) return;
         const tt = taskTimes(t, M.nowTs);
-        rows.push([run.name, m.code, m.nr, s.worker, s.name, STATUS_LABEL[t.status],
+        rows.push([run.name, ordNr, m.code, m.sku || '', m.sku ? variantName(m.sku) : '', m.nr, s.worker, s.name, STATUS_LABEL[t.status],
           t.startedAt ? stamp(t.startedAt) : '', t.firstFinishedAt ? stamp(t.firstFinishedAt) : '', t.finishedAt ? stamp(t.finishedAt) : '',
           tt.cycle != null ? (tt.cycle / 1000).toFixed(1) : '', (tt.work / 1000).toFixed(1), (tt.wait / 1000).toFixed(1),
           (tt.rework / 1000).toFixed(1), t.segments.filter(x => x.type === 'wait').length,
@@ -2496,10 +3775,11 @@ function exportData(kind) {
     download(base + 'tijdsegmenten.csv', toCSV(rows));
   }
   else if (kind === 'motors') {
-    rows.push(['run', 'motor', 'nr', 'status', 'start', 'gereed', 'lead_time_sec', 'som_cycle_sec', 'actieve_tijd_sec',
+    rows.push(['run', 'ordernummer', 'motor', 'nr', 'product_id', 'variant', 'status', 'start', 'gereed', 'lead_time_sec', 'som_cycle_sec', 'actieve_tijd_sec',
       'wachttijd_sec', 'rework_sec', 'aantal_fouten', 'eerste_keer_goed']);
     M.motors.slice().sort((a, b) => a.nr - b.nr).forEach(x => {
-      rows.push([run.name, x.code, x.nr, x.complete ? 'gereed' : x.started ? 'wip' : 'niet gestart',
+      rows.push([run.name, ordNr, x.code, x.nr, x.m.sku || '', x.m.sku ? variantName(x.m.sku) : '',
+        x.complete ? 'gereed' : x.started ? 'wip' : 'niet gestart',
         x.startedAt ? stamp(x.startedAt) : '', x.completedAt ? stamp(x.completedAt) : '',
         x.lead != null ? (x.lead / 1000).toFixed(1) : '', (x.cycleSum / 1000).toFixed(1), (x.work / 1000).toFixed(1),
         (x.wait / 1000).toFixed(1), (x.rework / 1000).toFixed(1), x.defects, x.complete ? (x.firstPass ? 'ja' : 'nee') : '']);
@@ -2507,12 +3787,12 @@ function exportData(kind) {
     download(base + 'motoren.csv', toCSV(rows));
   }
   else if (kind === 'defects') {
-    rows.push(['run', 'tijd', 'motor', 'medewerker', 'werkstation', 'onderdeel', 'fouttype', 'omschrijving', 'rework', 'rework_gemeten', 'rework_sec']);
+    rows.push(['run', 'ordernummer', 'tijd', 'motor', 'product_id', 'variant', 'medewerker', 'werkstation', 'onderdeel', 'fouttype', 'omschrijving', 'rework', 'rework_gemeten', 'rework_sec']);
     M.defects.forEach(d => {
-      const st = M.D.stationById[d.stationId], mo = M.D.motors[d.motorId];
+      const st = M.D.stationById[d.stationId], mo = M.D.motors[d.motorId], v = vOf(d.motorId);
       const t = M.D.tasks[d.motorId + '|' + d.stationId];
       const rw = d.measured && t ? taskTimes(t, M.nowTs).rework / 1000 : d.reworkSec;
-      rows.push([run.name, stamp(d.ts), mo ? mo.code : '', st ? st.worker : '', st ? st.name : '', d.part, d.type, d.desc,
+      rows.push([run.name, ordNr, stamp(d.ts), mo ? mo.code : '', v[0], v[1], st ? st.worker : '', st ? st.name : '', d.part, d.type, d.desc,
         d.rework ? 'ja' : 'nee', d.measured ? 'ja' : 'nee', d.rework ? Number(rw).toFixed(1) : '']);
     });
     download(base + 'afkeuringen.csv', toCSV(rows));
@@ -2521,6 +3801,8 @@ function exportData(kind) {
     rows.push(['KPI', 'waarde', 'eenheid', 'toelichting']);
     const add = (k, v, u, t) => rows.push([k, v, u || '', t || '']);
     add('Run', run.name); add('Datum', run.date); add('Week', run.week);
+    add('Ordernummer', ordNr, '', M.order ? M.order.label : '');
+    add('Runcode online', run.cloud ? run.cloud.code : '', '', run.cloud ? 'multi-user run' : 'alleen lokaal gemeten');
     add('Demo-data', run.demo ? 'JA' : 'nee', '', 'demo-data is geen echte meting');
     add('Runtijd', (M.elapsed / 1000).toFixed(0), 'sec', durH(M.elapsed));
     add('Takt time', M.takt != null ? (M.takt / 1000).toFixed(1) : '', 'sec', 'beschikbare tijd / klantvraag');
@@ -2548,18 +3830,23 @@ function exportData(kind) {
       (s.active / 1000).toFixed(0), (s.wait / 1000).toFixed(0), (s.rework / 1000).toFixed(0),
       s.occupancy != null ? (s.occupancy * 100).toFixed(1) : '', s.waitPct != null ? (s.waitPct * 100).toFixed(1) : '', s.defects]));
     rows.push([]);
+    rows.push(['Variant', 'product_id', 'motoren', 'gereed', 'gem_lead_sec', 'fpy_pct', 'fouten', 'rework_sec']);
+    M.variants.forEach(v => rows.push([v.name, v.sku, v.motors.length, v.complete,
+      v.leadAvg != null ? (v.leadAvg / 1000).toFixed(1) : '', v.fpy != null ? (v.fpy * 100).toFixed(1) : '',
+      v.defects, (v.rework / 1000).toFixed(0)]));
+    rows.push([]);
     rows.push(['TIMWOOD-categorie', 'minuten']);
     Object.keys(TIMWOOD).forEach(k => rows.push([k, (M.timwood[k] / 60000).toFixed(2)]));
     download(base + 'kpi-samenvatting.csv', toCSV(rows));
   }
   else if (kind === 'runs') {
     if (!DB.runs.length) { toast('Er zijn nog geen runs.', true); return; }
-    rows.push(['run', 'datum', 'week', 'demo', 'runtijd_sec', 'motoren_gereed', 'gem_lead_sec', 'gem_cycle_sec', 'takt_sec',
+    rows.push(['run', 'datum', 'week', 'ordernummer', 'runcode', 'demo', 'runtijd_sec', 'motoren_gereed', 'gem_lead_sec', 'gem_cycle_sec', 'takt_sec',
       'throughput_per_uur', 'productiviteit', 'fpy_pct', 'fouten', 'rework_sec', 'wachttijd_sec', 'wacht_pct',
       'bezetting_pct', 'flow_eff_pct', 'lijnbalans_pct', 'bottleneck']);
     DB.runs.forEach(r => {
       const s = runSummary(r);
-      rows.push([s.name, s.date, s.week, r.demo ? 'ja' : 'nee', (s.elapsed / 1000).toFixed(0), s.motorsDone,
+      rows.push([s.name, s.date, s.week, s.orderNr || '', s.cloudCode || '', r.demo ? 'ja' : 'nee', (s.elapsed / 1000).toFixed(0), s.motorsDone,
         s.leadAvg != null ? (s.leadAvg / 1000).toFixed(1) : '', s.cycleAvg != null ? (s.cycleAvg / 1000).toFixed(1) : '',
         s.takt != null ? (s.takt / 1000).toFixed(1) : '', s.throughput != null ? s.throughput.toFixed(2) : '',
         s.productivity != null ? s.productivity.toFixed(2) : '', s.fpy != null ? (s.fpy * 100).toFixed(1) : '',
@@ -2589,7 +3876,7 @@ function renderData() {
   updateStoreInfo();
 
   $('#tblRuns').innerHTML =
-    '<thead><tr><th>Run</th><th>Datum</th><th class="r">Week</th><th class="r">Motoren</th><th class="r">Events</th>' +
+    '<thead><tr><th>Run</th><th>Datum</th><th class="r">Week</th><th>Order</th><th>Online</th><th class="r">Motoren</th><th class="r">Events</th>' +
     '<th>Status</th><th>Acties</th></tr></thead><tbody>' +
     (DB.runs.length ? DB.runs.slice().reverse().map(r => {
       const s = runSummary(r);
@@ -2599,6 +3886,8 @@ function renderData() {
         (r.notes ? '<div class="hint">' + esc(r.notes) + '</div>' : '') + '</td>' +
         '<td class="mono">' + esc(r.date || '') + '</td>' +
         '<td class="r mono">' + esc(r.week || '') + '</td>' +
+        '<td class="mono">' + esc(s.orderNr || '—') + '</td>' +
+        '<td>' + (r.cloud ? '<span class="tag green">' + esc(r.cloud.code) + '</span>' : '<span class="tag">lokaal</span>') + '</td>' +
         '<td class="r mono">' + s.motorsDone + ' / ' + s.motorsTotal + '</td>' +
         '<td class="r mono">' + r.events.length + '</td>' +
         '<td>' + (r.endedAt ? '<span class="pill p-done">Afgesloten</span>' : '<span class="pill p-run">Open</span>') + '</td>' +
@@ -2607,6 +3896,7 @@ function renderData() {
         '<button class="btn sm" data-run="' + (r.endedAt ? 'reopen' : 'close') + '" data-id="' + r.id + '">' +
         (r.endedAt ? 'Heropenen' : 'Afsluiten') + '</button>' +
         '<button class="btn sm" data-run="edit" data-id="' + r.id + '">Bewerken</button>' +
+        (r.cloud ? '' : '<button class="btn sm" data-run="up" data-id="' + r.id + '">Uploaden</button>') +
         '<button class="btn sm dgr" data-run="del" data-id="' + r.id + '">Verwijderen</button>' +
         '</div></td></tr>';
     }).join('') : '<tr><td colspan="7" class="empty">Nog geen productieruns.</td></tr>') + '</tbody>';
@@ -2646,15 +3936,27 @@ function renderData() {
 
 function runAction(what, id) {
   const r = DB.runs.find(x => x.id === id); if (!r) return;
-  if (what === 'act') { DB.activeRunId = id; UI.sel = {}; saveDB(true); toast('Run "' + r.name + '" is nu actief'); renderAll(); return; }
+  if (what === 'act') {
+    DB.activeRunId = id; UI.sel = {}; saveDB(true);
+    toast('Run "' + r.name + '" is nu actief');
+    if (r.cloud) connectRun(r); else { SYNC.status = 'off'; renderSyncBar(); }
+    renderAll(); return;
+  }
+  if (what === 'up') { migrateRun(r); return; }
   if (what === 'close') {
     confirmBox('Run afsluiten?', 'Na het afsluiten kun je geen metingen meer registreren in <b>' + esc(r.name) +
       '</b>. De data blijft bewaard en je kunt de run later heropenen.', 'Afsluiten').then(ok => {
-        if (!ok) return; r.endedAt = now(); pushEvent(r, 'run_end', {}); saveDB(true); renderAll();
+        if (!ok) return;
+        r.endedAt = syncedNow(); pushEvent(r, 'run_end', {}); saveDB(true);
+        cloudUpdateRun(r, { ended_at: new Date(r.endedAt).toISOString() });
+        renderAll();
       });
     return;
   }
-  if (what === 'reopen') { r.endedAt = null; saveDB(true); toast('Run heropend'); renderAll(); return; }
+  if (what === 'reopen') {
+    r.endedAt = null; saveDB(true); cloudUpdateRun(r, { ended_at: null });
+    toast('Run heropend'); renderAll(); return;
+  }
   if (what === 'edit') {
     openModal({
       title: 'Run bewerken', wide: true, body: runFormBody(r),
@@ -2671,6 +3973,7 @@ function runAction(what, id) {
       'Dit kan niet ongedaan gemaakt worden. Exporteer eerst een back-up als je de data nog nodig hebt.',
       'Definitief verwijderen', true).then(ok => {
         if (!ok) return;
+        if (r.cloud) cloudDeleteRun(r);
         DB.runs = DB.runs.filter(x => x.id !== id);
         if (DB.activeRunId === id) DB.activeRunId = DB.runs.length ? DB.runs[DB.runs.length - 1].id : null;
         saveDB(true); toast('Run verwijderd'); renderAll();
@@ -2732,6 +4035,12 @@ function renderSettings() {
     DB.settings.defectTypes.splice(+b.dataset.ddel, 1); saveDB(true); renderSettings();
   });
 
+  renderOrderSettings();
+  renderBomSettings();
+  renderCloudSettings();
+  $('#fileOrders').onchange = e => { if (e.target.files[0]) importJsonFile(e.target.files[0], 'orders'); e.target.value = ''; };
+  $('#fileBom').onchange = e => { if (e.target.files[0]) importJsonFile(e.target.files[0], 'bom'); e.target.value = ''; };
+
   const run = activeRun();
   $('#setRun').innerHTML = run
     ? '<div class="hint" style="margin-bottom:10px">Je past hier de gegevens aan van de actieve run <b>' + esc(run.name) + '</b>.</div>' +
@@ -2743,6 +4052,515 @@ function renderSettings() {
     $('#btnSaveRun').onclick = () => { Object.assign(run, readRunForm(document)); saveDB(true); toast('Run bijgewerkt'); renderAll(); };
     $('#btnCloseRun').onclick = () => runAction(run.endedAt ? 'reopen' : 'close', run.id);
   }
+}
+
+/* ---------------------------------------- instellingen: online samenwerken */
+function renderCloudSettings() {
+  const el = $('#setCloud'); if (!el) return;
+  const run = activeRun();
+  el.innerHTML =
+    '<div class="hint" style="margin-bottom:12px">Met een gratis Supabase-project werkt de hele groep tegelijk in dezelfde run, ' +
+    'ieder op een eigen telefoon. Het stappenplan staat in <b>SETUP.md</b> naast dit bestand.</div>' +
+    '<div class="grid g3" style="margin-bottom:12px">' +
+    kpi('Status', syncConfigured() ? (SYNC_LABEL[SYNC.status] || SYNC_LABEL.off)[0] : 'Niet ingesteld',
+      syncConfigured() ? esc(SYNC.cfg.url) : 'alles blijft op dit apparaat', syncConfigured() ? 'ok' : '') +
+    kpi('Dit apparaat', esc(SYNC.device.name || '—'),
+      SYNC.device.stationId ? esc((DB.settings.stations.find(s => s.id === SYNC.device.stationId) || {}).name || '') : 'geen station gekozen') +
+    kpi('Klokafwijking', SYNC.offsetOk ? ((SYNC.offset >= 0 ? '+' : '') + (SYNC.offset / 1000).toFixed(1) + ' s') : '—',
+      SYNC.offsetOk ? 'alle timestamps worden hiervoor gecorrigeerd' : 'nog niet gemeten') +
+    '</div>' +
+    (run && run.cloud ? '<div class="banner info"><div><b>Runcode: ' + esc(run.cloud.code) + '</b>' +
+      'Geef deze code aan je groepsgenoten. Events in de wachtrij: ' + SYNC.queue.length + '.</div></div>' : '') +
+    (SYNC.lastError ? '<div class="banner red"><div><b>Laatste foutmelding</b>' + esc(SYNC.lastError) + '</div></div>' : '') +
+    '<div class="btnrow">' +
+    '<button class="btn pri" id="btnCloudSetup">' + (syncConfigured() ? 'Databasegegevens wijzigen' : 'Database instellen') + '</button>' +
+    '<button class="btn" id="btnCloudJoin">Meedoen met een runcode</button>' +
+    '<button class="btn" id="btnCloudName">Mijn naam en station</button>' +
+    (syncConfigured() ? '<button class="btn" id="btnCloudSync">Nu synchroniseren</button>' : '') +
+    (syncConfigured() ? '<button class="btn dgr" id="btnCloudOff">Verbinding vergeten</button>' : '') +
+    '</div>';
+  $('#btnCloudSetup').onclick = setupCloud;
+  $('#btnCloudJoin').onclick = joinRun;
+  $('#btnCloudName').onclick = () => pickStation(true).then(() => renderSettings());
+  if ($('#btnCloudSync')) $('#btnCloudSync').onclick = async () => {
+    const r = activeRun();
+    if (!r || !r.cloud) { toast('De actieve run staat niet online.', true); return; }
+    await connectRun(r); toast('Gesynchroniseerd'); renderAll();
+  };
+  if ($('#btnCloudOff')) $('#btnCloudOff').onclick = () => {
+    confirmBox('Verbinding vergeten?', 'De databasegegevens worden van dit apparaat gewist. De runs die al online staan ' +
+      'blijven bestaan; je lokale kopie blijft ook staan.', 'Vergeten', true).then(ok => {
+        if (!ok) return;
+        SYNC.cfg = { url: '', key: '' }; SYNC.queue = []; SYNC.status = 'off';
+        saveSyncCfg(); renderAll(); toast('Verbinding gewist');
+      });
+  };
+}
+
+/* =========================================================================
+   SYNCHRONISATIE — online, multi-user, offline-tolerant
+   ---------------------------------------------------------------------------
+   Ontwerp:
+   - De append-only tabel `events` in Supabase (Postgres) is de bron van
+     waarheid. Elk event is één regel met een client-gegenereerde UUID als
+     primary key, zodat opnieuw verzenden nooit een dubbel event oplevert.
+   - Schrijven en lezen gaat met gewone fetch-aanroepen naar de REST-API van
+     Supabase (PostgREST). Daar is geen library voor nodig.
+   - Direct doorgeven aan de andere apparaten gebeurt via Supabase Realtime
+     (broadcast op een kanaal met het run-id). Die laag is optioneel: lukt het
+     laden van de client niet, dan blijft de reguliere poll-lus de events
+     binnen enkele seconden ophalen. De meting kan dus nooit stilvallen door
+     een haperende websocket.
+   - Alle timestamps worden gecorrigeerd voor de klokafwijking tussen dit
+     apparaat en de server, zodat telefoons die voor- of achterlopen de
+     meting niet vervuilen.
+   ========================================================================= */
+
+const SYNCKEY = 'innovo_sync_v1';
+
+const SYNC = {
+  cfg: { url: '', key: '' },
+  device: { name: '', stationId: '' },
+  status: 'off',              // off | connecting | online | offline | syncing
+  offset: 0,                  // servertijd - lokale tijd, in ms
+  offsetOk: false,
+  runId: null,
+  cursor: null,               // created_at van het laatst opgehaalde event
+  queue: [],                  // nog niet verzonden events
+  lastError: '',
+  lastPull: 0,
+  pulling: false,
+  flushing: false,
+  timer: null,
+  channel: null,
+  peers: 0
+};
+
+/* -------------------------------------------------- apparaat & instellingen */
+function loadSyncCfg() {
+  try {
+    const o = JSON.parse(localStorage.getItem(SYNCKEY) || '{}');
+    SYNC.cfg = { url: (o.url || '').replace(/\/+$/, ''), key: o.key || '' };
+    SYNC.device = { name: o.device || '', stationId: o.stationId || '' };
+    SYNC.queue = Array.isArray(o.queue) ? o.queue : [];
+    SYNC.offset = Number(o.offset) || 0;
+  } catch (e) { /* standaardwaarden blijven staan */ }
+}
+function saveSyncCfg() {
+  try {
+    localStorage.setItem(SYNCKEY, JSON.stringify({
+      url: SYNC.cfg.url, key: SYNC.cfg.key, device: SYNC.device.name,
+      stationId: SYNC.device.stationId, queue: SYNC.queue, offset: SYNC.offset
+    }));
+  } catch (e) { }
+}
+function syncConfigured() { return !!(SYNC.cfg.url && SYNC.cfg.key); }
+function deviceName() { return SYNC.device.name || 'onbekend'; }
+/** Tijd van dit apparaat, gecorrigeerd naar de servertijd. */
+function syncedNow() { return Date.now() + (SYNC.offsetOk ? SYNC.offset : 0); }
+
+/* ------------------------------------------------------------- REST-helpers */
+async function api(path, opt) {
+  opt = opt || {};
+  if (!syncConfigured()) throw new Error('Geen database ingesteld');
+  const headers = Object.assign({
+    'apikey': SYNC.cfg.key,
+    'Authorization': 'Bearer ' + SYNC.cfg.key,
+    'Content-Type': 'application/json'
+  }, opt.headers || {});
+  if (SYNC.runId) headers['x-run-id'] = SYNC.runId;
+  const ctrl = new AbortController();
+  const to = setTimeout(() => ctrl.abort(), opt.timeout || 12000);
+  try {
+    const res = await fetch(SYNC.cfg.url + path, {
+      method: opt.method || 'GET', headers: headers,
+      body: opt.body ? JSON.stringify(opt.body) : undefined, signal: ctrl.signal
+    });
+    const txt = await res.text();
+    let data = null;
+    if (txt) { try { data = JSON.parse(txt); } catch (e) { data = txt; } }
+    if (!res.ok) {
+      const msg = (data && (data.message || data.hint)) || ('HTTP ' + res.status);
+      const err = new Error(msg); err.status = res.status; err.data = data; throw err;
+    }
+    return data;
+  } finally { clearTimeout(to); }
+}
+function rpc(fn, args) { return api('/rest/v1/rpc/' + fn, { method: 'POST', body: args || {} }); }
+
+/* ---------------------------------------------------- kloksynchronisatie */
+async function measureClockOffset() {
+  const samples = [];
+  for (let i = 0; i < 3; i++) {
+    const t0 = Date.now();
+    let srv;
+    try { srv = await rpc('server_now'); } catch (e) { return false; }
+    const t1 = Date.now();
+    const server = new Date(typeof srv === 'string' ? srv : (srv && srv.now) || srv).getTime();
+    if (!server || isNaN(server)) return false;
+    samples.push({ off: server - (t0 + (t1 - t0) / 2), rtt: t1 - t0 });
+  }
+  samples.sort((a, b) => a.rtt - b.rtt);          // neem de snelste meting
+  SYNC.offset = Math.round(samples[0].off);
+  SYNC.offsetOk = true;
+  saveSyncCfg();
+  return true;
+}
+
+/* --------------------------------------------------- runs aanmaken / joinen */
+function runCode() {
+  const n = Math.floor(1000 + Math.random() * 9000);
+  return 'INNOVO-' + n;
+}
+function runToRow(run) {
+  return {
+    id: run.cloud ? run.cloud.runId : uuid(),
+    code: run.cloud ? run.cloud.code : runCode(),
+    name: run.name, date: run.date || null, week: run.week || null,
+    target: run.target || null, available_min: run.availableMin || null,
+    demand: run.demand || null, variant: run.variant || null, notes: run.notes || null,
+    stations: run.stations, queue: run.queue || [], order_week: run.orderWeek || null,
+    strict_order: !!run.strictOrder, demo: !!run.demo,
+    started_at: run.startedAt ? new Date(run.startedAt).toISOString() : null,
+    ended_at: run.endedAt ? new Date(run.endedAt).toISOString() : null
+  };
+}
+function rowToRun(row) {
+  return {
+    id: 'cloud-' + row.id, name: row.name, date: row.date || '', week: row.week || '',
+    target: row.target || 0, availableMin: row.available_min || 0, demand: row.demand || 0,
+    variant: row.variant || '', notes: row.notes || '', demo: !!row.demo,
+    orderWeek: row.order_week || null, strictOrder: !!row.strict_order,
+    stations: row.stations || [], queue: row.queue || [],
+    createdAt: new Date(row.created_at || Date.now()).getTime(),
+    startedAt: row.started_at ? new Date(row.started_at).getTime() : Date.now(),
+    endedAt: row.ended_at ? new Date(row.ended_at).getTime() : null,
+    cloud: { runId: row.id, code: row.code },
+    events: []
+  };
+}
+function eventToRow(runId, ev) {
+  const payload = {};
+  Object.keys(ev).forEach(k => {
+    if (['id', 'ts', 'seq', 'type', 'motorId', 'stationId', 'actor'].indexOf(k) < 0) payload[k] = ev[k];
+  });
+  return {
+    id: ev.id, run_id: runId, ts: new Date(ev.ts).toISOString(), type: ev.type,
+    motor_id: ev.motorId || null, station_id: ev.stationId || null,
+    actor: ev.actor || null, payload: payload
+  };
+}
+function rowToEvent(row) {
+  return Object.assign({
+    id: row.id, ts: new Date(row.ts).getTime(), seq: 0, type: row.type,
+    motorId: row.motor_id || undefined, stationId: row.station_id || undefined,
+    actor: row.actor || ''
+  }, row.payload || {});
+}
+
+async function cloudCreateRun(run) {
+  const row = runToRow(run);
+  SYNC.runId = row.id;
+  const res = await api('/rest/v1/runs', {
+    method: 'POST', body: row, headers: { 'Prefer': 'return=representation', 'x-run-id': row.id }
+  });
+  const saved = Array.isArray(res) ? res[0] : res;
+  run.cloud = { runId: saved.id, code: saved.code };
+  saveDB(true);
+  return run.cloud;
+}
+async function cloudJoin(code) {
+  SYNC.runId = null;
+  const res = await rpc('join_run', { p_code: String(code).trim().toUpperCase() });
+  const row = Array.isArray(res) ? res[0] : res;
+  if (!row || !row.id) throw new Error('Geen run gevonden met code ' + code);
+  SYNC.runId = row.id;
+  let run = DB.runs.find(r => r.cloud && r.cloud.runId === row.id);
+  if (!run) { run = rowToRun(row); DB.runs.push(run); }
+  else {
+    Object.assign(run, {
+      name: row.name, stations: row.stations || run.stations, queue: row.queue || run.queue,
+      orderWeek: row.order_week, strictOrder: !!row.strict_order,
+      endedAt: row.ended_at ? new Date(row.ended_at).getTime() : null
+    });
+  }
+  DB.activeRunId = run.id;
+  SYNC.cursor = null;
+  saveDB(true);
+  await cloudPull(run, true);
+  return run;
+}
+
+/* ---------------------------------------------------------- events pushen */
+function SYNC_send(run, ev) {
+  if (!run.cloud || !syncConfigured()) return;
+  SYNC.queue.push({ runId: run.cloud.runId, ev: ev });
+  saveSyncCfg();
+  broadcast(run, ev);
+  cloudFlush();
+}
+SYNC.send = SYNC_send;
+
+async function cloudFlush() {
+  if (SYNC.flushing || !SYNC.queue.length || !syncConfigured()) return;
+  if (!navigator.onLine) { setStatus('offline'); return; }
+  SYNC.flushing = true;
+  try {
+    while (SYNC.queue.length) {
+      const batch = SYNC.queue.slice(0, 40);
+      const runId = batch[0].runId;
+      const items = batch.filter(b => b.runId === runId);
+      SYNC.runId = runId;
+      await api('/rest/v1/events?on_conflict=id', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=ignore-duplicates,return=minimal', 'x-run-id': runId },
+        body: items.map(i => eventToRow(runId, i.ev))
+      });
+      SYNC.queue = SYNC.queue.filter(q => items.indexOf(q) < 0);
+      saveSyncCfg();
+    }
+    SYNC.lastError = '';
+    setStatus('online');
+  } catch (e) {
+    SYNC.lastError = e.message || String(e);
+    setStatus(navigator.onLine ? 'syncing' : 'offline');
+  } finally {
+    SYNC.flushing = false;
+    renderSyncBar();
+  }
+}
+
+/* ----------------------------------------------------------- events halen */
+async function cloudPull(run, full) {
+  if (!run || !run.cloud || !syncConfigured() || SYNC.pulling) return 0;
+  SYNC.pulling = true;
+  try {
+    SYNC.runId = run.cloud.runId;
+    let path = '/rest/v1/events?run_id=eq.' + encodeURIComponent(run.cloud.runId) +
+      '&select=id,ts,type,motor_id,station_id,actor,payload,created_at&order=created_at.asc&limit=2000';
+    if (!full && SYNC.cursor) {
+      /* kleine overlap terug in de tijd: liever een paar events dubbel ophalen
+         (die worden op id herkend) dan er eentje missen op een gelijke timestamp */
+      const from = new Date(new Date(SYNC.cursor).getTime() - 3000).toISOString();
+      path += '&created_at=gt.' + encodeURIComponent(from);
+    }
+    const rows = await api(path);
+    if (Array.isArray(rows) && rows.length) {
+      const last = rows[rows.length - 1].created_at;
+      if (!SYNC.cursor || last > SYNC.cursor) SYNC.cursor = last;
+      const added = mergeCloudEvents(run, rows.map(rowToEvent));
+      SYNC.lastPull = Date.now();
+      setStatus('online');
+      if (added) { renderAll(); }
+      return added;
+    }
+    SYNC.lastPull = Date.now();
+    SYNC.lastError = '';
+    setStatus('online');
+    return 0;
+  } catch (e) {
+    SYNC.lastError = e.message || String(e);
+    setStatus(navigator.onLine ? 'syncing' : 'offline');
+    return 0;
+  } finally {
+    SYNC.pulling = false;
+    renderSyncBar();
+  }
+}
+/** Voegt binnengekomen events toe; bestaande id's worden overgeslagen. */
+function mergeCloudEvents(run, evs) {
+  const have = {};
+  run.events.forEach(e => have[e.id] = true);
+  let added = 0;
+  evs.forEach(e => { if (!have[e.id]) { run.events.push(e); have[e.id] = true; added++; } });
+  if (added) {
+    run.events.sort((a, b) => a.ts - b.ts || (a.seq || 0) - (b.seq || 0));
+    saveDB();
+  }
+  return added;
+}
+
+/* --------------------------------------- realtime broadcast (optioneel) */
+let sbLib = null, sbClient = null, sbTried = false;
+function loadRealtime() {
+  if (sbLib || sbTried || !syncConfigured()) return Promise.resolve(sbLib);
+  sbTried = true;
+  return new Promise(res => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
+    s.onload = () => { sbLib = window.supabase || null; res(sbLib); };
+    s.onerror = () => { sbLib = null; res(null); };   // geen probleem: de poll-lus vangt het op
+    document.head.appendChild(s);
+    setTimeout(() => res(sbLib), 8000);
+  });
+}
+async function joinChannel(run) {
+  if (!run || !run.cloud) return;
+  try {
+    const lib = await loadRealtime();
+    if (!lib || !lib.createClient) return;
+    if (!sbClient) sbClient = lib.createClient(SYNC.cfg.url, SYNC.cfg.key, { realtime: { params: { eventsPerSecond: 10 } } });
+    if (SYNC.channel) { try { sbClient.removeChannel(SYNC.channel); } catch (e) { } SYNC.channel = null; }
+    const ch = sbClient.channel('run-' + run.cloud.runId, { config: { broadcast: { self: false }, presence: { key: deviceName() || uuid() } } });
+    ch.on('broadcast', { event: 'ev' }, msg => {
+      const r = activeRun();
+      if (!r || !r.cloud || r.cloud.runId !== run.cloud.runId) return;
+      if (msg && msg.payload && msg.payload.id) {
+        if (mergeCloudEvents(r, [msg.payload])) renderAll();
+      }
+    });
+    ch.on('presence', { event: 'sync' }, () => {
+      try { SYNC.peers = Object.keys(ch.presenceState() || {}).length; } catch (e) { }
+      renderSyncBar();
+    });
+    ch.subscribe(st => {
+      if (st === 'SUBSCRIBED') { try { ch.track({ device: deviceName(), at: Date.now() }); } catch (e) { } renderSyncBar(); }
+    });
+    SYNC.channel = ch;
+  } catch (e) { /* broadcast is een extraatje; polling blijft werken */ }
+}
+function broadcast(run, ev) {
+  if (!SYNC.channel) return;
+  try { SYNC.channel.send({ type: 'broadcast', event: 'ev', payload: ev }); } catch (e) { }
+}
+
+/* ------------------------------------------------------------- poll-lus */
+function setStatus(s) {
+  if (SYNC.status === s) return;
+  SYNC.status = s;
+  renderSyncBar();
+}
+function syncLoop() {
+  clearInterval(SYNC.timer);
+  SYNC.timer = setInterval(() => {
+    const run = activeRun();
+    if (!run || !run.cloud || !syncConfigured()) return;
+    if (!navigator.onLine) { setStatus('offline'); return; }
+    const active = !document.hidden;
+    const gap = active ? 2000 : 15000;
+    if (Date.now() - SYNC.lastPull >= gap) cloudPull(run, false);
+    if (SYNC.queue.length) cloudFlush();
+  }, 1000);
+}
+
+async function connectRun(run) {
+  if (!run || !run.cloud || !syncConfigured()) { setStatus('off'); return; }
+  setStatus('connecting');
+  SYNC.runId = run.cloud.runId;
+  SYNC.cursor = null;
+  const ok = await measureClockOffset();
+  if (!ok) { SYNC.lastError = 'Kon de servertijd niet ophalen'; setStatus('offline'); }
+  await cloudPull(run, true);
+  await cloudFlush();
+  joinChannel(run);
+  syncLoop();
+  renderSyncBar();
+}
+
+/* ------------------------------------------------- lokale run uploaden */
+async function migrateRun(run) {
+  if (!syncConfigured()) { toast('Stel eerst de online database in (INSTELLINGEN).', true); return; }
+  if (run.cloud) { toast('Deze run staat al online.', true); return; }
+  const ok = await confirmBox('Run uploaden naar de online database?',
+    'De run <b>' + esc(run.name) + '</b> met <b>' + run.events.length + ' events</b> wordt geüpload. ' +
+    'Je krijgt daarna een runcode waarmee je groepsgenoten kunnen meekijken. De lokale kopie blijft bestaan.',
+    'Uploaden');
+  if (!ok) return;
+  try {
+    setStatus('syncing');
+    const cloud = await cloudCreateRun(run);
+    SYNC.runId = cloud.runId;
+    for (let i = 0; i < run.events.length; i += 100) {
+      const chunk = run.events.slice(i, i + 100).map(e => eventToRow(cloud.runId, e));
+      await api('/rest/v1/events?on_conflict=id', {
+        method: 'POST',
+        headers: { 'Prefer': 'resolution=ignore-duplicates,return=minimal', 'x-run-id': cloud.runId },
+        body: chunk
+      });
+    }
+    saveDB(true);
+    setStatus('online');
+    await alertBox('Run staat online', 'De runcode is <b style="font-size:20px">' + esc(cloud.code) + '</b>.<br><br>' +
+      'Groepsgenoten kunnen met deze code meedoen via "Meedoen met een run".');
+    renderAll();
+  } catch (e) {
+    setStatus('offline');
+    alertBox('Uploaden mislukt', esc(e.message || String(e)));
+  }
+}
+async function migrateAll() {
+  const local = DB.runs.filter(r => !r.cloud);
+  if (!local.length) { toast('Alle runs staan al online.', true); return; }
+  const ok = await confirmBox('Alle lokale runs uploaden?',
+    'Er worden <b>' + local.length + '</b> lokale runs geüpload naar de online database. ' +
+    'Elke run krijgt een eigen runcode.', 'Uploaden');
+  if (!ok) return;
+  let n = 0, fail = 0;
+  for (const r of local) {
+    try {
+      const cloud = await cloudCreateRun(r);
+      SYNC.runId = cloud.runId;
+      for (let i = 0; i < r.events.length; i += 100) {
+        await api('/rest/v1/events?on_conflict=id', {
+          method: 'POST',
+          headers: { 'Prefer': 'resolution=ignore-duplicates,return=minimal', 'x-run-id': cloud.runId },
+          body: r.events.slice(i, i + 100).map(e => eventToRow(cloud.runId, e))
+        });
+      }
+      n++;
+    } catch (e) { fail++; console.error(e); }
+  }
+  saveDB(true); renderAll();
+  alertBox('Uploaden afgerond', n + ' runs geüpload' + (fail ? ', ' + fail + ' mislukt' : '') + '.');
+}
+
+/* ------------------------------------------------------------ run afsluiten */
+async function cloudUpdateRun(run, patch) {
+  if (!run.cloud || !syncConfigured()) return;
+  try {
+    SYNC.runId = run.cloud.runId;
+    await api('/rest/v1/runs?id=eq.' + encodeURIComponent(run.cloud.runId), {
+      method: 'PATCH', headers: { 'Prefer': 'return=minimal', 'x-run-id': run.cloud.runId }, body: patch
+    });
+  } catch (e) { SYNC.lastError = e.message || String(e); renderSyncBar(); }
+}
+async function cloudDeleteRun(run) {
+  if (!run.cloud || !syncConfigured()) return;
+  try {
+    SYNC.runId = run.cloud.runId;
+    await api('/rest/v1/runs?id=eq.' + encodeURIComponent(run.cloud.runId), {
+      method: 'DELETE', headers: { 'Prefer': 'return=minimal', 'x-run-id': run.cloud.runId }
+    });
+  } catch (e) { /* lokaal verwijderen lukt altijd */ }
+}
+
+/* ---------------------------------------------------------------- statusbalk */
+const SYNC_LABEL = {
+  off: ['Lokaal', 'Deze run staat alleen op dit apparaat', 's-off'],
+  connecting: ['Verbinden…', 'Bezig met verbinden met de database', 's-sync'],
+  online: ['Online', 'Live verbonden — alles wordt gedeeld', 's-on'],
+  offline: ['Offline', 'Geen verbinding — metingen lopen lokaal door', 's-off2'],
+  syncing: ['Synchroniseren…', 'Verbinding hapert, events staan in de wachtrij', 's-sync']
+};
+function renderSyncBar() {
+  const els = [$('#syncBar'), $('#syncBarM')].filter(Boolean);
+  if (!els.length || !DB) return;
+  const run = activeRun();
+  const cloud = run && run.cloud;
+  const st = cloud ? SYNC.status : (syncConfigured() ? 'off' : 'off');
+  const L = SYNC_LABEL[st] || SYNC_LABEL.off;
+  const q = SYNC.queue.length;
+  const html = '<span class="dot2"></span><b>' + L[0] + '</b>' +
+    (cloud ? '<span class="code">' + esc(run.cloud.code) + '</span>' : '') +
+    (q ? '<span class="q">' + q + ' in wachtrij</span>' : '') +
+    (SYNC.peers > 1 ? '<span class="q">' + SYNC.peers + ' apparaten</span>' : '') +
+    (SYNC.device.name ? '<span class="who">' + esc(SYNC.device.name) + '</span>' : '') +
+    (SYNC.lastError && st !== 'online' ? '<span class="err" title="' + esc(SYNC.lastError) + '">!</span>' : '');
+  els.forEach(el => {
+    el.className = 'syncbar ' + L[2];
+    el.innerHTML = html;
+    el.title = L[1] + (SYNC.lastError ? ' — ' + SYNC.lastError : '');
+  });
 }
 
 /* =========================================================================
@@ -2759,7 +4577,9 @@ function buildDemoRun(weekNr, level, seed) {
   const nSub = stations.length - 1, last = stations[stations.length - 1];
   const d = new Date(); d.setDate(d.getDate() - (4 - level) * 7); d.setHours(9, 0, 0, 0);
   const base = d.getTime();
-  const nMotors = 8;
+  const order = orderForWeek(level) || orderForWeek(1);
+  const queue = order ? buildQueue(order, 'mixed').slice(0, 8) : [];
+  const nMotors = queue.length || 8;
   const imp = 1 - (level - 1) * 0.15;          // elke week iets sneller
   const waitP = 0.50 - (level - 1) * 0.17;     // minder wachtmomenten
   /* vaste foutenplanning per week: week 1 vier fouten, week 2 twee, week 3 één */
@@ -2778,9 +4598,9 @@ function buildDemoRun(weekNr, level, seed) {
 
   push(base, 'run_start', {});
   for (let i = 0; i < nMotors; i++) {
-    const mId = uid(), nr = i + 1;
+    const q = queue[i] || { motorId: uid(), nr: i + 1, sku: '' };
+    const mId = q.motorId, nr = q.nr;
     const created = base + i * 4000;
-    push(created, 'motor_create', { motorId: mId, nr: nr });
     const subEnds = [];
     for (let j = 0; j < nSub; j++) {
       const st = stations[j];
@@ -2853,10 +4673,11 @@ function buildDemoRun(weekNr, level, seed) {
   const availMin = Math.round((endTs - base) / 60000);
   return {
     id: uid(), name: 'DEMO week ' + weekNr, date: (new Date(base)).toISOString().slice(0, 10), week: weekNr,
-    target: nMotors, availableMin: availMin, demand: nMotors, variant: 'demo',
+    target: nMotors, availableMin: availMin, demand: nMotors, variant: '',
+    orderWeek: order ? order.week : null, queueMix: 'mixed', strictOrder: false,
     notes: 'Automatisch gegenereerde voorbeelddata — geen echte meting.',
     createdAt: base, startedAt: base, endedAt: endTs, demo: true,
-    stations: stations, events: evs
+    stations: stations, queue: queue.slice(0, nMotors), events: evs
   };
 }
 function loadDemo() {
@@ -2938,6 +4759,7 @@ function renderHeader() {
   $('#hRun').textContent = run ? (run.name + (run.demo ? ' (DEMO)' : '')) : '—';
   $('#hRun').style.color = run && run.demo ? '#ffcf8a' : '';
   $('#btnUndo').disabled = !run || !run.events.length || !!run.endedAt;
+  $('#btnMobile').style.display = (DB.runs.length || syncConfigured()) ? '' : 'none';
   if (!run) { $('#hElapsed').textContent = '00:00:00'; $('#hTakt').textContent = '—'; $('#hCounts').textContent = '0 / 0'; return; }
   const M = computeMetrics(run);
   $('#hElapsed').textContent = durH(M.elapsed);
@@ -2947,11 +4769,14 @@ function renderHeader() {
 
 function renderAll() {
   renderHeader();
+  renderSyncBar();
+  if (MOBILE.on) { renderMobile(); return; }
   if (TAB === 'productie') renderProduction();
   else if (TAB === 'dashboard') renderDashboard();
   else if (TAB === 'kwaliteit') renderQuality();
   else if (TAB === 'verspilling') renderWaste();
   else if (TAB === 'stabiliteit') renderSpc();
+  else if (TAB === 'orders') renderOrders();
   else if (TAB === 'vergelijk') renderCompare();
   else if (TAB === 'data') renderData();
   else if (TAB === 'instellingen') renderSettings();
@@ -2963,6 +4788,21 @@ function tick() {
   const M = computeMetrics(run, nowTs);
   $('#hElapsed').textContent = durH(M.elapsed);
   $('#hCounts').textContent = M.completedMotors.length + ' / ' + M.wip;
+  if (MOBILE.on) {
+    const st = M.D.stationById[MOBILE.stationId];
+    if (st) {
+      const mId = currentMotorFor(M.D, st);
+      const t = mId ? getTask(M.D, mId, st.id) : null;
+      if (t) {
+        const tt = taskTimes(t, nowTs);
+        const b = $('[data-mbig]'); if (b) b.textContent = dur(bigTime(t, t.status, nowTs));
+        const w = $('[data-mf="work"]'); if (w) w.textContent = dur(tt.work);
+        const q = $('[data-mf="wait"]'); if (q) q.textContent = dur(tt.wait);
+        const r = $('[data-mf="rework"]'); if (r) r.textContent = dur(tt.rework);
+      }
+    }
+    return;
+  }
   if (TAB !== 'productie') return;
   const D = M.D;
   $$('.st[data-task]').forEach(card => {
@@ -2988,6 +4828,7 @@ function tick() {
    INIT
    ========================================================================= */
 function init() {
+  loadSyncCfg();
   loadDB();
   $$('nav button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
   $('#btnNewRun').onclick = newRun;
@@ -2998,6 +4839,13 @@ function init() {
   $('#btnBackupImp').onclick = () => $('#fileImp').click();
   $('#fileImp').onchange = e => { if (e.target.files[0]) importBackup(e.target.files[0]); e.target.value = ''; };
   $('#btnWipe').onclick = wipeAll;
+  $('#btnMigrate').onclick = migrateAll;
+  $('#btnJoin').onclick = joinRun;
+  $('#btnMobile').onclick = enterMobile;
+  $('#mExit').onclick = exitMobile;
+  $('#mSwitch').onclick = () => pickStation(true).then(ok => { if (ok) { MOBILE.stationId = SYNC.device.stationId; renderMobile(); } });
+  $('#syncBar').onclick = () => { showTab('instellingen'); };
+  $('#syncBarM').onclick = () => { const r = activeRun(); if (r && r.cloud) connectRun(r); };
   $('#btnDemo').onclick = loadDemo;
   $('#btnDemoDel').onclick = deleteDemo;
   $('#btnAddStation').onclick = () => {
@@ -3027,8 +4875,29 @@ function init() {
   window.addEventListener('beforeunload', () => saveDB(true));
   document.addEventListener('visibilitychange', () => { if (!document.hidden) renderAll(); });
 
+  window.addEventListener('online', () => { setStatus('syncing'); const r = activeRun(); if (r && r.cloud) { cloudFlush(); cloudPull(r, false); } });
+  window.addEventListener('offline', () => setStatus('offline'));
+
+  registerPWA();
   renderAll();
   setInterval(tick, 500);
+
+  /* verbind met een online run die al actief was */
+  const run = activeRun();
+  if (run && run.cloud && syncConfigured()) connectRun(run);
+  syncLoop();
+
+  /* op een telefoon direct naar de eigen stationsweergave */
+  if (isPhone() && SYNC.device.stationId && activeRun()) enterMobile();
+}
+
+/* -------------------------------------------------------------------- PWA */
+function registerPWA() {
+  if (location.protocol === 'file:') return;          // service workers werken niet vanaf file://
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    navigator.serviceWorker.register('sw.js').catch(() => { });
+  } catch (e) { }
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 </script>

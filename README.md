@@ -3,30 +3,53 @@
 Webapplicatie voor de module **Information Management** (Logistics Management, BUas), case
 *Innovo Motors – From startup to scale-up*.
 
-Open `index.html` in een browser. Er is geen server, geen installatie en geen internet nodig:
-alles zit in dat ene bestand en de data wordt opgeslagen in de `localStorage` van de browser.
+Met z'n vieren tegelijk meten, ieder op zijn eigen telefoon, in dezelfde productierun.
+Werkt ook volledig zelfstandig op één laptop.
 
-## Snel starten tijdens een productieronde
+| Bestand | Waarvoor |
+|---|---|
+| `index.html` | de volledige applicatie — open of publiceer alleen dit bestand |
+| `SETUP.md` | stappenplan om online samen te werken en de app te publiceren |
+| `supabase.sql` | databaseschema en beveiligingsregels, in één keer te draaien |
+| `sw.js`, `manifest.webmanifest`, `icon-*.png` | maken er een installeerbare app (PWA) van |
 
-1. **INSTELLINGEN** → controleer de namen en werkstations (standaard: Viggo – voorwiel + stuur,
-   Noah – achterwiel, Stan – tank + stoel, Pepijn – hoofdassemblage).
-2. **+ NIEUWE RUN** → naam, datum, weeknummer, doelaantal, beschikbare tijd en klantvraag.
-   De takt time wordt automatisch berekend.
-3. **PRODUCTIE** → **+ NIEUWE MOTOR** voor Motor 001, 002, …
-4. Per werkstation: **START** → **PAUZE/WACHTEN** (met reden) → **HERVATTEN** → **GEREED** →
-   **KWALITEITSCONTROLE**. De vier timers lopen onafhankelijk en gelijktijdig.
-5. Fout geklikt? **↶ Ongedaan maken** rechtsboven verwijdert de laatste registratie en
-   herberekent alles.
-6. Na afloop: **DATA** → exporteer CSV/JSON voor Excel of Power BI, en maak een back-up.
+## Snel starten
+
+### Op één laptop (geen installatie nodig)
+
+Open `index.html` in een browser. Klaar.
+
+### Met de hele groep tegelijk
+
+1. Volg eenmalig `SETUP.md` (gratis Supabase-project, SQL-script, app publiceren).
+2. Eén persoon: **+ Nieuwe run** → kies de week uit de orderlijst → *Online run* aanvinken.
+   Er verschijnt een runcode, bijvoorbeeld `INNOVO-4821`.
+3. De anderen openen dezelfde URL, tikken op **Meedoen**, vullen de code in en kiezen hun
+   werkstation. Ze zien daarna alleen hun eigen station, schermvullend.
+4. De coördinator houdt de laptop erbij: alle vier de stations naast elkaar plus het dashboard.
+
+## Meten tijdens de run
+
+Per werkstation: **START** → **PAUZE/WACHTEN** (met reden) → **HERVATTEN** → **GEREED** →
+**KWALITEITSCONTROLE**. Na GEREED schuift je station automatisch door naar de volgende motor
+uit de order; START staat meteen klaar. Fout getikt? **Ongedaan maken** draait de laatste
+actie terug.
 
 ## Hoe de meting werkt
 
-Elke klik wordt opgeslagen als een **event met een echte timestamp**. Alle KPI's worden telkens
+Elke tik wordt opgeslagen als een **event met een echte timestamp**. Alle KPI's worden telkens
 opnieuw uit die eventlog berekend — niets wordt "live" bijgehouden. Daardoor:
 
-- blijven de tijden kloppen als de browser hapert, je ververst of het tabblad even wegvalt;
-- kun je de laatste actie ongedaan maken zonder dat de rest scheeftrekt;
+- blijven de tijden kloppen als de browser hapert, je ververst, het scherm vergrendelt of
+  de wifi wegvalt;
+- kunnen vier mensen tegelijk schrijven zonder dat metingen elkaar overschrijven;
 - kun je de ruwe events exporteren en de berekening in Excel zelf natrekken.
+
+Events worden nooit gewijzigd of verwijderd (append-only). "Ongedaan maken" voegt een
+**correctie-event** toe; het oorspronkelijke event blijft zichtbaar in de historie.
+Telefoonklokken die voor- of achterlopen worden bij het verbinden gemeten en gecorrigeerd.
+Valt het netwerk weg, dan loopt de timer lokaal door, gaan de events in een wachtrij en
+worden ze automatisch verstuurd zodra er weer verbinding is.
 
 ## Definities (meetprotocol)
 
@@ -37,6 +60,7 @@ opnieuw uit die eventlog berekend — niets wordt "live" bijgehouden. Daardoor:
 | Wachttijd | som van de pauzesegmenten, met reden en TIMWOOD-categorie |
 | Rework-tijd | apart gemeten hersteltijd na afkeur, telt niet mee in de cycle time |
 | Lead time motor | eerste start van de motor → laatste goedkeuring van het laatste station |
+| Overdrachtswachttijd | gereed bij het vorige station → start bij het volgende, per motor |
 | Throughput | complete motoren ÷ verstreken runtijd (per uur) |
 | Productiviteit | complete motoren ÷ daadwerkelijk gewerkte uren (alle stations samen) |
 | First Pass Yield | complete motoren zonder enige afkeur ÷ alle complete motoren |
@@ -51,14 +75,33 @@ opnieuw uit die eventlog berekend — niets wordt "live" bijgehouden. Daardoor:
 
 ## Pagina's
 
-**PRODUCTIE** meetscherm · **DASHBOARD** KPI's, bottleneck, takt, trends · **KWALITEIT** FPY,
-fouten, rework · **VERSPILLING** TIMWOOD en wachtredenen · **PROCESSTABILITEIT** control chart ·
-**VERGELIJK RUNS** week 1 t/m 4 naast elkaar · **DATA** export, back-up, eventlog ·
-**INSTELLINGEN** namen, redenen, foutcategorieën.
+**PRODUCTIE** meetscherm met orderwachtrij · **DASHBOARD** KPI's, bottleneck, takt, trends,
+uitsplitsing per motorvariant · **KWALITEIT** FPY, fouten, rework · **VERSPILLING** TIMWOOD,
+wachtredenen, overdrachtswachttijd · **PROCESSTABILITEIT** control chart ·
+**ORDERS & MATERIAAL** weekorders, BOM, materiaalbehoefte, picklijsten ·
+**VERGELIJK RUNS** week 1 t/m 9 naast elkaar · **DATA** export, back-up, eventlog ·
+**INSTELLINGEN** namen, redenen, foutcategorieën, orders, BOM, database.
+
+## Orders en Bill of Materials
+
+De orders van Factory 2 voor week 1 tot en met 9 en het volledige assortiment
+(M-148030 t/m M-148041) zitten vast in de applicatie, inclusief de eigenschappen per variant:
+kleur, Road- of Cross-banden en zadel, en normaal of wide stuur.
+
+> **De artikelnummers in de Bill of Materials moeten nog ingevuld worden.** De officiële
+> BOM-bijlage van Innovo (vanaf pagina 107) zat niet bij het aangeleverde document. De
+> onderdelenlijst per variant is daarom afgeleid uit de productlijst en bevat bewust géén
+> verzonnen artikelnummers. Vul ze aan bij **INSTELLINGEN → Bill of Materials**, of
+> importeer ze in één keer als JSON. Daarna kloppen de materiaalbehoefte en de picklijsten
+> automatisch.
+
+Orders en BOM zijn volledig aanpasbaar zonder de code te wijzigen: toevoegen, wijzigen,
+verwijderen, importeren en exporteren als JSON.
 
 ## Let op
 
-- De data staat in **deze browser op deze laptop**. Maak na elke meetsessie een back-up via
-  **DATA → Back-up exporteren**.
-- **Demo-data** (DATA → Demo-data laden) is gegenereerde voorbeelddata, duidelijk gemarkeerd met
+- Zonder online database staat de data in **deze browser op dit apparaat**. Maak na elke
+  meetsessie een back-up via **DATA → Back-up exporteren**.
+- Eerdere lokale runs upload je met één knop: **DATA → Lokale runs uploaden naar de database**.
+- **Demo-data** (DATA → Demo-data laden) is gegenereerde voorbeelddata, overal gemarkeerd met
   een `DEMO`-label. Gebruik die nooit als meetresultaat in je verslag.
