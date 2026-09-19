@@ -31,9 +31,21 @@ Open `index.html` in een browser. Klaar.
 ## Meten tijdens de run
 
 Per werkstation: **START** → **PAUZE/WACHTEN** (met reden) → **HERVATTEN** → **GEREED** →
-**KWALITEITSCONTROLE**. Na GEREED schuift je station automatisch door naar de volgende motor
-uit de order; START staat meteen klaar. Fout getikt? **Ongedaan maken** draait de laatste
-actie terug.
+**KWALITEITSCONTROLE**.
+
+Na GEREED schuift je station **vanzelf door** naar de volgende motor uit de wachtrij:
+
+- Kun je meteen verder, dan loopt de timer direct. Geen extra klik.
+- Kun je nog niet verder, dan gaat het station automatisch op **Wachten**. Die tijd telt als
+  wachttijd en niet als werktijd, en de cycle time begint pas als je echt begint. Is de vorige
+  processtap nog niet klaar, dan vult de app zelf de reden in en onthoudt op wie je wacht.
+- Is de wachtrij leeg, dan verschijnt "Alle motoren gereed".
+
+Fout getikt? **Ongedaan maken** draait de laatste actie terug, inclusief het doorschuiven.
+
+De run sluit zichzelf zodra álle stations klaar zijn met álle motoren in de wachtrij; daarna
+verschijnt het eindrapport. Op het productiescherm zie je live op wie er nog gewacht wordt.
+Eerder stoppen kan met bevestiging, en wordt geregistreerd als voortijdig beëindigd.
 
 ## Hoe de meting werkt
 
@@ -68,19 +80,55 @@ worden ze automatisch verstuurd zodra er weer verbinding is.
 | Takt time | beschikbare productietijd ÷ klantvraag |
 | Bezettingsgraad | actieve tijd ÷ verstreken runtijd, per station |
 | Wachttijdpercentage | wachttijd ÷ verstreken runtijd, per station |
-| Bottleneck | station met de hoogste gemiddelde cycle time |
+| Actuele takt | verstreken runtijd ÷ voltooide motoren — ons werkelijke tempo |
+| Laatste takt | tijd tussen de laatste twee voltooide motoren |
+| Gepland aantal | verstreken productietijd ÷ takt time |
+| Veroorzaakte wachttijd | tijd dat anderen stilstonden doordat dít station nog niet klaar was |
+| Bottleneck | station met de meeste veroorzaakte wachttijd (valt terug op cycle time zolang er nog geen wachttijd is toegerekend) |
 | Lijnbalans | Σ gemiddelde cycle times ÷ (aantal stations × hoogste gemiddelde cycle time) |
 | Flow-efficiëntie | werktijd ÷ (werktijd + wachttijd + rework) |
 | Control chart | gemiddelde, standaarddeviatie en gemiddelde ± 3σ over de gekozen meting |
 
 ## Pagina's
 
-**PRODUCTIE** meetscherm met orderwachtrij · **DASHBOARD** KPI's, bottleneck, takt, trends,
-uitsplitsing per motorvariant · **KWALITEIT** FPY, fouten, rework · **VERSPILLING** TIMWOOD,
-wachtredenen, overdrachtswachttijd · **PROCESSTABILITEIT** control chart ·
+**PRODUCTIE** meetscherm met tempobalk en orderwachtrij · **DASHBOARD** KPI's, bottleneck,
+takt, planning versus output, trends, uitsplitsing per motorvariant · **EINDRAPPORT**
+kwaliteitsoverzicht per motor, actielijst en verbeteradvies · **KWALITEIT** FPY, fouten,
+rework · **VERSPILLING** TIMWOOD, wachtredenen, overdrachtswachttijd ·
+**PROCESSTABILITEIT** control chart ·
 **ORDERS & MATERIAAL** weekorders, BOM, materiaalbehoefte, picklijsten ·
 **VERGELIJK RUNS** week 1 t/m 9 naast elkaar · **DATA** export, back-up, eventlog ·
 **INSTELLINGEN** namen, redenen, foutcategorieën, orders, BOM, database.
+
+## Tempo en schema tijdens de run
+
+Boven het productiescherm staat een tempobalk met de vereiste takt time, de **actuele takt**
+(ons werkelijke tempo), de **laatste takt** (versnellen of vertragen we?), of we voor of achter
+op schema liggen — in motoren én in minuten — en de verwachte eindtijd met de vraag of we die
+binnen de beschikbare tijd halen. Per station staat naast het gemiddelde ook het tempo over
+de **laatste drie motoren**, zodat je een trend binnen de run ziet in plaats van één gemiddelde.
+
+Op het dashboard staat de planningslijn (recht, op basis van de takt time) naast de werkelijke
+output, zodat je ziet wáár je begon achter te lopen.
+
+## Bottleneck en verbeteradvies
+
+De bottleneck wordt bepaald op **veroorzaakte wachttijd**: op wie staat de rest in de praktijk
+het langst te wachten? Bij elke wachttijd met de reden "wachten op vorige werkstation" legt de
+app vast welk station de motor nog niet had doorgegeven. Daarbij staan ter onderbouwing de
+gemiddelde cycle time en de bezettingsgraad, een ranglijst van alle stations, en of het
+knelpunt structureel is (bij vrijwel elke motor) of incidenteel.
+
+Na afloop rekent de app de meetgegevens door en geeft maximaal vijf concrete tips, gesorteerd
+op geschatte tijdwinst. Elke tip bevat de waarneming met het cijfer erbij, de waarschijnlijke
+oorzaak, een concrete actie en de verwachte winst per motor en per run. De tips kijken naar de
+veroorzaakte wachttijd, de werkverdeling, de grootste wachtoorzaak en TIMWOOD-categorie, de
+variatie in cycle time, fouten en rework, het leereffect en de vergelijking met de vorige run —
+inclusief de vraag of het advies van vorige keer geholpen heeft. Het advies wordt bij de run
+opgeslagen en is te kopiëren of als tekstbestand te exporteren voor je verslag.
+
+Het leereffect wordt gemeten op de som van de cycle times, niet op de lead time: die loopt
+vanzelf op zodra er werk in de wachtrij staat en zegt dus niets over sneller werken.
 
 ## Orders en Bill of Materials
 
@@ -112,3 +160,6 @@ verwijderen, importeren en exporteren als JSON.
 - Eerdere lokale runs upload je met één knop: **DATA → Lokale runs uploaden naar de database**.
 - **Demo-data** (DATA → Demo-data laden) is gegenereerde voorbeelddata, overal gemarkeerd met
   een `DEMO`-label. Gebruik die nooit als meetresultaat in je verslag.
+- De app gaat ervan uit dat het **laatste werkstation de hoofdassemblage** is en de andere
+  stations nodig heeft; de overige stations werken zelfstandig. Daarop is het automatisch
+  doorschuiven gebaseerd. Wil je een strikte volgorde, kies dat dan bij het starten van de run.
