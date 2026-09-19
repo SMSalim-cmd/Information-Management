@@ -75,35 +75,58 @@ Dit maakt twee tabellen (`runs` en `events`), de beveiligingsregels en twee func
 > uit stap 2: zonder runcode kun je géén enkele run lezen, wijzigen of wissen. Gebruik nooit
 > de `service_role` key in de app — die omzeilt alle regels.
 
-## Stap 4 — De app koppelen
+## Stap 4 — De sleutels in `config.js` zetten
 
-1. Open de app, ga naar **INSTELLINGEN → Online samenwerken → Database instellen**.
-2. Plak de Project URL en de anon key, vul je eigen naam in en klik op
-   **Verbinding testen en opslaan**.
-3. De app meet meteen de klokafwijking van dat apparaat en laat die zien. Klopt dat,
-   dan staat de verbinding.
+Open `config.js` uit deze map en vul de twee waarden in:
 
-Dit doe je per apparaat één keer. Sneller: publiceer de app eerst (stap 5) en vul op elke
-telefoon dezelfde twee velden in.
+```js
+window.INNOVO_CONFIG = {
+  supabaseUrl: 'https://abcdefghijkl.supabase.co',
+  supabaseAnonKey: 'eyJhbGciOi...'
+};
+```
+
+Daarmee brengt de site de databasegegevens zelf mee: **iedereen die de URL opent is meteen
+verbonden** en hoeft alleen nog een runcode in te vullen. Je hoeft dus niet op vier telefoons
+sleutels over te typen.
+
+Laat je `config.js` leeg, dan werkt de app gewoon lokaal en kan iedereen de gegevens alsnog
+zelf invullen bij **INSTELLINGEN → Online samenwerken → Database instellen**.
 
 ## Stap 5 — De app publiceren
 
 Zodat iedereen hem via een URL op zijn telefoon kan openen. Kies één van de drie.
 
-### GitHub Pages (het eenvoudigst als de code al op GitHub staat)
+### Netlify Drop (het snelst — geen account nodig om te beginnen)
 
-1. Zet `index.html`, `sw.js`, `manifest.webmanifest` en de drie `icon-*.png`-bestanden in
-   de hoofdmap van de repository en push naar `main`.
+1. Zet deze bestanden samen in één map: `index.html`, `config.js`, `sw.js`,
+   `manifest.webmanifest` en de drie `icon-*.png`-bestanden.
+2. Ga naar <https://app.netlify.com/drop> en sleep die map in het venster.
+3. Je krijgt direct een URL. Via **Site configuration → Change site name** maak je er
+   bijvoorbeeld `innovo-motors.netlify.app` van.
+
+Een nieuwe versie zetten? Sleep de map opnieuw naar hetzelfde project via
+**Deploys → Drag and drop your site output folder here**.
+
+### Netlify gekoppeld aan GitHub (werkt zichzelf bij)
+
+1. **Add new site → Import an existing project → GitHub**, kies deze repository.
+2. Branch: `claude/production-measurement-dashboard-thd7n1` (of `main` als je die branch
+   eerst samenvoegt). Build command leeg laten, publish directory `.` — `netlify.toml`
+   in de repo vult dit al voor je in.
+3. Elke push werkt de site automatisch bij.
+
+> Let op: als je de repository openbaar maakt, staat je anon key ook openbaar in `config.js`.
+> Dat mag: die sleutel is publiek bedoeld en de beveiliging zit in de Row Level Security.
+> Wil je hem toch niet in Git hebben, gebruik dan Netlify Drop en houd `config.js` lokaal.
+
+### GitHub Pages
+
+1. Zet `index.html`, `config.js`, `sw.js`, `manifest.webmanifest` en de drie
+   `icon-*.png`-bestanden in de hoofdmap van de repository en push naar `main`.
 2. Ga op GitHub naar **Settings → Pages**.
 3. Bij *Source*: **Deploy from a branch**, branch **main**, map **/ (root)**. Klik **Save**.
 4. Na een minuut staat de app op `https://<gebruikersnaam>.github.io/<repo>/`.
-
-### Netlify (slepen en klaar)
-
-1. Ga naar <https://app.netlify.com/drop>.
-2. Sleep de map met alle bestanden in het venster.
-3. Je krijgt direct een URL. Via **Site settings → Change site name** maak je er
-   bijvoorbeeld `innovo-motors.netlify.app` van.
 
 ### Vercel
 
@@ -125,9 +148,9 @@ De app opent daarna schermvullend, zonder adresbalk, en start ook als het netwer
 
 1. **Eén persoon** start de run: **+ Nieuwe run** → kies de week uit de orderlijst →
    vink *Online run* aan → **Run starten**. Er verschijnt een runcode, bijvoorbeeld
-   `INNOVO-4821`.
+   `INNOVO-4821`. Controleer of de balk bovenin op **Online** staat.
 2. **De anderen** openen dezelfde URL op hun telefoon, tikken op **Meedoen**, vullen de
-   code in en kiezen hun werkstation.
+   code in en kiezen hun werkstation. Meer hoeven zij niet in te stellen.
 3. Iedereen ziet nu alleen zijn eigen station, schermvullend. Alles wat je tikt is binnen
    enkele seconden zichtbaar bij de rest en op het dashboard.
 4. Degene die coördineert gebruikt de laptop: daar staan alle vier de stations naast elkaar
@@ -149,6 +172,8 @@ runcode; de lokale kopie blijft gewoon staan.
 | *Geen run gevonden met code …* | Typefout, of de run is op een ánder Supabase-project aangemaakt. Controleer of alle apparaten dezelfde Project URL gebruiken. |
 | *new row violates row-level security policy* | Je schrijft naar een run waarvan je het id niet hebt. Doe opnieuw mee met de runcode. |
 | Statusbalk blijft op *Synchroniseren…* | Er is wel internet maar de database antwoordt niet. De metingen lopen lokaal door en worden later alsnog verstuurd — je verliest niets. |
+| Statusbalk blijft op *Lokaal* terwijl `config.js` is ingevuld | De telefoon heeft een oude versie in de cache. Ververs de pagina één keer hard, of verwijder de app van het beginscherm en zet hem opnieuw neer. |
+| Je hebt eerder handmatig andere sleutels ingevuld | Die eigen instelling wint van `config.js`. Ga naar INSTELLINGEN → Online samenwerken → **Verbinding vergeten** en ververs de pagina. |
 | Iedereen ziet elkaar, maar traag | Normaal is twee seconden. Op een heel slecht netwerk kan het oplopen; de volgorde van de metingen blijft kloppen omdat de tijd van de meting zelf wordt opgeslagen, niet de tijd van verzenden. |
 
 ## Wat er wél en niet beveiligd is

@@ -11,6 +11,8 @@ Werkt ook volledig zelfstandig op één laptop.
 | `index.html` | de volledige applicatie — open of publiceer alleen dit bestand |
 | `SETUP.md` | stappenplan om online samen te werken en de app te publiceren |
 | `supabase.sql` | databaseschema en beveiligingsregels, in één keer te draaien |
+| `config.js` | de Supabase-gegevens van de gepubliceerde site — één keer invullen, dan hoeft niemand ze op zijn telefoon in te typen |
+| `netlify.toml` | zorgt dat Netlify de map zonder build publiceert |
 | `sw.js`, `manifest.webmanifest`, `icon-*.png` | maken er een installeerbare app (PWA) van |
 
 ## Snel starten

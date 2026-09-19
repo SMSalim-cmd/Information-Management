@@ -1,0 +1,21 @@
+# Statische site: er valt niets te bouwen, alles staat in de hoofdmap.
+[build]
+  publish = "."
+  command = ""
+
+# De service worker en config.js mogen niet blijven hangen in de cache,
+# anders zien telefoons een oude versie of oude databasegegevens.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/config.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"

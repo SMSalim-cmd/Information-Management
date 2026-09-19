@@ -12,6 +12,10 @@
 <meta name="apple-mobile-web-app-title" content="Innovo PM">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
+<!-- Optioneel: config.js zet de databasegegevens voor de hele site klaar,
+     zodat niemand ze op zijn eigen telefoon hoeft in te typen.
+     Ontbreekt het bestand, dan werkt de app gewoon lokaal verder. -->
+<script src="config.js"></script>
 <style>
 :root{
   --navy:#0f2438; --navy2:#16344f; --navy3:#1d4265;
@@ -5440,10 +5444,13 @@ function renderCloudSettings() {
   const run = activeRun();
   el.innerHTML =
     '<div class="hint" style="margin-bottom:12px">Met een gratis Supabase-project werkt de hele groep tegelijk in dezelfde run, ' +
-    'ieder op een eigen telefoon. Het stappenplan staat in <b>SETUP.md</b> naast dit bestand.</div>' +
+    'ieder op een eigen telefoon. Het stappenplan staat in <b>SETUP.md</b> naast dit bestand.' +
+    (syncFromSite() ? ' De gegevens komen uit <b>config.js</b> van de gepubliceerde site, dus niemand hoeft ze zelf in te vullen.' : '') +
+    '</div>' +
     '<div class="grid g3" style="margin-bottom:12px">' +
     kpi('Status', syncConfigured() ? (SYNC_LABEL[SYNC.status] || SYNC_LABEL.off)[0] : 'Niet ingesteld',
-      syncConfigured() ? esc(SYNC.cfg.url) : 'alles blijft op dit apparaat', syncConfigured() ? 'ok' : '') +
+      syncConfigured() ? esc(SYNC.cfg.url) + (syncFromSite() ? ' · via config.js van de site' : ' · op dit apparaat ingesteld')
+        : 'alles blijft op dit apparaat', syncConfigured() ? 'ok' : '') +
     kpi('Dit apparaat', esc(SYNC.device.name || '—'),
       SYNC.device.stationId ? esc((DB.settings.stations.find(s => s.id === SYNC.device.stationId) || {}).name || '') : 'geen station gekozen') +
     kpi('Klokafwijking', SYNC.offsetOk ? ((SYNC.offset >= 0 ? '+' : '') + (SYNC.offset / 1000).toFixed(1) + ' s') : '—',
@@ -5525,6 +5532,18 @@ function loadSyncCfg() {
     SYNC.queue = Array.isArray(o.queue) ? o.queue : [];
     SYNC.offset = Number(o.offset) || 0;
   } catch (e) { /* standaardwaarden blijven staan */ }
+  /* Staan de databasegegevens in config.js naast de site, dan gelden die voor
+     iedereen die de pagina opent. Wie op zijn eigen apparaat iets anders heeft
+     ingesteld, houdt die eigen instelling. */
+  const site = window.INNOVO_CONFIG || {};
+  if (!SYNC.cfg.url && site.supabaseUrl && site.supabaseAnonKey) {
+    SYNC.cfg = { url: String(site.supabaseUrl).replace(/\/+$/, ''), key: String(site.supabaseAnonKey) };
+    SYNC.fromSite = true;
+  }
+}
+function syncFromSite() {
+  const site = window.INNOVO_CONFIG || {};
+  return !!(site.supabaseUrl && site.supabaseAnonKey && SYNC.cfg.url === String(site.supabaseUrl).replace(/\/+$/, ''));
 }
 function saveSyncCfg() {
   try {
