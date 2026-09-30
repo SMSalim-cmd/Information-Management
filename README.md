@@ -172,7 +172,10 @@ Tijden mogen als `09:15`, `9:15:30`, `09.15`, `2026-09-30 09:15`, `30-09-2026 09
 gewone Excel-tijdcel; wachttijd en rework als `90`, `1:30`, `2 min` of `1:01:30`.
 
 Bestaat er al een run met dezelfde naam of datum, dan kies je zelf: als nieuwe run toevoegen,
-samenvoegen met de bestaande run, of de bestaande run vervangen.
+samenvoegen met de bestaande run, of de bestaande run vervangen. Bij samenvoegen zegt de app
+vooraf hoeveel regels er al in staan; een motor met dezelfde naam wordt als dezelfde motor
+gezien en een meting die er al is blijft staan. Hetzelfde bestand twee keer inlezen verdubbelt
+dus niets — dat zou de aantallen en de FPY stilletjes verkeerd maken.
 
 Een geïmporteerde run wordt omgezet naar dezelfde events met dezelfde echte timestamps als een
 run die je zelf meet, dus alle KPI's, het eindrapport, de exports en de vergelijking tussen

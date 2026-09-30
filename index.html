@@ -1875,7 +1875,11 @@ function orderBatches(order, batchOrder) {
 /** Groepeert de wachtrij in batches: opeenvolgende motoren van hetzelfde model. */
 function computeBatches(queueOrder) {
   const out = [];
-  queueOrder.forEach(m => {
+  /* Een motor die uit de rij is gehaald hoort niet in een batch: hij wordt niet
+     gebouwd, dus hij mag de batchgrootte niet opblazen en al helemaal geen
+     batch in tweeën splitsen (dat zou een modelwissel verzinnen die er niet is). */
+  queueOrder.forEach(m => { m.batchNr = null; m.batchPos = null; m.batchSize = null; m.batchIdx = null; });
+  queueOrder.filter(m => !m.cancelled).forEach(m => {
     const last = out[out.length - 1];
     if (last && last.sku === (m.sku || '')) last.motors.push(m);
     else out.push({ sku: m.sku || '', motors: [m] });
@@ -8067,9 +8071,29 @@ function importBuildEvents(run) {
     }, data));
   };
 
+  /* Bij samenvoegen sluiten we aan op wat er al in de run staat: een motor met
+     dezelfde naam is dezelfde motor, en een meting die er al is laten we staan.
+     Anders zou hetzelfde bestand twee keer inlezen alle aantallen verdubbelen. */
+  const prev = run && run.events && run.events.length ? deriveRun(run) : null;
+  const byCode = {};
+  let maxNr = 0;
+  if (prev) prev.motorList.forEach(m => {
+    byCode[normHead(m.code)] = m;
+    if (m.nr > maxNr) maxNr = m.nr;
+  });
+  const alreadyMeasured = r => {
+    if (!prev) return false;
+    const m = byCode[normHead(r.motor)];
+    if (!m) return false;
+    const t = prev.tasks[m.id + '|' + r.stationId];
+    return !!(t && t.startedAt != null);
+  };
+  const rows = good.filter(r => !alreadyMeasured(r));
+  const skipped = good.length - rows.length;
+
   /* motoren in volgorde van hun eerste starttijd */
   const motors = {};
-  good.forEach(r => {
+  rows.forEach(r => {
     if (!motors[r.motor]) motors[r.motor] = { label: r.motor, sku: r.sku || '', first: r.start, rows: [] };
     const m = motors[r.motor];
     if (r.sku && !m.sku) m.sku = r.sku;
@@ -8078,13 +8102,16 @@ function importBuildEvents(run) {
   });
   const list = Object.keys(motors).map(k => motors[k]).sort((a, b) => a.first - b.first);
   const idOf = {};
-  list.forEach((m, i) => {
-    m.id = uid(); m.nr = i + 1;
+  let added = 0;
+  list.forEach(m => {
+    const ex = byCode[normHead(m.label)];
+    if (ex) { m.id = ex.id; m.nr = ex.nr; m.existing = true; idOf[m.label] = ex.id; return; }
+    m.id = uid(); m.nr = maxNr + (++added);
     idOf[m.label] = m.id;
     push(m.first, 'motor_create', { motorId: m.id, nr: m.nr, sku: m.sku, label: m.label }, true);
   });
 
-  good.forEach(r => {
+  rows.forEach(r => {
     const mid = idOf[r.motor];
     const cyc = r.done - r.start;
     push(r.start, 'start', { motorId: mid, stationId: r.stationId });
@@ -8120,7 +8147,25 @@ function importBuildEvents(run) {
   });
 
   evs.sort((a, b) => a.ts - b.ts || a.seq - b.seq);
-  return { events: evs, motors: list };
+  return { events: evs, motors: list, rows: rows.length, skipped: skipped, newMotors: added };
+}
+
+/** Hoeveel regels staan er al in de gekozen run? Dat willen we vóór het
+    importeren zeggen, niet erna. */
+function importOverlap() {
+  if (IMP.conflict !== 'merge' || !IMP.targetRunId) return 0;
+  const run = DB.runs.find(r => r.id === IMP.targetRunId);
+  if (!run || !run.events.length) return 0;
+  const D = deriveRun(run);
+  const byCode = {};
+  D.motorList.forEach(m => byCode[normHead(m.code)] = m);
+  return IMP.rows.filter(r => {
+    if (r.errs.length) return false;
+    const m = byCode[normHead(r.motor)];
+    if (!m) return false;
+    const t = D.tasks[m.id + '|' + r.stationId];
+    return !!(t && t.startedAt != null);
+  }).length;
 }
 
 /** Maakt of vult de run en schrijft hem weg. */
@@ -8154,12 +8199,16 @@ function importCommit() {
   else stations.forEach(s => { if (!run.stations.some(x => x.id === s.id)) run.stations.push(s); });
 
   const built = importBuildEvents(run);
+  if (!built.events.length) {
+    toast('Deze regels staan al allemaal in de gekozen run; er is niets toegevoegd.', true);
+    return null;
+  }
   /* de herkomst als event, zodat het label "geïmporteerd" ook meereist naar
      de apparaten die later met de runcode meedoen */
   built.events.push({
-    id: uuid(), ts: built.events.length ? built.events[0].ts : now(), seq: 0,
+    id: uuid(), ts: built.events[0].ts, seq: 0,
     type: 'run_import', actor: 'import', source: 'import', derived: true,
-    file: IMP.fileName, rows: good.length, motors: built.motors.length
+    file: IMP.fileName, rows: built.rows, skipped: built.skipped, motors: built.motors.length
   });
   run.events = run.events.concat(built.events);
   run.events.sort((a, b) => a.ts - b.ts || (a.seq || 0) - (b.seq || 0));
@@ -8169,10 +8218,13 @@ function importCommit() {
   run.imported = true;
   run.importedAt = run.importedAt || now();
   run.importSource = run.importSource || IMP.fileName;
-  run.importRows = (run.importRows || 0) + good.length;
+  run.importRows = (run.importRows || 0) + built.rows;
   DB.activeRunId = run.id;
   saveDB(true);
-  return { run: run, motors: built.motors.length, rows: good.length };
+  return {
+    run: run, motors: built.motors.length, rows: built.rows,
+    skipped: built.skipped, newMotors: built.newMotors
+  };
 }
 
 /* ------------------------------------------------------------- de wizard */
@@ -8348,7 +8400,8 @@ function importStep3(m) {
       ['merge', 'Samenvoegen met de bestaande run', 'De regels worden als extra events toegevoegd; niets wordt gewist.'],
       ['replace', 'De bestaande run vervangen', 'De bestaande run wordt verwijderd en opnieuw opgebouwd uit dit bestand.']]
         .map(o => '<button type="button" data-conf="' + o[0] + '"' + (IMP.conflict === o[0] ? ' class="on"' : '') + '>' +
-          o[1] + '<small>' + o[2] + '</small></button>').join('') + '</div></div>'
+          o[1] + '<small>' + o[2] + '</small></button>').join('') + '</div>' +
+      '<div id="impOverlap" style="margin-top:10px"></div></div>'
       : '') +
     '<div id="impResult" style="margin-top:12px"></div>';
 
@@ -8360,10 +8413,29 @@ function importStep3(m) {
   bind('impAvail', 'availableMin', true); bind('impDemand', 'demand', true); bind('impNotes', 'notes');
   $('#impDate3', m).onchange = () => { IMP.date = $('#impDate3', m).value || todayISO(); importStep3(m); };
   if ($('#impTarget', m)) $('#impTarget', m).onchange = () => { IMP.targetRunId = $('#impTarget', m).value; };
+  /* bij samenvoegen vooraf zeggen hoeveel regels al in die run staan */
+  const showOverlap = () => {
+    const el = $('#impOverlap', m); if (!el) return;
+    const n = importOverlap();
+    if (IMP.conflict !== 'merge') { el.innerHTML = ''; return; }
+    el.innerHTML = n === 0
+      ? '<div class="hint">Geen van deze regels staat al in die run; alle ' + good.length +
+      ' regels worden toegevoegd.</div>'
+      : n === good.length
+        ? '<div class="banner red" style="margin:0"><div><b>Deze regels staan er al allemaal in</b>' +
+        'Samenvoegen voegt dan niets toe. Kies "vervangen" als je de meting wilt overdoen.</div></div>'
+        : '<div class="banner info" style="margin:0"><div><b>' + n + ' van de ' + good.length +
+        ' regels staan er al in</b>Die laten we staan; de overige ' + (good.length - n) +
+        ' worden toegevoegd. Een motor met dezelfde naam wordt als dezelfde motor gezien, ' +
+        'dus er komt niets dubbel in te staan.</div></div>';
+  };
   $$('[data-conf]', m).forEach(b => b.onclick = () => {
     IMP.conflict = b.dataset.conf;
     $$('[data-conf]', m).forEach(x => x.className = x === b ? 'on' : '');
+    showOverlap();
   });
+  if ($('#impTarget', m)) $('#impTarget', m).addEventListener('change', showOverlap);
+  showOverlap();
 
   setModalButtons(m, [
     { label: 'Terug', onClick: mm => { importStep2(mm); return false; } },
@@ -8375,8 +8447,9 @@ function importStep3(m) {
         showTab('productie');
         renderAll();
         alertBox('Import gelukt',
-          '<b>' + esc(res.run.name) + '</b> bevat nu ' + res.motors + ' motoren uit ' + res.rows + ' regels. ' +
-          'De run staat gemarkeerd als <b>geïmporteerd</b> en doet gewoon mee in het dashboard, het eindrapport ' +
+          '<b>' + esc(res.run.name) + '</b> bevat nu ' + res.motors + ' motoren uit ' + res.rows + ' regels.' +
+          (res.skipped ? ' ' + res.skipped + ' regels stonden er al in en zijn ongewijzigd gelaten.' : '') +
+          ' De run staat gemarkeerd als <b>geïmporteerd</b> en doet gewoon mee in het dashboard, het eindrapport ' +
           'en de vergelijking tussen runs.');
         return false;
       }
