@@ -8031,13 +8031,18 @@ function importValidate() {
     rows.push(row);
   });
 
-  /* dubbele combinatie motor + station */
+  /* Dubbele combinatie motor + station. Eén werkstation kan per motor maar één
+     cycle time hebben, dus we houden de eerste regel aan en slaan de rest over.
+     Twee regels samenvoegen zou een verzonnen tijd opleveren. */
   const seen = {};
   rows.forEach(r => {
     if (!r.motor || !r.stationId) return;
     const k = r.motor + '|' + r.stationId;
-    if (seen[k]) r.warns.push('Deze motor staat al op regel ' + seen[k] + ' bij hetzelfde werkstation; beide regels worden overgenomen.');
-    else seen[k] = r.line;
+    if (seen[k]) {
+      r.dup = true;
+      r.warns.push('Deze motor staat al op regel ' + seen[k] + ' bij hetzelfde werkstation; ' +
+        'die eerste regel houden we aan en deze slaan we over.');
+    } else seen[k] = r.line;
   });
   /* één modelcode per motor */
   const byMotor = {};
@@ -8088,7 +8093,7 @@ function importBuildEvents(run) {
     const t = prev.tasks[m.id + '|' + r.stationId];
     return !!(t && t.startedAt != null);
   };
-  const rows = good.filter(r => !alreadyMeasured(r));
+  const rows = good.filter(r => !r.dup && !alreadyMeasured(r));
   const skipped = good.length - rows.length;
 
   /* motoren in volgorde van hun eerste starttijd */
@@ -8161,6 +8166,7 @@ function importOverlap() {
   D.motorList.forEach(m => byCode[normHead(m.code)] = m);
   return IMP.rows.filter(r => {
     if (r.errs.length) return false;
+    if (r.dup) return true;
     const m = byCode[normHead(r.motor)];
     if (!m) return false;
     const t = D.tasks[m.id + '|' + r.stationId];
@@ -8330,7 +8336,8 @@ function importStep2(m) {
 }
 
 function importCheckBlock() {
-  const okRows = IMP.rows.length - IMP.errors;
+  const dups = IMP.rows.filter(r => !r.errs.length && r.dup).length;
+  const okRows = IMP.rows.length - IMP.errors - dups;
   const bad = IMP.rows.filter(r => r.errs.length || r.warns.length).slice(0, 60);
   const missing = IMPORT_FIELDS.filter(f => f.req && IMP.map[f.key] < 0);
   return (missing.length
@@ -8339,7 +8346,8 @@ function importCheckBlock() {
     : '') +
     '<div class="grid g4" style="margin-bottom:10px">' +
     kpi('Regels in het bestand', IMP.rows.length, 'zonder de kopregel') +
-    kpi('Bruikbaar', okRows, okRows === IMP.rows.length ? 'alles kan worden ingelezen' : 'deze regels worden ingelezen',
+    kpi('Bruikbaar', okRows, okRows === IMP.rows.length ? 'alles kan worden ingelezen'
+      : dups ? 'deze regels worden ingelezen · ' + dups + ' dubbel' : 'deze regels worden ingelezen',
       okRows ? 'ok' : 'bad') +
     kpi('Fouten', IMP.errors, IMP.errors ? 'deze regels slaan we over' : 'geen fouten gevonden', IMP.errors ? 'bad' : 'ok') +
     kpi('Waarschuwingen', IMP.warns, IMP.warns ? 'kijk ze even na' : 'niets bijzonders', IMP.warns ? 'warn' : 'ok') +
