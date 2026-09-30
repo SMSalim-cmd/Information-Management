@@ -220,6 +220,7 @@ canvas{display:block;width:100%}
 .banner.info{background:var(--blue2);border-color:#bcd8f5;color:#0d4f9c}
 .banner.warn{background:var(--amber2);border-color:#f2ddb4;color:#8a5a00}
 .banner.red{background:var(--red2);border-color:#f3c9c9;color:#9c1f1f}
+.banner.ok{background:var(--green2);border-color:#b6e3c6;color:#14653a}
 .banner.demo{background:#fff4e5;border-color:#f0c98a;color:#8a5200}
 .banner b{display:block}
 
@@ -301,6 +302,93 @@ details.def .dd b{color:var(--txt)}
   .tip dl{grid-template-columns:1fr} .tip dt{padding-top:6px}
 }
 
+/* ---------- afteltimer ---------- */
+.cd{display:flex;gap:18px;align-items:stretch;background:#fff;border:1px solid var(--line);
+  border-radius:12px;box-shadow:var(--sh);overflow:hidden;border-left:7px solid var(--grey);flex-wrap:wrap}
+.cd-main{padding:14px 20px;flex:1;min-width:250px}
+.cd-lab{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);font-weight:800}
+.cd-val{font-size:clamp(44px,7vw,76px);font-weight:800;letter-spacing:-.04em;line-height:1;
+  font-variant-numeric:tabular-nums;margin:2px 0}
+.cd-sub{font-size:12.5px;color:var(--txt2)}
+.cd-side{display:flex;gap:16px;align-items:center;padding:12px 18px;background:#f7f9fb;
+  border-left:1px solid var(--line2);flex-wrap:wrap}
+.cd-cell{display:flex;flex-direction:column;line-height:1.2;min-width:110px}
+.cd-cell i{font-style:normal;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--txt3);font-weight:800}
+.cd-cell b{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.cd-cell span{font-size:11.5px;color:var(--txt2)}
+.cd.cd-good{border-left-color:var(--green)} .cd.cd-good .cd-val{color:var(--green)}
+.cd.cd-warn{border-left-color:var(--amber)} .cd.cd-warn .cd-val{color:var(--amber)}
+.cd.cd-over{border-left-color:var(--red);background:#fff6f6} .cd.cd-over .cd-val{color:var(--red)}
+b.cd-good{color:var(--green)} b.cd-warn{color:var(--amber)} b.cd-over{color:var(--red)}
+.bigt.cd-good{color:var(--green)} .bigt.cd-warn{color:var(--amber)} .bigt.cd-over{color:var(--red)}
+.bigt.cd-neu{color:var(--txt)}
+@keyframes blinker{50%{opacity:.25}}
+.blink{animation:blinker 1s step-start infinite}
+
+/* ---------- tijd is om ---------- */
+#timeup{position:fixed;inset:0;background:rgba(150,20,20,.96);z-index:150;display:none;
+  align-items:center;justify-content:center;padding:20px;color:#fff}
+#timeup.on{display:flex}
+.tu-box{max-width:620px;text-align:center}
+.tu-big{font-size:clamp(46px,11vw,92px);font-weight:800;letter-spacing:-.03em;line-height:1;
+  animation:blinker 1.1s step-start infinite}
+.tu-sub{font-size:clamp(22px,5vw,38px);font-weight:800;letter-spacing:.12em;margin-bottom:18px}
+.tu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:14px}
+.tu-grid>div{background:rgba(255,255,255,.14);border-radius:10px;padding:10px}
+.tu-grid i{font-style:normal;display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;opacity:.85}
+.tu-grid b{font-size:26px}
+.tu-hint{font-size:13.5px;opacity:.9}
+
+/* ---------- batches ---------- */
+.batchstrip{display:flex;gap:12px;overflow-x:auto;padding:2px 2px 10px}
+.batch{flex:0 0 auto;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh);
+  border-top:4px solid var(--line);overflow:hidden}
+.batch.on{border-top-color:var(--green)} .batch.done{border-top-color:var(--blue);opacity:.72}
+.batch-h{display:flex;justify-content:space-between;gap:14px;align-items:baseline;padding:9px 13px;
+  background:#f7f9fb;border-bottom:1px solid var(--line2);white-space:nowrap}
+.batch-h b{font-size:14px;font-family:inherit}
+.batch-n{font-size:12px;color:var(--txt2)}
+.batch-p{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.batch-m{display:flex;gap:9px;padding:10px 12px}
+.bm{min-width:120px}
+.bm-t{display:flex;gap:6px;align-items:baseline;font-size:13.5px}
+.bm.ok .bm-t b{color:var(--blue)}
+/* ---------- batchvolgorde in het runformulier ---------- */
+.bord{display:flex;flex-direction:column;gap:6px}
+.bord-r{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);
+  border-radius:9px;padding:7px 9px 7px 11px}
+.bord-r .nr{width:22px;height:22px;border-radius:50%;background:var(--blue2);color:var(--blue);
+  font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.bord-r .sku{font-weight:800;font-size:13.5px;font-variant-numeric:tabular-nums}
+.bord-r .nm{color:var(--txt2);font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bord-r .cnt{font-size:12.5px;font-weight:700;white-space:nowrap}
+.bord-b{display:flex;gap:4px;flex:0 0 auto}
+.bord-b button{width:30px;height:30px;border:1px solid var(--line);background:#f7f9fb;border-radius:7px;
+  cursor:pointer;font-size:13px;line-height:1;color:var(--txt);padding:0}
+.bord-b button:hover:not(:disabled){background:#eaf0f5}
+.bord-b button:disabled{opacity:.35;cursor:default}
+.chip-switch{margin-top:6px;background:var(--amber2);color:var(--amber);border-radius:7px;padding:5px 9px;
+  font-size:12px;font-weight:800;text-align:center}
+.chgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:10px}
+.chcard{background:#fff;border:1px solid #f0c98a;border-radius:9px;padding:9px 12px}
+.chw{font-weight:800;font-size:13.5px;margin-bottom:3px}
+.chrow{font-size:12.5px;padding:1px 0}
+.chrow.add{color:var(--green)} .chrow.remove{color:var(--red)} .chrow.qty{color:var(--blue)}
+
+/* ---------- import ---------- */
+.impsteps{display:flex;gap:8px;margin-bottom:14px}
+.impstep{flex:1;padding:7px 10px;border-radius:8px;background:#eef2f6;color:var(--txt3);
+  font-size:12px;font-weight:800;text-align:center}
+.impstep.on{background:var(--blue);color:#fff}
+.impstep.done{background:var(--green2);color:var(--green)}
+.imperr{font-size:12.5px;padding:3px 0;color:var(--red)}
+.impwarn{font-size:12.5px;padding:3px 0;color:var(--amber)}
+
+@media(max-width:680px){
+  .cd-side{border-left:0;border-top:1px solid var(--line2);width:100%}
+  .cd-val{font-size:clamp(40px,14vw,64px)}
+}
+
 /* ---------- synchronisatiebalk ---------- */
 .syncbar{display:flex;align-items:center;gap:8px;padding:5px 11px;border-radius:20px;font-size:12px;
   font-weight:700;background:#24486c;color:#cfe2f4;white-space:nowrap;cursor:pointer;border:1px solid #35597e}
@@ -347,6 +435,15 @@ details.def .dd b{color:var(--txt)}
   min-height:48px;font-size:14px;text-transform:none;font-weight:700}
 .mnext{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 13px;display:flex;
   justify-content:space-between;align-items:center;gap:10px;font-size:13.5px;box-shadow:var(--sh)}
+.mrun{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;
+  border:1px solid var(--line);border-left:6px solid var(--grey);border-radius:12px;padding:9px 14px;box-shadow:var(--sh)}
+.mrun span{font-size:11.5px;color:var(--txt2)}
+.mrun b{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+.mrun.cd-good{border-left-color:var(--green)} .mrun.cd-good b{color:var(--green)}
+.mrun.cd-warn{border-left-color:var(--amber)} .mrun.cd-warn b{color:var(--amber)}
+.mrun.cd-over{border-left-color:var(--red);background:#fff6f6} .mrun.cd-over b{color:var(--red)}
+.mtimer.cd-good{color:var(--green)} .mtimer.cd-warn{color:var(--amber)}
+.mtimer.cd-over{color:var(--red)} .mtimer.cd-neu{color:var(--txt)}
 .mnext b{display:block;font-size:15px}
 .mnext .hint{white-space:nowrap}
 .mnext>div:last-child{flex:none}
@@ -426,16 +523,23 @@ details.def .dd b{color:var(--txt)}
   <div id="prodBanner"></div>
 
   <div class="sec">
+    <h2>Tijd</h2>
+    <div id="countdown"></div>
+  </div>
+
+  <div id="changeWarn" class="sec"></div>
+
+  <div class="sec">
     <h2>Tempo — waar staan we nu?</h2>
     <div id="tempoBar"></div>
   </div>
 
   <div class="sec">
-    <h2>Orderwachtrij</h2>
+    <h2>Orderwachtrij per batch</h2>
     <div id="queueProgress"></div>
     <div style="display:flex;gap:12px;align-items:flex-start;margin-top:10px">
       <button class="btn pri" id="btnNewMotor" style="padding:14px 16px;font-weight:800;white-space:nowrap">+ MOTOR TOEVOEGEN</button>
-      <div class="motorstrip" id="motorStrip" style="flex:1"></div>
+      <div class="batchstrip" id="batchStrip" style="flex:1"></div>
     </div>
   </div>
 
@@ -531,6 +635,21 @@ details.def .dd b{color:var(--txt)}
   </div>
 
   <div class="sec">
+    <h2>Modelwissels en omsteltijd</h2>
+    <div id="dashChangeover"></div>
+  </div>
+
+  <div class="sec">
+    <h2>Per modelcode</h2>
+    <div class="tblwrap"><table class="tbl" id="tblModels"></table></div>
+  </div>
+
+  <div class="sec">
+    <h2>Opstartkosten per batch — eerste motor tegenover de rest</h2>
+    <div class="tblwrap"><table class="tbl" id="tblBatches"></table></div>
+  </div>
+
+  <div class="sec">
     <h2>Uitsplitsing per motorvariant</h2>
     <div class="tblwrap"><table class="tbl" id="tblVariants"></table></div>
   </div>
@@ -546,6 +665,11 @@ details.def .dd b{color:var(--txt)}
 <section class="page" id="page-eindrapport">
   <div id="finBanner"></div>
   <div class="sec"><div class="grid g4" id="finKpis"></div></div>
+
+  <div class="sec">
+    <h2>Tijdsverantwoording</h2>
+    <div id="finTime"></div>
+  </div>
 
   <div class="sec">
     <h2>Nog te herstellen</h2>
@@ -743,6 +867,7 @@ details.def .dd b{color:var(--txt)}
         <button class="btn" data-exp="motors">CSV · Motoren</button>
         <button class="btn" data-exp="defects">CSV · Afkeuringen</button>
         <button class="btn" data-exp="segments">CSV · Tijdsegmenten</button>
+        <button class="btn" data-exp="changeover">CSV · Batches en omstellen</button>
         <button class="btn" data-exp="kpi">CSV · KPI-samenvatting</button>
         <button class="btn" data-exp="final">CSV · Eindrapport kwaliteit</button>
         <button class="btn" data-exp="advice">Tekst · Verbeteradvies</button>
@@ -751,6 +876,22 @@ details.def .dd b{color:var(--txt)}
       </div>
     </div>
   </div>
+  <div class="sec">
+    <h2>Data importeren uit Excel</h2>
+    <div class="card" style="padding:16px">
+      <div class="hint" style="margin-bottom:10px">Metingen van eerdere weken die nog niet in de app staan, kun je hier
+        invoeren via een Excel- of CSV-bestand. Download eerst het sjabloon: daarin staan de juiste kolommen en een
+        voorbeeldregel.</div>
+      <div class="btnrow">
+        <button class="btn pri" id="btnImport">Bestand kiezen en importeren</button>
+        <button class="btn" id="btnTplXlsx">Sjabloon downloaden (Excel)</button>
+        <button class="btn" id="btnTplCsv">Sjablonen downloaden (CSV)</button>
+      </div>
+      <input type="file" id="fileImport" accept=".xlsx,.csv,text/csv" style="display:none">
+      <div class="hint" style="margin-top:10px" id="importInfo"></div>
+    </div>
+  </div>
+
   <div class="sec">
     <h2>Back-up</h2>
     <div class="card" style="padding:16px">
@@ -845,6 +986,10 @@ details.def .dd b{color:var(--txt)}
     </div>
   </div>
   <div class="sec">
+    <h2>Weergave en streeftijden</h2>
+    <div class="card" style="padding:16px" id="setDisp"></div>
+  </div>
+  <div class="sec">
     <h2>Online samenwerken</h2>
     <div class="card" style="padding:16px" id="setCloud"></div>
   </div>
@@ -865,6 +1010,8 @@ details.def .dd b{color:var(--txt)}
 </section>
 
 </main>
+
+<div id="timeup"></div>
 
 <div id="mobile">
   <div class="mtop">
@@ -966,8 +1113,13 @@ function defaultSettings() {
       { id: 'r6', label: 'Fout herstellen / rework', tim: 'Defects' },
       { id: 'r7', label: 'Overleg / instructie', tim: 'Talent' },
       { id: 'r8', label: 'Storing', tim: 'Waiting' },
-      { id: 'r9', label: 'Anders', tim: 'Waiting' }
+      { id: 'r9', label: 'Anders', tim: 'Waiting' },
+      { id: 'r10', label: 'Omstellen naar ander model', tim: 'Waiting' }
     ],
+    /* Omsteltijd bij een modelwissel is geen gewone wachttijd. De lijn staat
+       stil terwijl er andere onderdelen klaargezet worden; standaard rekenen we
+       dat toe aan Waiting, maar dat is hier aanpasbaar. */
+    changeoverTim: 'Waiting',
     catalog: CATALOG.map(c => Object.assign({}, c)),
     orders: defaultOrders(),
     bom: defaultBom(),
@@ -1012,6 +1164,7 @@ function normaliseDB(o) {
     if (Array.isArray(o.settings.defectTypes) && o.settings.defectTypes.length) d.settings.defectTypes = o.settings.defectTypes;
     if (Array.isArray(o.settings.catalog) && o.settings.catalog.length) d.settings.catalog = o.settings.catalog;
     if (Array.isArray(o.settings.orders) && o.settings.orders.length) d.settings.orders = o.settings.orders;
+    if (o.settings.changeoverTim) d.settings.changeoverTim = o.settings.changeoverTim;
     if (o.settings.bom && typeof o.settings.bom === 'object') {
       /* Eerdere versies hadden een uit de productlijst afgeleide BOM (rijen met
          derived:true) omdat de bijlage van Innovo nog niet beschikbaar was.
@@ -1169,6 +1322,15 @@ function deriveRun(run) {
         const m = D.motors[ev.motorId];
         if (m) m.pos = ++maxPos;
         logit(ev, mName(ev.motorId) + ' achteraan de wachtrij gezet' + (ev.reason ? ': ' + ev.reason : ''));
+        break;
+      }
+      case 'queue_reorder': {
+        /* de volledige nieuwe volgorde als lijst motor-ID's; alleen de posities
+           veranderen, er wordt niets gewist — de meting blijft dus intact */
+        const ord = ev.order || [];
+        ord.forEach((id, i) => { const m = D.motors[id]; if (m) m.pos = i; });
+        if (ord.length > maxPos) maxPos = ord.length;
+        logit(ev, ev.label || 'Volgorde van de wachtrij aangepast');
         break;
       }
       case 'motor_cancel': {
@@ -1380,6 +1542,9 @@ function deriveRun(run) {
   /* wachtrijvolgorde: positie in de order, met uitgestelde motoren achteraan */
   D.queueOrder = D.motorList.slice().sort((a, b) =>
     (a.pos == null ? a.nr : a.pos) - (b.pos == null ? b.nr : b.pos) || a.nr - b.nr);
+
+  /* batches: opeenvolgende motoren van hetzelfde model */
+  D.batches = computeBatches(D.queueOrder);
 
   return D;
 }
@@ -1626,12 +1791,18 @@ function pickList(order, stations) {
   return per.filter(b => b.rows.length);
 }
 
-/** Bouwt de motorwachtrij voor een week: Motor 001..0NN met de juiste variant. */
-function buildQueue(order, mix) {
+/** Bouwt de motorwachtrij voor een week: Motor 001..0NN met de juiste variant.
+    Standaard per model gegroepeerd (batches achter elkaar). `batchOrder` is een
+    lijst product-ID's die de volgorde van de batches bepaalt. */
+function buildQueue(order, mix, batchOrder) {
   const items = [];
-  const lines = (order.lines || []).filter(l => l.amount > 0);
+  let lines = (order.lines || []).filter(l => l.amount > 0);
+  if (batchOrder && batchOrder.length) {
+    lines = batchOrder.map(sku => lines.find(l => l.sku === sku)).filter(Boolean)
+      .concat(lines.filter(l => batchOrder.indexOf(l.sku) < 0));
+  }
   if (mix === 'mixed') {
-    /* om en om door de varianten heen (gelijkmatige mix) */
+    /* om en om door de modellen heen (gelijkmatige mix) */
     const left = lines.map(l => ({ sku: l.sku, n: l.amount }));
     let guard = 0;
     while (left.some(l => l.n > 0) && guard++ < 1000) {
@@ -1641,6 +1812,57 @@ function buildQueue(order, mix) {
     lines.forEach(l => { for (let i = 0; i < l.amount; i++) items.push(l.sku); });
   }
   return items.map((sku, i) => ({ motorId: 'q' + uid(), nr: i + 1, sku: sku, pos: i }));
+}
+
+/** De batches van een order: per model het aantal, in de gekozen volgorde. */
+function orderBatches(order, batchOrder) {
+  let lines = (order.lines || []).filter(l => l.amount > 0);
+  if (batchOrder && batchOrder.length) {
+    lines = batchOrder.map(sku => lines.find(l => l.sku === sku)).filter(Boolean)
+      .concat(lines.filter(l => batchOrder.indexOf(l.sku) < 0));
+  }
+  return lines.map(l => ({ sku: l.sku, amount: l.amount, name: variantName(l.sku) }));
+}
+
+/** Groepeert de wachtrij in batches: opeenvolgende motoren van hetzelfde model. */
+function computeBatches(queueOrder) {
+  const out = [];
+  queueOrder.forEach(m => {
+    const last = out[out.length - 1];
+    if (last && last.sku === (m.sku || '')) last.motors.push(m);
+    else out.push({ sku: m.sku || '', motors: [m] });
+  });
+  out.forEach((b, i) => {
+    b.nr = i + 1;
+    b.name = b.sku ? variantName(b.sku) : 'Zonder model';
+    b.short = b.sku ? variantShort(b.sku) : 'Zonder model';
+    b.size = b.motors.length;
+    b.motors.forEach((m, j) => {
+      m.batchNr = b.nr; m.batchPos = j + 1; m.batchSize = b.size; m.batchIdx = i;
+    });
+  });
+  return out;
+}
+
+/** Welke onderdelen veranderen er als we van het ene model naar het andere gaan?
+    Per werkstation, zodat ieder weet wat hij moet klaarzetten. */
+function bomDiff(fromSku, toSku, stations) {
+  const key = r => r.part + '|' + (r.code || '');
+  const a = {}, b = {};
+  bomFor(fromSku).forEach(r => a[key(r)] = r);
+  bomFor(toSku).forEach(r => b[key(r)] = r);
+  const rows = [];
+  Object.keys(b).forEach(k => {
+    if (!a[k]) rows.push({ kind: 'add', part: b[k].part, qty: b[k].qty, stationIdx: b[k].stationIdx });
+    else if (a[k].qty !== b[k].qty) rows.push({ kind: 'qty', part: b[k].part, qty: b[k].qty, was: a[k].qty, stationIdx: b[k].stationIdx });
+  });
+  Object.keys(a).forEach(k => {
+    if (!b[k]) rows.push({ kind: 'remove', part: a[k].part, qty: a[k].qty, stationIdx: a[k].stationIdx });
+  });
+  const per = (stations || []).map((s, i) => ({ station: s, idx: i, rows: rows.filter(r => r.stationIdx === i) }));
+  const rest = rows.filter(r => !(stations || [])[r.stationIdx]);
+  if (rest.length) per.push({ station: { worker: 'Overig', name: 'niet aan een station gekoppeld' }, idx: -1, rows: rest });
+  return { rows: rows, perStation: per.filter(p => p.rows.length) };
 }
 
 /* =========================================================================
@@ -1663,7 +1885,8 @@ function computeMetrics(run, nowTs) {
     id: s.id, worker: s.worker, name: s.name, order: i,
     cycles: [], done: [], work: 0, wait: 0, rework: 0, tasksDone: 0, tasksOpen: 0,
     qcPass: 0, qcFail: 0, defects: 0, wip: 0, queue: 0, reworkRounds: 0,
-    causedWait: 0, causedCount: 0, causedMotors: {}, busy: false
+    causedWait: 0, causedCount: 0, causedMotors: {}, busy: false,
+    changeover: 0, changeCount: 0
   }));
   const sIdx = {}; stations.forEach(s => sIdx[s.id] = s);
 
@@ -1715,6 +1938,44 @@ function computeMetrics(run, nowTs) {
     });
   });
 
+  /* ---- omsteltijd bij een modelwissel ----
+     Per station: de tijd tussen het gereedmelden van de laatste motor van de
+     vorige batch en de start van de eerste motor van het nieuwe model. Dat is
+     geen gewone wachttijd maar omsteltijd, dus we halen die eruit. */
+  const changeovers = [];
+  stations.forEach(s => {
+    const seq = Object.keys(D.tasks).map(k => D.tasks[k])
+      .filter(t => t.stationId === s.id && t.startedAt != null)
+      .sort((a, b) => a.startedAt - b.startedAt);
+    for (let i = 1; i < seq.length; i++) {
+      const prev = seq[i - 1], cur = seq[i];
+      const pm = D.motors[prev.motorId], cm = D.motors[cur.motorId];
+      if (!pm || !cm || (pm.sku || '') === (cm.sku || '')) continue;
+      if (prev.firstFinishedAt == null) continue;
+      const gap = cur.startedAt - prev.firstFinishedAt;
+      if (gap <= 0) continue;
+      s.changeover += gap; s.changeCount++;
+      changeovers.push({
+        stationId: s.id, worker: s.worker, fromSku: pm.sku || '', toSku: cm.sku || '',
+        fromMotorId: pm.id, toMotorId: cm.id, ms: gap, at: prev.firstFinishedAt
+      });
+      /* wachtsegmenten in dat venster zijn omsteltijd, geen wachttijd */
+      cur.segments.concat(prev.segments).forEach(sg => {
+        if (sg.type !== 'wait') return;
+        const end = sg.end == null ? nowTs : sg.end;
+        if (end > prev.firstFinishedAt && sg.start < cur.startedAt) sg.changeover = true;
+      });
+    }
+  });
+  /* een expliciet geregistreerde omstelreden telt altijd als omsteltijd */
+  Object.keys(D.tasks).forEach(k => D.tasks[k].segments.forEach(sg => {
+    if (sg.type === 'wait' && sg.reasonId === 'r10') sg.changeover = true;
+  }));
+  M.changeovers = changeovers.sort((a, b) => a.at - b.at);
+  M.totalChangeover = sum(stations.map(s => s.changeover));
+  M.changeCount = sum(stations.map(s => s.changeCount));
+  M.avgChangeover = M.changeCount ? M.totalChangeover / M.changeCount : null;
+
   /* wachtrij: motor is klaar bij het vorige station maar dit station is nog niet begonnen */
   D.motorList.forEach(m => {
     stations.forEach((s, i) => {
@@ -1733,6 +1994,8 @@ function computeMetrics(run, nowTs) {
     s.sdCycle = sd(s.cycles);
     s.cv = (s.sdCycle != null && s.avgCycle) ? s.sdCycle / s.avgCycle : null;
     s.active = s.work + s.rework;
+    /* de gewone wachttijd is de wachttijd minus het deel dat omstellen was */
+    s.waitPure = Math.max(0, s.wait - s.changeover);
     s.avgWait = s.tasksDone ? s.wait / s.tasksDone : (s.wait || 0);
     s.occupancy = M.elapsed > 0 ? s.active / M.elapsed : null;
     s.waitPct = M.elapsed > 0 ? s.wait / M.elapsed : null;
@@ -1782,6 +2045,7 @@ function computeMetrics(run, nowTs) {
   /* ---------------- totalen ---------------- */
   M.totalWork = sum(stations.map(s => s.work));
   M.totalWait = sum(stations.map(s => s.wait));
+  M.totalWaitPure = sum(stations.map(s => s.waitPure));
   M.totalRework = sum(stations.map(s => s.rework));
   M.totalActive = M.totalWork + M.totalRework;
   M.totalAvailable = M.elapsed * stations.length;
@@ -1882,11 +2146,13 @@ function computeMetrics(run, nowTs) {
   /* ---------------- wachtredenen + TIMWOOD ---------------- */
   const reasons = {}, tim = {};
   Object.keys(TIMWOOD).forEach(k => tim[k] = 0);
+  const coTim = DB.settings.changeoverTim || 'Waiting';
   Object.keys(D.tasks).forEach(k => {
     const t = D.tasks[k];
     t.segments.forEach(sg => {
       if (sg.type !== 'wait') return;
       const d = Math.max(0, segDur(sg, nowTs));
+      if (sg.changeover) { tim[coTim] = (tim[coTim] || 0) + d; return; }   // omstellen apart
       const lab = sg.reason || 'Onbekend';
       if (!reasons[lab]) reasons[lab] = { label: lab, ms: 0, count: 0, tim: sg.tim || 'Waiting', byStation: {}, notes: [] };
       reasons[lab].ms += d; reasons[lab].count++;
@@ -1898,6 +2164,11 @@ function computeMetrics(run, nowTs) {
     if (tt.rework > 0) tim.Defects += tt.rework;
   });
   M.reasons = Object.keys(reasons).map(k => reasons[k]).sort((a, b) => b.ms - a.ms);
+  /* omsteltijd die nog niet via een wachtsegment is geregistreerd, telt alsnog mee */
+  const coRegistered = sum(Object.keys(D.tasks).map(k =>
+    sum(D.tasks[k].segments.filter(sg => sg.type === 'wait' && sg.changeover).map(sg => Math.max(0, segDur(sg, nowTs))))));
+  if (M.totalChangeover > coRegistered) tim[coTim] = (tim[coTim] || 0) + (M.totalChangeover - coRegistered);
+  M.changeoverTim = coTim;
   M.timwood = tim;
   M.totalWaste = sum(Object.keys(tim).map(k => tim[k]));
 
@@ -1913,6 +2184,55 @@ function computeMetrics(run, nowTs) {
   M.defectsByPart = Object.keys(byPart).map(k => ({ label: k, n: byPart[k] })).sort((a, b) => b.n - a.n);
   M.qcTotal = sum(stations.map(s => s.qcPass + s.qcFail));
   M.qcFailTotal = sum(stations.map(s => s.qcFail));
+
+  /* ---------------- per model en per batch ---------------- */
+  const byModel = {};
+  D.queueOrder.forEach(m => {
+    const sku = m.sku || '';
+    if (!byModel[sku]) byModel[sku] = {
+      sku: sku, name: sku ? variantName(sku) : 'Zonder model', short: sku ? variantShort(sku) : 'Zonder model',
+      motors: [], leads: [], cycleSums: [], defects: 0, rework: 0, batches: 0
+    };
+    const g = byModel[sku], mm = motors.find(x => x.id === m.id);
+    g.motors.push(m);
+    g.defects += m.defects.length;
+    if (mm) {
+      g.rework += mm.rework;
+      if (mm.complete) { if (mm.lead != null) g.leads.push(mm.lead); if (mm.cycleSum) g.cycleSums.push(mm.cycleSum); }
+    }
+  });
+  D.batches.forEach(b => { if (byModel[b.sku]) byModel[b.sku].batches++; });
+  M.models = Object.keys(byModel).map(k => {
+    const g = byModel[k];
+    g.leadAvg = avg(g.leads); g.cycleAvg = avg(g.cycleSums);
+    g.complete = g.leads.length;
+    g.fpy = g.complete ? g.motors.filter(m => m.completedAt && m.firstPass).length / g.complete : null;
+    g.stationAvg = {};
+    stations.forEach(s => {
+      const cyc = g.motors.map(m => D.tasks[m.id + '|' + s.id])
+        .filter(t => t && t.status === 'done' && t.firstFinishedAt != null && t.startedAt != null)
+        .map(t => t.firstFinishedAt - t.startedAt);
+      g.stationAvg[s.id] = avg(cyc);
+    });
+    return g;
+  }).sort((a, b) => b.motors.length - a.motors.length);
+
+  /* opstartkosten binnen een batch: eerste motor tegenover de rest */
+  M.batchStats = D.batches.map(b => {
+    const done = b.motors.map(m => motors.find(x => x.id === m.id)).filter(x => x && x.complete && x.cycleSum > 0);
+    const first = done.find(x => D.motors[x.id].batchPos === 1);
+    const rest = done.filter(x => D.motors[x.id].batchPos > 1);
+    const restAvg = avg(rest.map(x => x.cycleSum));
+    return {
+      nr: b.nr, sku: b.sku, name: b.name, short: b.short, size: b.size, done: done.length,
+      firstCycle: first ? first.cycleSum : null, restAvg: restAvg,
+      startupCost: (first && restAvg != null) ? first.cycleSum - restAvg : null,
+      firstLead: first ? first.lead : null, restLeadAvg: avg(rest.map(x => x.lead))
+    };
+  });
+  const sc = M.batchStats.map(b => b.startupCost).filter(v => v != null && v > 0);
+  M.startupCostAvg = avg(sc);
+  M.startupCostTotal = sum(sc);
 
   /* ---------------- wachtrij ---------------- */
   M.queueTotal = D.queueOrder.filter(m => !m.cancelled).length;
@@ -1935,6 +2255,16 @@ function computeMetrics(run, nowTs) {
   M.scheduleDiff = M.plannedNow != null ? M.completedMotors.length - M.plannedNow : null;
   M.scheduleTimeDiff = (M.scheduleDiff != null && M.takt != null) ? M.scheduleDiff * M.takt : null;
   M.schedulePct = (M.plannedNow > 0) ? M.completedMotors.length / M.plannedNow : null;
+
+  /* motoren die pas ná de beschikbare tijd zijn afgemaakt */
+  M.deadline = M.availableMs != null ? M.runStart + M.availableMs : null;
+  M.timeLeft = M.availableMs != null ? M.availableMs - M.elapsed : null;
+  M.overtime = M.timeLeft != null && M.timeLeft < 0 ? -M.timeLeft : 0;
+  motors.forEach(x => { x.outsideTime = !!(M.deadline && x.completedAt && x.completedAt > M.deadline); });
+  M.outsideTime = motors.filter(x => x.outsideTime);
+  M.withinTime = M.completedMotors.filter(x => !x.outsideTime);
+  M.targetMet = (run.demand > 0) ? M.withinTime.length >= run.demand : null;
+  M.perMotorLeft = (M.timeLeft != null && M.queueLeft > 0) ? M.timeLeft / M.queueLeft : null;
 
   /* verwachte eindtijd op basis van het huidige tempo */
   const remaining = Math.max(0, (M.queueTotal || 0) - M.completedMotors.length);
@@ -2011,6 +2341,12 @@ function runSummary(run) {
     bottleneckBasis: M.bottleneckBasis, causedWait: M.bottleneck ? M.bottleneck.causedWait : null,
     taktActual: M.taktActual, scheduleDiff: M.scheduleDiff, scheduleTimeDiff: M.scheduleTimeDiff,
     qGood: M.qGood, qRepaired: M.qRepaired, qOpen: M.qOpenMotors.length, qRejected: M.qRejected,
+    changeover: M.totalChangeover, changeCount: M.changeCount, avgChangeover: M.avgChangeover,
+    startupCostAvg: M.startupCostAvg, batches: M.D.batches.length,
+    availableMs: M.availableMs, timeLeft: M.timeLeft, overtime: M.overtime,
+    withinTime: M.withinTime.length, outsideTime: M.outsideTime.length, targetMet: M.targetMet,
+    imported: !!run.imported,
+    models: M.models.map(g => ({ sku: g.sku, name: g.name, n: g.motors.length, leadAvg: g.leadAvg, cycleAvg: g.cycleAvg, fpy: g.fpy })),
     advice: run.advice || null, early: !!run.endedEarly,
     lineBalance: M.lineBalance, flowEff: M.flowEff,
     stations: M.stations.map(s => ({
@@ -2680,6 +3016,13 @@ function currentMotorFor(D, st) {
   const lastDone = D.queueOrder.filter(m => { const t = getTask(D, m.id, st.id); return t && t.status !== 'idle'; }).pop();
   return lastDone ? lastDone.id : (D.queueOrder.length ? D.queueOrder[D.queueOrder.length - 1].id : null);
 }
+/** Komt er na de huidige motor een ander model bij dit station? */
+function curMBatchSwitch(D, st, mId, nx) {
+  if (!mId || !nx) return null;
+  const m = D.motors[mId];
+  if (!m || (nx.sku || '') === (m.sku || '')) return null;
+  return (nx.sku || 'ander model') + ' · ' + variantShort(nx.sku);
+}
 /** De motor die na de huidige aan de beurt is bij dit station. */
 function nextMotorFor(D, st, curId) {
   return D.queueOrder.find(m => m.id !== curId && eligibleForStation(D, st, m)) || null;
@@ -2708,7 +3051,9 @@ function renderProduction() {
     bn.innerHTML = '<div class="banner info"><div><b>Nog geen productierun actief</b>' +
       'Klik rechtsboven op <b style="display:inline">+ Nieuwe run</b> om een productieronde te starten. ' +
       'Pas eventueel eerst bij INSTELLINGEN de namen van de medewerkers en werkstations aan.</div></div>';
-    $('#motorStrip').innerHTML = '';
+    $('#countdown').innerHTML = '';
+    $('#changeWarn').innerHTML = '';
+    $('#batchStrip').innerHTML = '';
     $('#tempoBar').innerHTML = '';
     $('#busyLine').innerHTML = '';
     $('#queueProgress').innerHTML = '';
@@ -2718,6 +3063,9 @@ function renderProduction() {
     return;
   }
   const M = computeMetrics(run), D = M.D;
+  renderCountdown(M, run);
+  renderChangeWarning(M, D, run);
+  renderBatches(M, D, run);
   renderTempo(M, run);
   renderBusyLine(M);
   let banner = '';
@@ -2727,26 +3075,6 @@ function renderProduction() {
     'Heropen de run via DATA → productieruns, of start een nieuwe run.</div></div>';
   bn.innerHTML = banner;
 
-  /* ---- motorstrip ---- */
-  const strip = D.queueOrder.slice().reverse().map(m => {
-    const dots = D.stations.map(s => {
-      const st = taskStatus(D, m.id, s.id);
-      const cls = st === 'running' ? 'run' : st === 'waiting' ? 'wait' : st === 'rework' ? 'rew'
-        : st === 'done' ? 'done' : st === 'skipped' ? 'skip' : '';
-      return '<span class="dot ' + cls + '" title="' + esc(s.worker + ' – ' + s.name + ': ' + STATUS_LABEL[st]) + '"></span>';
-    }).join('');
-    const mm = M.motors.find(x => x.id === m.id);
-    const state = m.cancelled ? '<span class="tag">GEANNULEERD</span>'
-      : m.hold ? '<span class="tag red">GEBLOKKEERD</span>'
-        : mm.complete ? '<span class="tag blue">GEREED</span>'
-          : mm.started ? '<span class="tag green">WIP</span>' : '<span class="tag">WACHT</span>';
-    const fp = mm.defects ? '<span class="tag red" title="' + mm.defects + ' afkeur(en)">✕' + mm.defects + '</span>' : '';
-    return '<div class="mcard" data-mcard="' + m.id + '"><div class="n"><span>' + esc(m.code) + '</span>' + state + fp + '</div>' +
-      (m.sku ? '<div class="t" style="font-size:11px">' + esc(variantShort(m.sku)) + '</div>' : '') +
-      '<div class="dots">' + dots + '</div>' +
-      '<div class="t">Lead time <b class="mono" data-mlead="' + m.id + '">' + (mm.lead != null ? dur(mm.lead) : '—') + '</b></div></div>';
-  }).join('');
-  $('#motorStrip').innerHTML = strip || '<div class="hint" style="padding:14px">Nog geen motoren in de wachtrij. Voeg er een toe om te beginnen.</div>';
   $('#btnNewMotor').disabled = !!run.endedAt;
 
   /* ---- voortgang van de hele orderwachtrij ---- */
@@ -2759,6 +3087,8 @@ function renderProduction() {
     '<div><b style="font-size:17px">' + dn + ' van ' + tot + ' motoren compleet</b>' +
     (ord ? ' <span class="tag blue">' + esc(ord.orderNr) + ' · ' + esc(ord.label) + '</span>' : '') +
     (run.strictOrder ? ' <span class="tag">strikte volgorde</span>' : ' <span class="tag">parallel werken</span>') +
+    ' <span class="tag blue">' + D.batches.length + ' batch' + (D.batches.length === 1 ? '' : 'es') + '</span>' +
+    (M.changeCount ? ' <span class="tag amber">omsteltijd ' + dur(M.totalChangeover) + '</span>' : '') +
     '</div>' +
     '<div class="hint">' + M.wip + ' onderhanden · ' + (tot - dn - M.wip) + ' nog niet gestart' +
     (D.queueOrder.some(m => m.hold) ? ' · <b style="color:var(--red)">' + D.queueOrder.filter(m => m.hold).length + ' geblokkeerd</b>' : '') +
@@ -2785,13 +3115,19 @@ function renderProduction() {
     const bigMs = bigTime(t, status, M.nowTs);
     const nx = nextMotorFor(D, st, mId);
     const left = remainingFor(D, st);
-    const bigCls = status === 'waiting' ? 'wait' : status === 'running' ? 'run' : status === 'rework' ? 'rew'
-      : status === 'done' ? '' : 'off';
+    const budget = stationBudget(run, M, st.id);
+    const cdLeft = budget != null ? budget - bigMs : null;
+    const cdPhase = (t && t.startedAt != null && status !== 'done') ? phaseOf(cdLeft, budget) : 'neu';
+    const showCd = DISP.countdown && budget != null;
+    const switchNext = curMBatchSwitch(D, st, mId, nx);
+    const bigCls = timerStateCls(status);
 
     let motorCtl;
     const curM = mId ? D.motors[mId] : null;
     const vLine = curM && curM.sku
-      ? '<div class="hint" style="text-align:center;margin-top:-4px">' + esc(variantName(curM.sku)) + '</div>' : '';
+      ? '<div class="hint" style="text-align:center;margin-top:-4px"><b>' + esc(curM.sku) + '</b> · ' +
+      esc(variantShort(curM.sku)) + (curM.batchSize ? ' · motor ' + curM.batchPos + ' van ' + curM.batchSize : '') + '</div>'
+      : '';
     if (!D.motorList.length) motorCtl = '<div class="st-cur" style="background:#eceff2;color:#7b8fa1">Nog geen motoren in de wachtrij</div>';
     else if (locked) motorCtl = '<div class="st-cur">' + esc(curM.code) + '</div>';
     else motorCtl = '<select data-selm="' + st.id + '">' + D.queueOrder.map(m => {
@@ -2813,7 +3149,11 @@ function renderProduction() {
       '<div class="s">' + esc(st.name) + '</div></div>' +
       '<span class="pill ' + STATUS_PILL[status] + '">' + STATUS_LABEL[status] + '</span></div></div>' +
       '<div class="st-body">' + motorCtl + vLine +
-      '<div class="bigt ' + bigCls + '" data-big>' + dur(bigMs) + '</div>' +
+      '<div class="bigt ' + bigCls + (showCd ? ' ' + PHASE_CLS[cdPhase] + (cdPhase === 'over' ? ' blink' : '') : '') +
+      '" data-big data-budget="' + (budget || '') + '">' +
+      (showCd ? durSigned(cdLeft) : dur(bigMs)) + '</div>' +
+      (showCd ? '<div class="hint" style="text-align:center;margin-top:-6px" data-bigsub>verstreken ' + dur(bigMs) +
+        ' van ' + dur(budget) + '</div>' : '') +
       '<div class="subt">' +
       '<div>Actief<b data-f="work">' + dur(tt.work) + '</b></div>' +
       '<div>Wachten<b data-f="wait">' + dur(tt.wait) + '</b></div>' +
@@ -2826,6 +3166,7 @@ function renderProduction() {
       '<button class="b-qc" data-a="qc"' + (canQc ? '' : ' disabled') + '>◎ Kwaliteitscontrole</button>' +
       '<button class="b-skip" data-a="skip"' + (canSkip ? '' : ' disabled') + '>Niet van toepassing voor deze motor</button>' +
       '</div>' + (busyOther ? '<div class="hint" style="color:var(--amber)">Dit station is nog bezig met een andere motor.</div>' : '') +
+      (switchNext ? '<div class="chip-switch">Hierna modelwissel naar ' + esc(switchNext) + '</div>' : '') +
       (curM && curM.hold ? '<div class="hint" style="color:var(--red)">Deze motor is geblokkeerd: ' + esc(curM.holdReason) + '</div>' : '') +
       '<div class="mnext" style="box-shadow:none;padding:7px 10px;font-size:12.5px">' +
       '<div><span class="hint">Hierna</span><b style="font-size:13px">' +
@@ -3284,11 +3625,13 @@ function showQueueManager() {
   }).join('');
   openModal({
     title: 'Wachtrij beheren', wide: true, noFocus: true,
-    sub: 'Blokkeer een motor (bijv. ontbrekend onderdeel), zet hem achteraan of haal hem uit de rij.',
-    body: '<div class="tblwrap"><table class="tbl"><thead><tr><th>Motor</th><th>Status</th><th>Actie</th></tr></thead>' +
+    sub: 'Verschuif een hele batch, blokkeer een motor (bijv. ontbrekend onderdeel), zet hem achteraan of haal hem uit de rij.',
+    body: batchOrderPanel(run, D) +
+      '<div class="tblwrap"><table class="tbl"><thead><tr><th>Motor</th><th>Status</th><th>Actie</th></tr></thead>' +
       '<tbody>' + (rows || '<tr><td colspan="3" class="empty">Geen motoren.</td></tr>') + '</tbody></table></div>',
     buttons: [{ label: 'Sluiten', cls: 'pri', value: true }],
     onOpen: m => {
+      bindBatchOrderPanel(run, m);
       $$('[data-q]', m).forEach(b => b.onclick = () => {
         const what = b.dataset.q, mid = b.dataset.m;
         if (what === 'release') { pushEvent(run, 'motor_release', { motorId: mid }); closeModal(true); afterEvent(); return; }
@@ -3303,6 +3646,58 @@ function showQueueManager() {
     }
   });
 }
+/** Is er in deze batch al gewerkt? Zo'n batch verschuiven we niet meer, anders
+    zou de wachtrij niet meer kloppen met wat er op de lijn staat. */
+function batchStarted(D, b) {
+  return b.motors.some(m => (m.tasks || []).some(t => t && t.startedAt != null));
+}
+
+/** Paneel om hele batches te verschuiven. Alleen batches waarin nog niet
+    gewerkt is kunnen van plek wisselen. */
+function batchOrderPanel(run, D) {
+  const bs = D.batches.filter(b => b.motors.some(m => !m.cancelled));
+  if (bs.length < 2) return '';
+  const locked = bs.map(b => batchStarted(D, b));
+  return '<div class="fld" style="margin-bottom:12px"><span>Volgorde van de batches</span>' +
+    '<div class="bord" id="qbOrder">' + bs.map((b, i) => {
+      const done = b.motors.every(m => m.stationsDoneCount >= run.stations.length);
+      const canUp = !locked[i] && i > 0 && !locked[i - 1];
+      const canDn = !locked[i] && i < bs.length - 1 && !locked[i + 1];
+      return '<div class="bord-r"><span class="nr">' + b.nr + '</span>' +
+        '<span class="sku">' + esc(b.sku || '—') + '</span>' +
+        '<span class="nm">' + esc(b.short) + (done ? ' · gereed' : locked[i] ? ' · al begonnen' : '') + '</span>' +
+        '<span class="cnt">' + b.size + ' motoren</span>' +
+        '<span class="bord-b">' +
+        '<button type="button" data-qbup="' + i + '"' + (canUp ? '' : ' disabled') + ' title="Eerder bouwen">▲</button>' +
+        '<button type="button" data-qbdn="' + i + '"' + (canDn ? '' : ' disabled') + ' title="Later bouwen">▼</button>' +
+        '</span></div>';
+    }).join('') + '</div>' +
+    '<div class="hint">Een batch waarin al gewerkt is staat vast. Verschuiven verandert alleen de volgorde; ' +
+    'alle gemeten tijden blijven ongewijzigd.</div></div>';
+}
+function bindBatchOrderPanel(run, m) {
+  const move = (i, dir) => {
+    const D = deriveRun(run);
+    const bs = D.batches.filter(b => b.motors.some(x => !x.cancelled));
+    const j = i + dir;
+    if (!bs[i] || !bs[j]) return;
+    const arr = bs.slice();
+    arr.splice(j, 0, arr.splice(i, 1)[0]);
+    const order = [];
+    arr.forEach(b => b.motors.forEach(x => order.push(x.id)));
+    /* motoren die buiten deze batches vallen (bijv. geannuleerd) houden we
+       achteraan, zodat we niemand uit de rij laten vallen */
+    D.queueOrder.forEach(x => { if (order.indexOf(x.id) < 0) order.push(x.id); });
+    pushEvent(run, 'queue_reorder', {
+      order: order,
+      label: 'Batch ' + (bs[i].sku || '—') + ' ' + (dir < 0 ? 'naar voren' : 'naar achteren') + ' verplaatst'
+    });
+    closeModal(true); afterEvent(); showQueueManager();
+  };
+  $$('[data-qbup]', m).forEach(b => b.onclick = () => move(+b.dataset.qbup, -1));
+  $$('[data-qbdn]', m).forEach(b => b.onclick = () => move(+b.dataset.qbdn, 1));
+}
+
 function askQueueReason(what) {
   const titles = { hold: 'Waarom blokkeer je deze motor?', defer: 'Waarom gaat deze motor achteraan?', cancel: 'Waarom gaat deze motor uit de rij?' };
   return openModal({
@@ -3432,6 +3827,13 @@ function renderMobile() {
   const cls = status === 'waiting' ? 'wait' : status === 'running' ? 'run' : status === 'rework' ? 'rew'
     : status === 'done' ? 'done' : 'off';
   const sm = M.stations.find(x => x.id === st.id) || {};
+  const budget = stationBudget(run, M, st.id);
+  const cdLeft = budget != null ? budget - big : null;
+  const cdPhase = (t && t.startedAt != null && status !== 'done') ? phaseOf(cdLeft, budget) : 'neu';
+  const showCd = DISP.countdown && budget != null;
+  const runLeft = M.timeLeft;
+  const runPhase = phaseOf(runLeft, M.availableMs);
+  const switchNext = curMBatchSwitch(D, st, mId, nx);
 
   const preStart = !!(t && t.status === 'waiting' && t.startedAt == null);
   const canStart = !dis && mId && (status === 'idle' || preStart);
@@ -3443,11 +3845,22 @@ function renderMobile() {
   body.innerHTML =
     (run.endedAt ? '<div class="banner warn"><div><b>Run afgesloten</b>Je kunt niets meer registreren.</div></div>' : '') +
     (run.demo ? '<div class="banner demo"><div><b>DEMO-RUN</b>Geen echte meting.</div></div>' : '') +
+    (M.availableMs != null ? '<div class="mrun ' + PHASE_CLS[runPhase] + (runPhase === 'over' ? ' blink' : '') + '">' +
+      '<span>' + (DISP.countdown ? 'Nog beschikbaar' : 'Verstreken') + '</span>' +
+      '<b data-mrun>' + (DISP.countdown ? durSigned(runLeft) : durH(M.elapsed)) + '</b>' +
+      '<span>' + (M.perMotorLeft != null ? durSigned(M.perMotorLeft) + ' per motor' : M.queueLeft + ' te gaan') + '</span>' +
+      '</div>' : '') +
     '<div class="mcur">' +
     '<div class="lbl">Huidige motor</div>' +
     '<div class="mn">' + esc(mo ? mo.code : 'geen motor') + '</div>' +
-    '<div class="vr">' + esc(mo && mo.sku ? variantName(mo.sku) + ' · ' + mo.sku : (run.variant || '—')) + '</div>' +
-    '<div class="mtimer ' + cls + '" data-mbig>' + dur(big) + '</div>' +
+    '<div class="vr">' + (mo && mo.sku
+      ? '<b>' + esc(mo.sku) + '</b> · ' + esc(variantShort(mo.sku)) +
+      (mo.batchSize ? '<br>motor ' + mo.batchPos + ' van ' + mo.batchSize + ' in deze batch' : '')
+      : esc(run.variant || '—')) + '</div>' +
+    '<div class="mtimer ' + cls + (showCd ? ' ' + PHASE_CLS[cdPhase] + (cdPhase === 'over' ? ' blink' : '') : '') +
+    '" data-mbig data-budget="' + (budget || '') + '">' +
+    (showCd ? durSigned(cdLeft) : dur(big)) + '</div>' +
+    (showCd ? '<div class="hint" data-mbigsub>verstreken ' + dur(big) + ' van ' + dur(budget) + '</div>' : '') +
     '<div class="mstatus"><span class="mpill ' + STATUS_PILL[status] + '">' +
     (preStart ? 'Wachten — nog niet begonnen' : STATUS_LABEL[status]) + '</span></div>' +
     (preStart && openSegOf(t) && openSegOf(t).reason
@@ -3468,9 +3881,15 @@ function renderMobile() {
     '<button class="mbtn qc" data-ma="qc"' + (canQc ? '' : ' disabled') + '>◎ KWALITEITSCONTROLE</button>' +
     '</div>' +
 
+    (switchNext ? '<div class="chip-switch">Let op: hierna modelwissel naar ' + esc(switchNext) + '</div>' : '') +
+
     '<div class="mnext"><div><span class="hint">Hierna</span><b>' +
     esc(nx ? nx.code + (nx.sku ? ' · ' + variantShort(nx.sku) : '') : 'niets meer in de wachtrij') + '</b></div>' +
     '<div style="text-align:right"><span class="hint">Nog te gaan</span><b>' + left + '</b></div></div>' +
+
+    '<div class="mnext"><div><span class="hint">Batches in deze run</span><b>' +
+    D.batches.filter(b => b.motors.some(x => !x.completedAt)).length + ' van ' + D.batches.length + ' open</b></div>' +
+    '<div style="text-align:right"><span class="hint">Omsteltijd</span><b>' + dur(M.totalChangeover) + '</b></div></div>' +
 
     '<div class="mnext"><div><span class="hint">Mijn run tot nu toe</span><b>' + (sm.tasksDone || 0) + ' gereed · gem. ' +
     (sm.avgCycle != null ? dur(sm.avgCycle) : '—') + '</b></div>' +
@@ -3612,6 +4031,249 @@ function setupCloud() {
 }
 
 /* =========================================================================
+   AFTELWEERGAVE, BATCHES EN MODELWISSEL
+   ---------------------------------------------------------------------------
+   Aftellen is puur presentatie. Alle metingen blijven intern berekend uit de
+   echte start- en stoptimestamps, dus cycle time, actieve tijd, wachttijd en
+   lead time veranderen er niet van.
+   ========================================================================= */
+const DISPKEY = 'innovo_disp_v1';
+const DISP = { countdown: true, sound: true, shownTimeUp: {} };
+
+function loadDisp() {
+  try {
+    const o = JSON.parse(localStorage.getItem(DISPKEY) || '{}');
+    if (typeof o.countdown === 'boolean') DISP.countdown = o.countdown;
+    if (typeof o.sound === 'boolean') DISP.sound = o.sound;
+    DISP.shownTimeUp = o.shownTimeUp && typeof o.shownTimeUp === 'object' ? o.shownTimeUp : {};
+  } catch (e) { }
+}
+function saveDisp() { try { localStorage.setItem(DISPKEY, JSON.stringify(DISP)); } catch (e) { } }
+
+/** ms -> -1:42 bij een negatieve resterende tijd */
+function durSigned(ms) {
+  if (ms == null || isNaN(ms)) return '—';
+  return (ms < 0 ? '−' : '') + dur(Math.abs(ms));
+}
+/** groen ruim, oranje in de laatste 20%, rood bij nul of eronder */
+function phaseOf(remaining, budget) {
+  if (remaining == null || budget == null || budget <= 0) return 'neu';
+  if (remaining <= 0) return 'over';
+  return remaining <= budget * 0.2 ? 'warn' : 'good';
+}
+const PHASE_CLS = { good: 'cd-good', warn: 'cd-warn', over: 'cd-over', neu: 'cd-neu' };
+
+/* De statusklasse van de grote timer. Die blijft altijd staan, ook als de
+   aftelweergave er een kleurfase overheen zet, zodat aan het element te zien
+   blijft of er daadwerkelijk gewerkt wordt. */
+function timerStateCls(status) {
+  return status === 'waiting' ? 'wait' : status === 'running' ? 'run'
+    : status === 'rework' ? 'rew' : status === 'done' ? '' : 'off';
+}
+
+/** Streeftijd per motor voor een station: eigen streeftijd, anders de takt time. */
+function stationBudget(run, M, stationId) {
+  const t = (run.stationTargets || {})[stationId];
+  if (t > 0) return t;
+  return M.takt != null ? M.takt : null;
+}
+
+/* ------------------------------------------------- signaal bij tijd is om */
+function beep() {
+  if (!DISP.sound) return;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    [0, 0.35, 0.7].forEach(t => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'square'; o.frequency.value = 880;
+      g.gain.value = 0.15;
+      o.connect(g); g.connect(ctx.destination);
+      o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.22);
+    });
+    setTimeout(() => { try { ctx.close(); } catch (e) { } }, 1600);
+  } catch (e) { }
+}
+function buzz() {
+  if (navigator.vibrate) { try { navigator.vibrate([250, 120, 250, 120, 400]); } catch (e) { } }
+}
+
+function showTimeUp(run, M) {
+  const el = $('#timeup'); if (!el) return;
+  el.innerHTML =
+    '<div class="tu-box">' +
+    '<div class="tu-big">TIJD IS OM</div>' +
+    '<div class="tu-sub">STOPPEN</div>' +
+    '<div class="tu-grid">' +
+    '<div><i>Beschikbare tijd</i><b>' + durH(M.availableMs) + '</b></div>' +
+    '<div><i>Motoren af</i><b>' + M.withinTime.length + '</b></div>' +
+    '<div><i>Nog in de wachtrij</i><b>' + M.queueLeft + '</b></div>' +
+    '<div><i>Onderhanden</i><b>' + M.wip + '</b></div>' +
+    '</div>' +
+    '<div class="tu-hint">De tijd loopt vanaf nu in de min door. Wat je hierna nog afmaakt, ' +
+    'wordt geteld als buiten de beschikbare tijd geproduceerd.</div>' +
+    '<div class="btnrow" style="justify-content:center;margin-top:16px">' +
+    '<button class="btn" id="tuClose">Sluiten en doorgaan</button>' +
+    '<button class="btn dgr" id="tuStop">Run nu afsluiten</button>' +
+    '</div></div>';
+  el.classList.add('on');
+  beep(); buzz();
+  $('#tuClose').onclick = () => el.classList.remove('on');
+  $('#tuStop').onclick = () => { el.classList.remove('on'); runAction('close', run.id); };
+}
+
+/** Wordt elke tick aangeroepen; slaat één keer per run aan. */
+function checkTimeUp(run, M) {
+  if (!run || run.endedAt || run.demo || run.imported) return;
+  if (M.timeLeft == null || M.timeLeft > 0) return;
+  if (DISP.shownTimeUp[run.id]) return;
+  DISP.shownTimeUp[run.id] = true; saveDisp();
+  showTimeUp(run, M);
+}
+
+/* --------------------------------------------------- grote aftelteller */
+function renderCountdown(M, run) {
+  const el = $('#countdown'); if (!el) return;
+  if (M.availableMs == null) {
+    el.innerHTML = '<div class="banner info"><div><b>Geen beschikbare productietijd ingevuld</b>' +
+      'Vul die in bij de run, dan verschijnt hier de afteltimer.</div></div>';
+    return;
+  }
+  const left = M.timeLeft, ph = phaseOf(left, M.availableMs);
+  const per = M.perMotorLeft;
+  const perPh = (per != null && M.takt != null) ? (per >= M.takt ? 'good' : per >= M.takt * 0.8 ? 'warn' : 'over') : 'neu';
+  el.innerHTML =
+    '<div class="cd ' + PHASE_CLS[ph] + (ph === 'over' ? ' blink' : '') + '">' +
+    '<div class="cd-main">' +
+    '<div class="cd-lab">' + (DISP.countdown ? (left < 0 ? 'Tijd over de beschikbare tijd' : 'Resterende productietijd') : 'Verstreken productietijd') + '</div>' +
+    '<div class="cd-val" data-cd>' + (DISP.countdown ? durSigned(left) : durH(M.elapsed)) + '</div>' +
+    '<div class="cd-sub">' + (DISP.countdown
+      ? 'van ' + durH(M.availableMs) + ' beschikbaar · verstreken ' + durH(M.elapsed)
+      : 'van ' + durH(M.availableMs) + ' beschikbaar · nog ' + durSigned(left)) + '</div>' +
+    '</div>' +
+    '<div class="cd-side">' +
+    '<div class="cd-cell"><i>Per nog te maken motor</i><b class="' + PHASE_CLS[perPh] + '" data-cdper>' +
+    (per != null ? durSigned(per) : '—') + '</b>' +
+    '<span>' + (M.takt != null ? 'takt is ' + dur(M.takt) : 'geen takt bekend') + '</span></div>' +
+    '<div class="cd-cell"><i>Motoren af</i><b>' + M.withinTime.length +
+    (M.outsideTime.length ? ' <span class="tag red">+' + M.outsideTime.length + ' te laat</span>' : '') + '</b>' +
+    '<span>' + M.queueLeft + ' nog te gaan van ' + M.queueTotal + '</span></div>' +
+    '<div class="cd-cell"><i>Weekdoel</i><b>' + (run.demand || '—') + '</b>' +
+    '<span>' + (M.targetMet === null ? 'geen klantvraag ingevuld'
+      : M.targetMet ? 'gehaald binnen de tijd' : (run.demand - M.withinTime.length) + ' te gaan') + '</span></div>' +
+    '<button class="btn sm" id="cdToggle">' + (DISP.countdown ? 'Toon optellend' : 'Toon aftellend') + '</button>' +
+    '</div></div>';
+  $('#cdToggle').onclick = () => { DISP.countdown = !DISP.countdown; saveDisp(); renderAll(); };
+}
+
+/* ------------------------------------------------------- batchwachtrij */
+function renderBatches(M, D, run) {
+  const el = $('#batchStrip'); if (!el) return;
+  if (!D.batches.length) {
+    el.innerHTML = '<div class="hint" style="padding:14px">Nog geen motoren in de wachtrij.</div>';
+    return;
+  }
+  el.innerHTML = D.batches.map(b => {
+    const doneN = b.motors.filter(m => m.completedAt).length;
+    const active = b.motors.some(m => D.stations.some(s => ['running', 'waiting', 'rework'].indexOf(taskStatus(D, m.id, s.id)) >= 0));
+    return '<div class="batch' + (active ? ' on' : '') + (doneN === b.size ? ' done' : '') + '">' +
+      '<div class="batch-h"><div>' +
+      '<b>' + esc(b.sku || 'zonder model') + '</b> <span class="batch-n">' + b.size + '× ' + esc(b.short) + '</span>' +
+      '</div><div class="batch-p">' + doneN + '/' + b.size + '</div></div>' +
+      '<div class="batch-m">' + b.motors.map(m => {
+        const mm = M.motors.find(x => x.id === m.id) || {};
+        const dots = D.stations.map(s => {
+          const st = taskStatus(D, m.id, s.id);
+          const cls = st === 'running' ? 'run' : st === 'waiting' ? 'wait' : st === 'rework' ? 'rew'
+            : st === 'done' ? 'done' : st === 'skipped' ? 'skip' : '';
+          return '<span class="dot ' + cls + '" title="' + esc(s.worker + ': ' + STATUS_LABEL[st]) + '"></span>';
+        }).join('');
+        const state = m.cancelled ? '<span class="tag">UIT</span>'
+          : m.hold ? '<span class="tag red">BLOK</span>'
+            : mm.complete ? '<span class="tag blue">GEREED</span>'
+              : mm.started ? '<span class="tag green">WIP</span>' : '';
+        return '<div class="bm' + (mm.complete ? ' ok' : '') + '">' +
+          '<div class="bm-t"><b>' + esc(m.code) + '</b> <span class="hint">' + m.batchPos + '/' + m.batchSize + '</span>' + state + '</div>' +
+          '<div class="dots">' + dots + '</div>' +
+          '<div class="hint mono" data-mlead="' + m.id + '">' + (mm.lead != null ? dur(mm.lead) : '—') + '</div>' +
+          '</div>';
+      }).join('') + '</div></div>';
+  }).join('');
+}
+
+/* --------------------------------------------- waarschuwing modelwissel */
+function upcomingChange(D, M) {
+  /* Welke modelwissel komt er aan? Een station dat aan de laatste motor van
+     zijn batch werkt, gaat daarna over op het volgende model. */
+  for (const st of D.stations) {
+    const mId = currentMotorFor(D, st);
+    if (!mId) continue;
+    const m = D.motors[mId];
+    if (!m || m.batchPos !== m.batchSize) continue;
+    const nx = nextMotorFor(D, st, mId);
+    if (!nx || (nx.sku || '') === (m.sku || '')) continue;
+    return { station: st, from: m, to: nx };
+  }
+  return null;
+}
+
+function renderChangeWarning(M, D, run) {
+  const el = $('#changeWarn'); if (!el) return;
+  const up = upcomingChange(D, M);
+  if (!up) { el.innerHTML = ''; return; }
+  const diff = bomDiff(up.from.sku, up.to.sku, D.stations);
+  el.innerHTML =
+    '<div class="banner warn" style="margin-bottom:0"><div>' +
+    '<b>Let op: na ' + esc(up.from.code) + ' wissel naar ' + esc(up.to.sku || 'ander model') + ' — ' + esc(up.to.batchSize ? up.to.batchSize + '× ' : '') + esc(variantShort(up.to.sku)) + '</b>' +
+    (diff.perStation.length
+      ? 'Zet deze onderdelen klaar voordat ' + esc(up.station.worker) + ' doorschuift:' +
+      '<div class="chgrid">' + diff.perStation.map(p =>
+        '<div class="chcard"><div class="chw">' + esc(p.station.worker) + '</div>' +
+        p.rows.map(r => '<div class="chrow ' + r.kind + '">' +
+          (r.kind === 'add' ? '+ ' : r.kind === 'remove' ? '− ' : '± ') + esc(r.part) +
+          ' <span class="hint">' + (r.kind === 'qty' ? 'van ' + r.was + ' naar ' + r.qty : '×' + r.qty) + '</span></div>').join('') +
+        '</div>').join('') + '</div>'
+      : 'De Bill of Materials is voor beide modellen gelijk, dus er hoeft niets anders klaargezet te worden.') +
+    '</div></div>';
+}
+
+/* --------------------------------------------- instellingen: weergave */
+function renderDispSettings() {
+  const el = $('#setDisp'); if (!el) return;
+  const run = activeRun();
+  el.innerHTML =
+    '<div class="hint" style="margin-bottom:12px">Deze keuze geldt alleen voor dit apparaat. De metingen veranderen er niet van: ' +
+    'cycle time, wachttijd en lead time worden altijd uit de echte timestamps berekend.</div>' +
+    '<div class="wrapchk" style="margin-bottom:14px">' +
+    '<label class="chk"><input type="checkbox" id="dispCd"' + (DISP.countdown ? ' checked' : '') + '>Tijd aftellen in plaats van optellen</label>' +
+    '<label class="chk"><input type="checkbox" id="dispSnd"' + (DISP.sound ? ' checked' : '') + '>Geluidssignaal als de tijd om is</label>' +
+    '</div>' +
+    (run
+      ? '<div class="hint" style="margin-bottom:8px">Streeftijd per motor per werkstation. Laat je een veld leeg, dan gebruikt de app de takt time' +
+      (activeRunTakt() != null ? ' (' + dur(activeRunTakt()) + ')' : '') + '.</div>' +
+      '<div class="srow" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">' +
+      run.stations.map(s => '<label class="fld" style="margin:0"><span>' + esc(s.worker) + '</span>' +
+        '<input type="number" min="0" step="1" data-tgt="' + s.id + '" placeholder="takt time" value="' +
+        (((run.stationTargets || {})[s.id] || 0) ? Math.round((run.stationTargets || {})[s.id] / 1000) : '') + '"></label>').join('') +
+      '</div><div class="hint" style="margin-top:6px">In seconden per motor.</div>'
+      : '<div class="hint">Er is geen actieve run, dus er zijn geen streeftijden in te stellen.</div>');
+  $('#dispCd').onchange = () => { DISP.countdown = $('#dispCd').checked; saveDisp(); renderAll(); };
+  $('#dispSnd').onchange = () => { DISP.sound = $('#dispSnd').checked; saveDisp(); };
+  $$('[data-tgt]').forEach(inp => inp.onchange = () => {
+    const r = activeRun(); if (!r) return;
+    r.stationTargets = r.stationTargets || {};
+    const v = parseFloat(inp.value);
+    if (v > 0) r.stationTargets[inp.dataset.tgt] = v * 1000; else delete r.stationTargets[inp.dataset.tgt];
+    saveDB(true); toast('Streeftijd bijgewerkt'); renderAll();
+  });
+}
+function activeRunTakt() {
+  const r = activeRun(); if (!r) return null;
+  return (r.availableMin > 0 && r.demand > 0) ? r.availableMin * 60000 / r.demand : null;
+}
+
+/* =========================================================================
    DASHBOARD
    ========================================================================= */
 function kpi(lab, val, sub, cls) {
@@ -3632,7 +4294,8 @@ function renderDashboard() {
     noRunBanner('#dashBanner', 'het dashboard');
     ['dashKpis', 'dashBottleneck', 'taktBox', 'dashExtra'].forEach(i => $('#' + i).innerHTML = '');
     $('#tblStations').innerHTML = ''; $('#tblMotors').innerHTML = ''; $('#occBars').innerHTML = '';
-    $('#tblVariants').innerHTML = '';
+    $('#tblVariants').innerHTML = ''; $('#tblModels').innerHTML = '';
+    $('#tblBatches').innerHTML = ''; $('#dashChangeover').innerHTML = '';
     ['cvCycle', 'cvTrend', 'cvActWait', 'cvSchedule', 'cvCaused'].forEach(i => noData($('#' + i), 'Geen actieve run'));
     return;
   }
@@ -3851,6 +4514,68 @@ function renderDashboard() {
         '<td class="r mono">' + (x.defects ? '<span class="tag red">' + x.defects + '</span>' : '0') + '</td>' +
         '<td>' + (x.complete ? (x.firstPass ? '<span class="tag green">JA</span>' : '<span class="tag red">NEE</span>') : '—') + '</td></tr>';
     }).join('') : '<tr><td colspan="12" class="empty">Nog geen motoren aangemaakt.</td></tr>') + '</tbody>';
+
+  /* ---- omsteltijd bij modelwissels ---- */
+  $('#dashChangeover').innerHTML =
+    '<div class="grid g4">' +
+    kpi('Aantal modelwissels', M.changeCount, M.D.batches.length + ' batches in deze run') +
+    kpi('Totale omsteltijd', dur(M.totalChangeover),
+      M.elapsed ? num(M.totalChangeover / M.elapsed * 100, 1) + '% van de runtijd' : '',
+      M.totalChangeover > 0 ? 'warn' : 'ok') +
+    kpi('Gemiddeld per wissel', M.avgChangeover != null ? dur(M.avgChangeover) : '—',
+      'tussen de laatste motor en de eerste van het nieuwe model') +
+    kpi('Opstartkosten per batch', M.startupCostAvg != null ? dur(M.startupCostAvg) : '—',
+      'eerste motor duurt zoveel langer dan de rest',
+      M.startupCostAvg == null ? '' : M.startupCostAvg > 0 ? 'warn' : 'ok') +
+    '</div>' +
+    (M.changeovers.length
+      ? '<div class="tblwrap" style="margin-top:12px"><table class="tbl"><thead><tr><th>Tijd</th><th>Werkstation</th>' +
+      '<th>Van model</th><th>Naar model</th><th class="r">Omsteltijd</th></tr></thead><tbody>' +
+      M.changeovers.map(c => '<tr><td class="mono">' + clock(c.at) + '</td><td><b>' + esc(c.worker) + '</b></td>' +
+        '<td class="mono">' + esc(c.fromSku || '—') + '</td><td class="mono">' + esc(c.toSku || '—') + '</td>' +
+        '<td class="r mono"><b>' + dur(c.ms) + '</b></td></tr>').join('') +
+      '</tbody></table></div>'
+      : '<div class="hint" style="margin-top:10px">Nog geen modelwissel gemeten. De omsteltijd is de tijd tussen het ' +
+      'gereedmelden van de laatste motor van een batch en de start van de eerste motor van het volgende model, ' +
+      'en telt in TIMWOOD mee onder ' + esc(M.changeoverTim) + '.</div>');
+
+  /* ---- per modelcode ---- */
+  $('#tblModels').innerHTML =
+    '<thead><tr><th>Modelcode</th><th>Model</th><th class="r">In de run</th><th class="r">Batches</th>' +
+    '<th class="r">Gereed</th><th class="r">Gem. lead time</th><th class="r">Gem. som cycle</th>' +
+    M.stations.map(s => '<th class="r">' + esc(s.worker) + '</th>').join('') +
+    '<th class="r">FPY</th><th class="r">Fouten</th><th class="r">Rework</th></tr></thead><tbody>' +
+    (M.models.length ? M.models.map(g => '<tr><td class="mono"><b>' + esc(g.sku || '—') + '</b></td>' +
+      '<td>' + esc(g.name) + '</td>' +
+      '<td class="r mono">' + g.motors.length + '</td>' +
+      '<td class="r mono">' + g.batches + '</td>' +
+      '<td class="r mono">' + g.complete + '</td>' +
+      '<td class="r mono"><b>' + (g.leadAvg != null ? dur(g.leadAvg) : '—') + '</b></td>' +
+      '<td class="r mono">' + (g.cycleAvg != null ? dur(g.cycleAvg) : '—') + '</td>' +
+      M.stations.map(s => '<td class="r mono">' + (g.stationAvg[s.id] != null ? dur(g.stationAvg[s.id]) : '—') + '</td>').join('') +
+      '<td class="r mono">' + (g.fpy != null ? num(g.fpy * 100, 0) + '%' : '—') + '</td>' +
+      '<td class="r mono">' + (g.defects ? '<span class="tag red">' + g.defects + '</span>' : '0') + '</td>' +
+      '<td class="r mono">' + (g.rework ? dur(g.rework) : '—') + '</td></tr>').join('')
+      : '<tr><td colspan="' + (10 + M.stations.length) + '" class="empty">Nog geen modellen in de wachtrij.</td></tr>') + '</tbody>';
+
+  /* ---- eerste motor van een batch tegenover de rest ---- */
+  $('#tblBatches').innerHTML =
+    '<thead><tr><th class="r">Batch</th><th>Modelcode</th><th>Model</th><th class="r">Aantal</th><th class="r">Gereed</th>' +
+    '<th class="r">Eerste motor</th><th class="r">Overige gemiddeld</th><th class="r">Opstartkosten</th>' +
+    '<th>Leereffect binnen de batch</th></tr></thead><tbody>' +
+    (M.batchStats.length ? M.batchStats.map(b => {
+      const pct2 = (b.startupCost != null && b.restAvg) ? b.startupCost / b.restAvg * 100 : null;
+      return '<tr><td class="r mono">' + b.nr + '</td>' +
+        '<td class="mono"><b>' + esc(b.sku || '—') + '</b></td><td>' + esc(b.short) + '</td>' +
+        '<td class="r mono">' + b.size + '</td><td class="r mono">' + b.done + '</td>' +
+        '<td class="r mono">' + (b.firstCycle != null ? dur(b.firstCycle) : '—') + '</td>' +
+        '<td class="r mono">' + (b.restAvg != null ? dur(b.restAvg) : '—') + '</td>' +
+        '<td class="r mono"><b style="color:' + (b.startupCost > 0 ? 'var(--red)' : 'var(--green)') + '">' +
+        (b.startupCost != null ? (b.startupCost >= 0 ? '+' : '−') + dur(Math.abs(b.startupCost)) : '—') + '</b></td>' +
+        '<td>' + (pct2 == null ? '<span class="hint">te weinig motoren</span>'
+          : pct2 > 5 ? 'de eerste kostte ' + num(pct2, 0) + '% meer tijd — er zit leereffect in de batch'
+            : pct2 < -5 ? 'de eerste ging juist sneller' : 'nauwelijks verschil') + '</td></tr>';
+    }).join('') : '<tr><td colspan="9" class="empty">Nog geen afgeronde batches.</td></tr>') + '</tbody>';
 
   /* ---- uitsplitsing per motorvariant ---- */
   const vs = M.variants.filter(v => v.motors.length);
@@ -4186,7 +4911,7 @@ function renderFinal() {
   const run = activeRun();
   if (!run) {
     noRunBanner('#finBanner', 'het eindrapport');
-    ['finKpis', 'finOpen', 'finSchedule', 'finAdvice'].forEach(i => $('#' + i).innerHTML = '');
+    ['finKpis', 'finTime', 'finOpen', 'finSchedule', 'finAdvice'].forEach(i => $('#' + i).innerHTML = '');
     $('#tblFinal').innerHTML = '';
     return;
   }
@@ -4210,6 +4935,8 @@ function renderFinal() {
       'zonder enige afkeur of rework', M.fpy == null ? '' : M.fpy >= 0.9 ? 'ok' : M.fpy >= 0.7 ? 'warn' : 'bad') +
     kpi('Openstaande herstelpunten', M.openDefects.length,
       'totale rework-tijd ' + dur(totalRework), M.openDefects.length ? 'bad' : 'ok');
+
+  renderFinalTime(run, M);
 
   /* ---- actielijst: wat moet er nog gefixt worden ---- */
   const open = M.qOpenMotors;
@@ -4282,6 +5009,62 @@ function renderFinal() {
     '</div>';
 
   renderAdviceBlock(run);
+}
+
+/* ---------------------------------------------------- tijdsverantwoording
+   Hoeveel tijd hadden we, hoeveel hebben we gebruikt, en hebben we het
+   weekdoel gehaald bínnen die tijd? Motoren die pas ná de beschikbare tijd
+   klaar waren tellen we apart: ze zijn wel gemaakt, maar niet op tijd. */
+function renderFinalTime(run, M) {
+  const el = $('#finTime'); if (!el) return;
+  if (M.availableMs == null) {
+    el.innerHTML = '<div class="hint">Er is voor deze run geen beschikbare productietijd ingevuld. ' +
+      'Vul die in bij de runinstellingen om te zien of het doel binnen de tijd gehaald is.</div>';
+    return;
+  }
+  const used = Math.min(M.elapsed, M.availableMs);
+  const left = Math.max(0, M.timeLeft);
+  const over = M.overtime;
+  const pct = M.availableMs > 0 ? M.elapsed / M.availableMs : null;
+  const running = !run.endedAt;
+
+  el.innerHTML = '<div class="grid g4">' +
+    kpi('Beschikbare tijd', durH(M.availableMs),
+      run.availableMin + ' minuten ingepland' + (M.deadline ? ' · tot ' + clock(M.deadline) : '')) +
+    kpi('Gebruikte tijd', durH(used),
+      pct != null ? num(Math.min(pct, 1) * 100, 0) + '% van de beschikbare tijd' : '',
+      pct != null && pct > 1 ? 'bad' : pct != null && pct > 0.9 ? 'warn' : '') +
+    (over > 0
+      ? kpi('Tijd overschreden', durH(over), 'langer doorgewerkt dan gepland', 'bad')
+      : kpi(running ? 'Tijd over' : 'Tijd overgehouden', durH(left),
+        running
+          ? (M.perMotorLeft != null ? durSigned(M.perMotorLeft) + ' per nog te maken motor' : 'geen motoren meer open')
+          : 'binnen de beschikbare tijd gebleven', 'ok')) +
+    kpi('Binnen de tijd gemaakt', M.withinTime.length,
+      M.outsideTime.length ? M.outsideTime.length + ' motoren pas ná de tijd klaar' : 'alle motoren op tijd klaar',
+      M.outsideTime.length ? 'warn' : 'ok') +
+    '</div>' +
+    (M.targetMet == null
+      ? '<div class="hint" style="margin-top:10px">Zonder ingevulde klantvraag kan niet bepaald worden of het weekdoel gehaald is.</div>'
+      : '<div class="banner ' + (M.targetMet ? 'ok' : running ? 'warn' : 'red') + '" style="margin-top:12px"><div>' +
+      '<b>' + (M.targetMet
+        ? 'Weekdoel gehaald binnen de beschikbare tijd'
+        : running ? 'Weekdoel nog niet gehaald' : 'Weekdoel niet gehaald binnen de beschikbare tijd') + '</b>' +
+      M.withinTime.length + ' van de ' + run.demand + ' gevraagde motoren waren klaar binnen de ' +
+      durH(M.availableMs) + '.' +
+      (M.outsideTime.length
+        ? ' Daarnaast zijn er ' + M.outsideTime.length + ' motoren afgemaakt ná de beschikbare tijd; die tellen niet mee voor het doel.'
+        : '') +
+      '</div></div>') +
+    (M.outsideTime.length
+      ? '<div class="tblwrap" style="margin-top:12px"><table class="tbl"><thead><tr><th>Buiten de tijd afgemaakt</th>' +
+      '<th>Modelcode</th><th class="r">Klaar om</th><th class="r">Te laat</th></tr></thead><tbody>' +
+      M.outsideTime.map(x => '<tr><td><b>' + esc(x.code) + '</b></td>' +
+        '<td class="mono">' + esc(x.sku || '—') + '</td>' +
+        '<td class="r mono">' + clock(x.completedAt) + '</td>' +
+        '<td class="r mono">' + dur(x.completedAt - M.deadline) + '</td></tr>').join('') +
+      '</tbody></table></div>'
+      : '');
 }
 
 /* ---------------------------------------------------- adviesblok */
@@ -4525,14 +5308,35 @@ function renderCompare() {
     ['Bezettingsgraad lijn', s => s.occupancy != null ? num(s.occupancy * 100, 0) + '%' : '—', 'high'],
     ['Flow-efficiëntie', s => s.flowEff != null ? num(s.flowEff * 100, 0) + '%' : '—', 'high'],
     ['Lijnbalans', s => s.lineBalance != null ? num(s.lineBalance * 100, 0) + '%' : '—', 'high'],
-    ['Bottleneck', s => s.bottleneck ? esc(s.bottleneck) + ' (' + dur(s.bottleneckCycle) + ')' : '—']
+    ['Bottleneck', s => s.bottleneck ? esc(s.bottleneck) + ' (' + dur(s.bottleneckCycle) + ')' : '—'],
+    ['Modelcodes in de run', s => s.models.length ? s.models.map(g => esc(g.sku) + ' ×' + g.n).join('<br>') : '—'],
+    ['Aantal batches', s => s.batches || '—'],
+    ['Aantal modelwissels', s => s.changeCount, 'low'],
+    ['Totale omsteltijd', s => dur(s.changeover), 'low'],
+    ['Gem. omsteltijd per wissel', s => s.avgChangeover != null ? dur(s.avgChangeover) : '—', 'low'],
+    ['Opstartkosten eerste motor van een batch', s => s.startupCostAvg != null ? dur(s.startupCostAvg) : '—', 'low'],
+    ['Beschikbare productietijd', s => s.availableMs != null ? durH(s.availableMs) : '—'],
+    ['Tijd over / overschreden', s => s.availableMs == null ? '—'
+      : s.overtime > 0 ? '−' + durH(s.overtime) : '+' + durH(Math.max(0, s.timeLeft)), 'high'],
+    ['Gereed binnen de beschikbare tijd', s => s.availableMs == null ? '—' : s.withinTime, 'high'],
+    ['Gereed buiten de beschikbare tijd', s => s.availableMs == null ? '—' : s.outsideTime, 'low'],
+    ['Weekdoel binnen de tijd gehaald', s => s.targetMet == null ? '—'
+      : s.targetMet ? '<span class="tag green">ja</span>' : '<span class="tag red">nee</span>'],
+    ['Herkomst van de meting', s => s.imported
+      ? '<span class="tag amber">geïmporteerd</span>' : '<span class="tag">in de app gemeten</span>']
   ];
   const numeric = {
     'Gem. lead time per motor': s => s.leadAvg, 'Gem. cycle time (alle stations)': s => s.cycleAvg,
     'Throughput (motoren/uur)': s => s.throughput, 'Productiviteit (motoren/gewerkt uur)': s => s.productivity,
     'First Pass Yield': s => s.fpy, 'Aantal fouten': s => s.defects, 'Rework-tijd': s => s.rework,
     'Totale wachttijd': s => s.wait, 'Wachttijd % van beschikbare tijd': s => s.waitPct,
-    'Bezettingsgraad lijn': s => s.occupancy, 'Flow-efficiëntie': s => s.flowEff, 'Lijnbalans': s => s.lineBalance
+    'Bezettingsgraad lijn': s => s.occupancy, 'Flow-efficiëntie': s => s.flowEff, 'Lijnbalans': s => s.lineBalance,
+    'Aantal modelwissels': s => s.changeCount, 'Totale omsteltijd': s => s.changeover,
+    'Gem. omsteltijd per wissel': s => s.avgChangeover,
+    'Opstartkosten eerste motor van een batch': s => s.startupCostAvg,
+    'Tijd over / overschreden': s => s.timeLeft,
+    'Gereed binnen de beschikbare tijd': s => s.availableMs == null ? null : s.withinTime,
+    'Gereed buiten de beschikbare tijd': s => s.availableMs == null ? null : s.outsideTime
   };
   $('#tblCompare').innerHTML =
     '<thead><tr><th>KPI</th>' + sel.map(s => '<th class="r">' + esc(s.name) +
@@ -4924,7 +5728,48 @@ function runFormBody(r) {
     '<label class="fld"><span>Berekende takt time</span><input type="text" id="rfTakt" readonly style="background:#f3f7fa;font-weight:800"></label>' +
     '<label class="fld"><span>Motoren in de wachtrij</span><input type="text" id="rfQueue" readonly style="background:#f3f7fa;font-weight:800"></label>' +
     '</div>' +
+    /* De batchvolgorde bepaalt hoe de wachtrij wordt opgebouwd. Bij een bestaande
+       run is die rij er al; die pas je aan met "Wachtrij beheren" op PRODUCTIE. */
+    (r.id ? '' : '<div class="fld" id="rfBatchWrap" style="display:none;margin-top:2px">' +
+      '<span>Volgorde van de batches</span><div class="bord" id="rfBatches"></div>' +
+      '<div class="hint" id="rfBatchHint"></div></div>') +
     '<label class="fld"><span>Opmerkingen</span><textarea id="rfNotes" rows="2" placeholder="bijzonderheden, gewijzigde werkwijze, proefopstelling…">' + esc(r.notes || '') + '</textarea></label>';
+}
+
+/* De batchvolgorde in het runformulier. De lijst hangt aan het formulier zelf,
+   zodat twee openstaande formulieren elkaar niet in de weg zitten. */
+function renderBatchOrder(m) {
+  const wrap = $('#rfBatchWrap', m); if (!wrap) return;
+  const w = $('#rfWeekOrder', m) ? $('#rfWeekOrder', m).value : '';
+  const o = w ? orderForWeek(w) : null;
+  if (!o) { wrap.style.display = 'none'; m._batchOrder = null; return; }
+  const skus = (o.lines || []).filter(l => l.amount > 0).map(l => l.sku);
+  /* eerder gekozen volgorde bewaren, maar alleen voor modellen die er nog zijn */
+  const keep = (m._batchOrder || []).filter(s => skus.indexOf(s) >= 0);
+  m._batchOrder = keep.concat(skus.filter(s => keep.indexOf(s) < 0));
+  const grouped = $('#rfMix', m) && $('#rfMix', m).value === 'grouped';
+  wrap.style.display = '';
+  const rows = orderBatches(o, m._batchOrder);
+  $('#rfBatches', m).innerHTML = rows.map((b, i) =>
+    '<div class="bord-r"><span class="nr">' + (i + 1) + '</span>' +
+    '<span class="sku">' + esc(b.sku) + '</span>' +
+    '<span class="nm">' + esc(b.name) + '</span>' +
+    '<span class="cnt">' + b.amount + ' motoren</span>' +
+    '<span class="bord-b">' +
+    '<button type="button" data-bup="' + i + '"' + (i === 0 ? ' disabled' : '') + ' title="Eerder bouwen">▲</button>' +
+    '<button type="button" data-bdn="' + i + '"' + (i === rows.length - 1 ? ' disabled' : '') + ' title="Later bouwen">▼</button>' +
+    '</span></div>').join('');
+  $('#rfBatchHint', m).textContent = grouped
+    ? 'De bovenste batch wordt als eerste gebouwd. Tussen twee batches zit een modelwissel; die omsteltijd meet de app apart.'
+    : 'Let op: bij een gemengde wachtrij staan de modellen om en om. Deze volgorde telt pas als je kiest voor "Gegroepeerd — per variant achter elkaar".';
+  $$('[data-bup]', m).forEach(b => b.onclick = () => {
+    const i = +b.dataset.bup, a = m._batchOrder;
+    a.splice(i - 1, 0, a.splice(i, 1)[0]); renderBatchOrder(m);
+  });
+  $$('[data-bdn]', m).forEach(b => b.onclick = () => {
+    const i = +b.dataset.bdn, a = m._batchOrder;
+    a.splice(i + 1, 0, a.splice(i, 1)[0]); renderBatchOrder(m);
+  });
 }
 function bindTakt(m) {
   const upd = () => {
@@ -4933,8 +5778,10 @@ function bindTakt(m) {
     const w = $('#rfWeekOrder', m) ? $('#rfWeekOrder', m).value : '';
     const o = w ? orderForWeek(w) : null;
     if ($('#rfQueue', m)) $('#rfQueue', m).value = o ? orderTotal(o) + ' motoren uit ' + o.orderNr : 'geen order gekozen';
+    renderBatchOrder(m);
   };
   $('#rfAvail', m).oninput = upd; $('#rfDemand', m).oninput = upd;
+  if ($('#rfMix', m)) $('#rfMix', m).onchange = upd;
   const wo = $('#rfWeekOrder', m);
   if (wo) wo.onchange = () => {
     const o = wo.value ? orderForWeek(wo.value) : null;
@@ -4950,7 +5797,7 @@ function bindTakt(m) {
   upd();
 }
 function readRunForm(m) {
-  return {
+  const d = {
     name: ($('#rfName', m).value || '').trim() || ('Run ' + todayISO()),
     date: $('#rfDate', m).value || todayISO(),
     week: parseInt($('#rfWeek', m).value, 10) || isoWeek(new Date()),
@@ -4963,6 +5810,10 @@ function readRunForm(m) {
     strictOrder: $('#rfStrict', m) ? $('#rfStrict', m).value === '1' : false,
     notes: ($('#rfNotes', m).value || '').trim()
   };
+  /* alleen het nieuwe-run-formulier heeft de batchvolgorde; bij bewerken laten
+     we het veld met rust, anders zouden we de bestaande volgorde overschrijven */
+  if ($('#rfBatchWrap', m)) d.batchOrder = m._batchOrder ? m._batchOrder.slice() : null;
+  return d;
 }
 function newRun() {
   openModal({
@@ -4982,7 +5833,7 @@ function newRun() {
         const run = Object.assign({
           id: uid(), createdAt: now(), startedAt: syncedNow(), endedAt: null, demo: false,
           stations: DB.settings.stations.filter(s => s.active !== false).map(s => ({ id: s.id, worker: s.worker, name: s.name })),
-          queue: order ? buildQueue(order, d.queueMix) : [],
+          queue: order ? buildQueue(order, d.queueMix, d.batchOrder) : [],
           events: []
         }, d);
         if (!run.stations.length) { toast('Er is geen enkel actief werkstation ingesteld.', true); return false; }
@@ -5046,9 +5897,31 @@ function exportData(kind) {
     const Mj = computeMetrics(run);
     download(base + 'ruwe-data.json', JSON.stringify({
       exported: new Date().toISOString(), settings: DB.settings, run: run,
+      batches: Mj.batchStats,
+      modelwissels: Mj.changeovers.map(c => ({
+        tijdstip: new Date(c.at).toISOString(), medewerker: c.worker,
+        van: c.fromSku, naar: c.toSku, omsteltijdSec: c.ms / 1000
+      })),
+      permodel: Mj.models.map(g => ({
+        sku: g.sku, variant: g.name, motoren: g.motors.length, batches: g.batches, gereed: g.complete,
+        gemLeadSec: g.leadAvg != null ? g.leadAvg / 1000 : null,
+        gemSomCycleSec: g.cycleAvg != null ? g.cycleAvg / 1000 : null, fpy: g.fpy
+      })),
+      tijdsverantwoording: {
+        beschikbaarSec: Mj.availableMs != null ? Mj.availableMs / 1000 : null,
+        gebruiktSec: Mj.elapsed / 1000,
+        overSec: Mj.timeLeft != null && Mj.timeLeft > 0 ? Mj.timeLeft / 1000 : 0,
+        overschredenSec: Mj.overtime / 1000,
+        binnenDeTijd: Mj.withinTime.length, buitenDeTijd: Mj.outsideTime.length, weekdoelGehaald: Mj.targetMet
+      },
       eindrapport: Mj.D.queueOrder.map(m => ({
         motor: m.code, sku: m.sku, variant: m.sku ? variantName(m.sku) : '',
+        batchNr: m.batchNr || null, batchPositie: m.batchPos || null, batchGrootte: m.batchSize || null,
         eindstatus: (QSTAT[m.qstatus] || ['?'])[0], eersteKeerGoed: m.firstPass,
+        binnenBeschikbareTijd: (() => {
+          const x = Mj.motors.find(y => y.id === m.id);
+          return x && x.complete ? !x.outsideTime : null;
+        })(),
         leadTimeSec: (Mj.motors.find(x => x.id === m.id) || {}).lead / 1000 || null,
         defecten: m.defects.map(d => ({
           station: (Mj.D.stationById[d.stationId] || {}).worker, onderdeel: d.part, type: d.type,
@@ -5078,42 +5951,78 @@ function exportData(kind) {
     download(base + 'eventlog.csv', toCSV(rows));
   }
   else if (kind === 'tasks') {
-    rows.push(['run', 'ordernummer', 'motor', 'product_id', 'variant', 'motor_nr', 'medewerker', 'werkstation', 'status', 'start', 'gereed_1e_keer', 'gereed_laatste',
-      'cycle_time_sec', 'actieve_tijd_sec', 'wachttijd_sec', 'rework_tijd_sec', 'aantal_wachtmomenten', 'qc_goed', 'qc_afgekeurd', 'rework_rondes']);
+    rows.push(['run', 'ordernummer', 'motor', 'product_id', 'variant', 'motor_nr', 'batch_nr', 'batch_positie', 'batch_grootte',
+      'medewerker', 'werkstation', 'status', 'start', 'gereed_1e_keer', 'gereed_laatste',
+      'cycle_time_sec', 'actieve_tijd_sec', 'wachttijd_sec', 'wachttijd_excl_omstellen_sec', 'omsteltijd_sec',
+      'modelwissel_voor_deze_motor', 'rework_tijd_sec', 'aantal_wachtmomenten', 'qc_goed', 'qc_afgekeurd', 'rework_rondes']);
     M.D.motorList.slice().sort((a, b) => a.nr - b.nr).forEach(m => {
       M.D.stations.forEach(s => {
         const t = M.D.tasks[m.id + '|' + s.id]; if (!t) return;
         const tt = taskTimes(t, M.nowTs);
-        rows.push([run.name, ordNr, m.code, m.sku || '', m.sku ? variantName(m.sku) : '', m.nr, s.worker, s.name, STATUS_LABEL[t.status],
+        const co = sum(t.segments.filter(sg => sg.type === 'wait' && sg.changeover)
+          .map(sg => Math.max(0, segDur(sg, M.nowTs))));
+        const ch = M.changeovers.find(c => c.stationId === s.id && c.toMotorId === m.id);
+        rows.push([run.name, ordNr, m.code, m.sku || '', m.sku ? variantName(m.sku) : '', m.nr,
+          m.batchNr || '', m.batchPos || '', m.batchSize || '',
+          s.worker, s.name, STATUS_LABEL[t.status],
           t.startedAt ? stamp(t.startedAt) : '', t.firstFinishedAt ? stamp(t.firstFinishedAt) : '', t.finishedAt ? stamp(t.finishedAt) : '',
           tt.cycle != null ? (tt.cycle / 1000).toFixed(1) : '', (tt.work / 1000).toFixed(1), (tt.wait / 1000).toFixed(1),
+          (Math.max(0, tt.wait - co) / 1000).toFixed(1), (co / 1000).toFixed(1),
+          ch ? ch.fromSku + ' → ' + ch.toSku : '',
           (tt.rework / 1000).toFixed(1), t.segments.filter(x => x.type === 'wait').length,
           t.qc.filter(q => q.result === 'pass').length, t.qc.filter(q => q.result === 'fail').length, t.reworkRounds || 0]);
       });
     });
     download(base + 'taken.csv', toCSV(rows));
   }
+  else if (kind === 'changeover') {
+    rows.push(['run', 'ordernummer', 'tijdstip', 'medewerker', 'werkstation', 'van_product_id', 'van_variant',
+      'naar_product_id', 'naar_variant', 'naar_motor', 'batch_nr', 'omsteltijd_sec', 'timwood_categorie']);
+    M.changeovers.forEach(c => {
+      const mo = c.toMotorId ? M.D.motors[c.toMotorId] : null;
+      const st = M.D.stationById[c.stationId];
+      rows.push([run.name, ordNr, stamp(c.at), c.worker, st ? st.name : '',
+        c.fromSku, c.fromSku ? variantName(c.fromSku) : '',
+        c.toSku, c.toSku ? variantName(c.toSku) : '',
+        mo ? mo.code : '', mo ? (mo.batchNr || '') : '', (c.ms / 1000).toFixed(1), M.changeoverTim]);
+    });
+    rows.push([]);
+    rows.push(['Batch', 'product_id', 'variant', 'aantal_motoren', 'gereed', 'eerste_motor_som_cycle_sec',
+      'overige_gemiddeld_sec', 'opstartkosten_sec', 'eerste_motor_lead_sec', 'overige_lead_gemiddeld_sec']);
+    M.batchStats.forEach(b => rows.push([b.nr, b.sku, b.name, b.size, b.done,
+      b.firstCycle != null ? (b.firstCycle / 1000).toFixed(1) : '',
+      b.restAvg != null ? (b.restAvg / 1000).toFixed(1) : '',
+      b.startupCost != null ? (b.startupCost / 1000).toFixed(1) : '',
+      b.firstLead != null ? (b.firstLead / 1000).toFixed(1) : '',
+      b.restLeadAvg != null ? (b.restLeadAvg / 1000).toFixed(1) : '']));
+    download(base + 'batches-en-omstellen.csv', toCSV(rows));
+  }
   else if (kind === 'segments') {
-    rows.push(['run', 'motor', 'medewerker', 'werkstation', 'segment_type', 'start', 'eind', 'duur_sec', 'reden', 'timwood', 'notitie']);
+    rows.push(['run', 'motor', 'product_id', 'batch_nr', 'medewerker', 'werkstation', 'segment_type', 'omstellen',
+      'start', 'eind', 'duur_sec', 'reden', 'timwood', 'notitie']);
     Object.keys(M.D.tasks).forEach(k => {
       const t = M.D.tasks[k], m = M.D.motors[t.motorId], s = M.D.stationById[t.stationId];
       t.segments.forEach(sg => {
-        rows.push([run.name, m ? m.code : '', s ? s.worker : '', s ? s.name : '', sg.type,
+        rows.push([run.name, m ? m.code : '', m ? (m.sku || '') : '', m ? (m.batchNr || '') : '',
+          s ? s.worker : '', s ? s.name : '', sg.type, sg.changeover ? 'ja' : 'nee',
           stamp(sg.start), sg.end ? stamp(sg.end) : '(loopt nog)', (segDur(sg, M.nowTs) / 1000).toFixed(1),
-          sg.reason || '', sg.tim || '', sg.note || '']);
+          sg.reason || '', sg.changeover ? M.changeoverTim : (sg.tim || ''), sg.note || '']);
       });
     });
     download(base + 'tijdsegmenten.csv', toCSV(rows));
   }
   else if (kind === 'motors') {
-    rows.push(['run', 'ordernummer', 'motor', 'nr', 'product_id', 'variant', 'status', 'start', 'gereed', 'lead_time_sec', 'som_cycle_sec', 'actieve_tijd_sec',
-      'wachttijd_sec', 'rework_sec', 'aantal_fouten', 'eerste_keer_goed']);
+    rows.push(['run', 'ordernummer', 'motor', 'nr', 'product_id', 'variant', 'batch_nr', 'batch_positie', 'batch_grootte',
+      'eerste_van_de_batch', 'status', 'start', 'gereed', 'lead_time_sec', 'som_cycle_sec', 'actieve_tijd_sec',
+      'wachttijd_sec', 'rework_sec', 'aantal_fouten', 'eerste_keer_goed', 'binnen_beschikbare_tijd']);
     M.motors.slice().sort((a, b) => a.nr - b.nr).forEach(x => {
       rows.push([run.name, ordNr, x.code, x.nr, x.m.sku || '', x.m.sku ? variantName(x.m.sku) : '',
+        x.m.batchNr || '', x.m.batchPos || '', x.m.batchSize || '', x.m.batchPos === 1 ? 'ja' : 'nee',
         x.complete ? 'gereed' : x.started ? 'wip' : 'niet gestart',
         x.startedAt ? stamp(x.startedAt) : '', x.completedAt ? stamp(x.completedAt) : '',
         x.lead != null ? (x.lead / 1000).toFixed(1) : '', (x.cycleSum / 1000).toFixed(1), (x.work / 1000).toFixed(1),
-        (x.wait / 1000).toFixed(1), (x.rework / 1000).toFixed(1), x.defects, x.complete ? (x.firstPass ? 'ja' : 'nee') : '']);
+        (x.wait / 1000).toFixed(1), (x.rework / 1000).toFixed(1), x.defects, x.complete ? (x.firstPass ? 'ja' : 'nee') : '',
+        !x.complete ? '' : x.outsideTime ? 'nee' : 'ja']);
     });
     download(base + 'motoren.csv', toCSV(rows));
   }
@@ -5159,6 +6068,24 @@ function exportData(kind) {
     add('Gepland op dit moment', M.plannedNow != null ? M.plannedNow.toFixed(2) : '', 'motoren');
     add('Voor/achter op schema', M.scheduleDiff != null ? M.scheduleDiff.toFixed(2) : '', 'motoren',
       M.scheduleTimeDiff != null ? (M.scheduleTimeDiff / 1000).toFixed(0) + ' sec' : '');
+    add('Beschikbare productietijd', M.availableMs != null ? (M.availableMs / 1000).toFixed(0) : '', 'sec',
+      M.availableMs != null ? durH(M.availableMs) : 'niet ingevuld');
+    add('Gebruikte tijd', M.availableMs != null ? (Math.min(M.elapsed, M.availableMs) / 1000).toFixed(0) : '', 'sec',
+      'runtijd, afgetopt op de beschikbare tijd');
+    add('Tijd over', M.timeLeft != null && M.timeLeft > 0 ? (M.timeLeft / 1000).toFixed(0) : '0', 'sec');
+    add('Tijd overschreden', (M.overtime / 1000).toFixed(0), 'sec', 'langer doorgewerkt dan gepland');
+    add('Motoren binnen de beschikbare tijd', M.withinTime.length, 'stuks');
+    add('Motoren buiten de beschikbare tijd', M.outsideTime.length, 'stuks', 'wel gemaakt, maar niet op tijd');
+    add('Weekdoel binnen de tijd gehaald', M.targetMet == null ? '' : M.targetMet ? 'JA' : 'nee', '',
+      run.demand ? 'klantvraag ' + run.demand + ' motoren' : 'geen klantvraag ingevuld');
+    add('Aantal batches', M.D.batches.length, 'stuks', 'opeenvolgende motoren van hetzelfde model');
+    add('Aantal modelwissels', M.changeCount, 'stuks', 'over alle werkstations samen');
+    add('Totale omsteltijd', (M.totalChangeover / 1000).toFixed(0), 'sec',
+      'geboekt onder TIMWOOD-categorie ' + M.changeoverTim);
+    add('Gemiddelde omsteltijd per wissel', M.avgChangeover != null ? (M.avgChangeover / 1000).toFixed(1) : '', 'sec');
+    add('Opstartkosten per batch (gemiddeld)', M.startupCostAvg != null ? (M.startupCostAvg / 1000).toFixed(1) : '', 'sec',
+      'eerste motor van een batch tegenover de overige motoren');
+    add('Opstartkosten totaal', M.startupCostTotal ? (M.startupCostTotal / 1000).toFixed(0) : '0', 'sec');
     add('Motoren in één keer goed', M.qGood, 'stuks');
     add('Goedgekeurd na herstel', M.qRepaired, 'stuks');
     add('Nog te herstellen', M.qOpenMotors.length, 'stuks');
@@ -5176,6 +6103,23 @@ function exportData(kind) {
       s.recentCycle != null ? (s.recentCycle / 1000).toFixed(1) : '', (s.rework / 1000).toFixed(0),
       s.occupancy != null ? (s.occupancy * 100).toFixed(1) : '', s.waitPct != null ? (s.waitPct * 100).toFixed(1) : '', s.defects]));
     rows.push([]);
+    rows.push(['Station', 'medewerker', 'omsteltijd_sec', 'aantal_modelwissels', 'wachttijd_excl_omstellen_sec']);
+    M.stations.forEach(s => rows.push([s.name, s.worker, (s.changeover / 1000).toFixed(0), s.changeCount,
+      (s.waitPure / 1000).toFixed(0)]));
+    rows.push([]);
+    rows.push(['Modelcode', 'variant', 'motoren', 'batches', 'gereed', 'gem_lead_sec', 'gem_som_cycle_sec',
+      'fpy_pct', 'fouten', 'rework_sec'].concat(M.stations.map(s => 'gem_cycle_' + slug(s.worker) + '_sec')));
+    M.models.forEach(g => rows.push([g.sku, g.name, g.motors.length, g.batches, g.complete,
+      g.leadAvg != null ? (g.leadAvg / 1000).toFixed(1) : '', g.cycleAvg != null ? (g.cycleAvg / 1000).toFixed(1) : '',
+      g.fpy != null ? (g.fpy * 100).toFixed(1) : '', g.defects, (g.rework / 1000).toFixed(0)]
+      .concat(M.stations.map(s => g.stationAvg[s.id] != null ? (g.stationAvg[s.id] / 1000).toFixed(1) : ''))));
+    rows.push([]);
+    rows.push(['Batch', 'product_id', 'variant', 'motoren', 'gereed', 'eerste_motor_sec', 'overige_gem_sec', 'opstartkosten_sec']);
+    M.batchStats.forEach(b => rows.push([b.nr, b.sku, b.name, b.size, b.done,
+      b.firstCycle != null ? (b.firstCycle / 1000).toFixed(1) : '',
+      b.restAvg != null ? (b.restAvg / 1000).toFixed(1) : '',
+      b.startupCost != null ? (b.startupCost / 1000).toFixed(1) : '']));
+    rows.push([]);
     rows.push(['Variant', 'product_id', 'motoren', 'gereed', 'gem_lead_sec', 'fpy_pct', 'fouten', 'rework_sec']);
     M.variants.forEach(v => rows.push([v.name, v.sku, v.motors.length, v.complete,
       v.leadAvg != null ? (v.leadAvg / 1000).toFixed(1) : '', v.fpy != null ? (v.fpy * 100).toFixed(1) : '',
@@ -5186,13 +6130,16 @@ function exportData(kind) {
     download(base + 'kpi-samenvatting.csv', toCSV(rows));
   }
   else if (kind === 'final') {
-    rows.push(['run', 'ordernummer', 'motor', 'product_id', 'variant', 'eindstatus', 'stations_gereed',
+    rows.push(['run', 'ordernummer', 'motor', 'product_id', 'variant', 'batch_nr', 'batch_positie', 'batch_grootte',
+      'eindstatus', 'stations_gereed', 'binnen_beschikbare_tijd',
       'lead_time_sec', 'rework_sec', 'aantal_fouten', 'open_herstelpunten', 'eerste_keer_goed',
       'probleem_station', 'onderdeel', 'fouttype', 'omschrijving', 'hersteld', 'hersteld_op']);
     M.D.queueOrder.forEach(m => {
       const mm = M.motors.find(x => x.id === m.id) || {};
       const row = [run.name, ordNr, m.code, m.sku || '', m.sku ? variantName(m.sku) : '',
+        m.batchNr || '', m.batchPos || '', m.batchSize || '',
         (QSTAT[m.qstatus] || ['?'])[0], m.stationsDoneCount + '/' + M.stations.length,
+        !mm.complete ? '' : mm.outsideTime ? 'nee' : 'ja',
         mm.lead != null ? (mm.lead / 1000).toFixed(1) : '', (mm.rework / 1000).toFixed(1),
         m.defects.length, m.openDefects.length, m.completedAt ? (m.firstPass ? 'ja' : 'nee') : ''];
       if (!m.defects.length) { rows.push(row.concat(['', '', '', '', '', ''])); return; }
@@ -5214,7 +6161,10 @@ function exportData(kind) {
       'throughput_per_uur', 'productiviteit', 'fpy_pct', 'fouten', 'rework_sec', 'wachttijd_sec', 'wacht_pct',
       'bezetting_pct', 'flow_eff_pct', 'lijnbalans_pct', 'bottleneck', 'bottleneck_basis',
       'veroorzaakte_wacht_sec', 'takt_werkelijk_sec', 'schema_verschil_motoren',
-      'in_1x_goed', 'na_herstel', 'nog_te_herstellen', 'afgekeurd', 'voortijdig_beeindigd']);
+      'in_1x_goed', 'na_herstel', 'nog_te_herstellen', 'afgekeurd', 'voortijdig_beeindigd',
+      'modelcodes', 'batches', 'modelwissels', 'omsteltijd_sec', 'gem_omsteltijd_sec', 'opstartkosten_gem_sec',
+      'beschikbare_tijd_sec', 'tijd_over_sec', 'tijd_overschreden_sec',
+      'binnen_de_tijd_gereed', 'buiten_de_tijd_gereed', 'weekdoel_binnen_de_tijd', 'geimporteerd']);
     DB.runs.forEach(r => {
       const s = runSummary(r);
       rows.push([s.name, s.date, s.week, s.orderNr || '', s.cloudCode || '', r.demo ? 'ja' : 'nee', (s.elapsed / 1000).toFixed(0), s.motorsDone,
@@ -5228,7 +6178,14 @@ function exportData(kind) {
         s.causedWait != null ? (s.causedWait / 1000).toFixed(0) : '',
         s.taktActual != null ? (s.taktActual / 1000).toFixed(1) : '',
         s.scheduleDiff != null ? s.scheduleDiff.toFixed(2) : '',
-        s.qGood, s.qRepaired, s.qOpen, s.qRejected, s.early ? 'ja' : 'nee']);
+        s.qGood, s.qRepaired, s.qOpen, s.qRejected, s.early ? 'ja' : 'nee',
+        s.models.map(g => g.sku).join(' + '), s.batches, s.changeCount, (s.changeover / 1000).toFixed(0),
+        s.avgChangeover != null ? (s.avgChangeover / 1000).toFixed(1) : '',
+        s.startupCostAvg != null ? (s.startupCostAvg / 1000).toFixed(1) : '',
+        s.availableMs != null ? (s.availableMs / 1000).toFixed(0) : '',
+        s.timeLeft != null && s.timeLeft > 0 ? (s.timeLeft / 1000).toFixed(0) : '0',
+        (s.overtime / 1000).toFixed(0), s.withinTime, s.outsideTime,
+        s.targetMet == null ? '' : s.targetMet ? 'ja' : 'nee', s.imported ? 'ja' : 'nee']);
     });
     download('innovo_alle-runs.csv', toCSV(rows));
   }
@@ -5421,6 +6378,7 @@ function renderSettings() {
 
   renderOrderSettings();
   renderBomSettings();
+  renderDispSettings();
   renderCloudSettings();
   $('#fileOrders').onchange = e => { if (e.target.files[0]) importJsonFile(e.target.files[0], 'orders'); e.target.value = ''; };
   $('#fileBom').onchange = e => { if (e.target.files[0]) importJsonFile(e.target.files[0], 'bom'); e.target.value = ''; };
@@ -6195,6 +7153,13 @@ function tick() {
   $('#hElapsed').textContent = durH(M.elapsed);
   $('#hCounts').textContent = M.completedMotors.length + ' / ' + M.wip;
   maybeFinishRun(run);
+  checkTimeUp(run, M);
+  const mr = $('[data-mrun]');
+  if (mr) mr.textContent = DISP.countdown ? durSigned(M.timeLeft) : durH(M.elapsed);
+  const cd = $('[data-cd]');
+  if (cd) cd.textContent = DISP.countdown ? durSigned(M.timeLeft) : durH(M.elapsed);
+  const cdp = $('[data-cdper]');
+  if (cdp) cdp.textContent = M.perMotorLeft != null ? durSigned(M.perMotorLeft) : '—';
   if (MOBILE.on) {
     const st = M.D.stationById[MOBILE.stationId];
     if (st) {
@@ -6202,7 +7167,19 @@ function tick() {
       const t = mId ? getTask(M.D, mId, st.id) : null;
       if (t) {
         const tt = taskTimes(t, nowTs);
-        const b = $('[data-mbig]'); if (b) b.textContent = dur(bigTime(t, t.status, nowTs));
+        const big = bigTime(t, t.status, nowTs);
+        const b = $('[data-mbig]');
+        if (b) {
+          const bud = parseFloat(b.dataset.budget) || null;
+          const showCd = DISP.countdown && bud;
+          b.textContent = showCd ? durSigned(bud - big) : dur(big);
+          if (showCd && t.startedAt != null && t.status !== 'done') {
+            const ph = phaseOf(bud - big, bud);
+            b.className = 'mtimer ' + timerStateCls(t.status) + ' ' + PHASE_CLS[ph] + (ph === 'over' ? ' blink' : '');
+          }
+          const bs = $('[data-mbigsub]');
+          if (bs && bud) bs.textContent = 'verstreken ' + dur(big) + ' van ' + dur(bud);
+        }
         const w = $('[data-mf="work"]'); if (w) w.textContent = dur(tt.work);
         const q = $('[data-mf="wait"]'); if (q) q.textContent = dur(tt.wait);
         const r = $('[data-mf="rework"]'); if (r) r.textContent = dur(tt.rework);
@@ -6217,11 +7194,19 @@ function tick() {
     const key = card.dataset.task; if (!key) return;
     const t = D.tasks[key]; if (!t) return;
     const tt = taskTimes(t, nowTs);
-    const os = openSegOf(t);
-    const big = t.status === 'waiting'
-      ? (os ? nowTs - os.start : tt.wait)
-      : (t.startedAt != null ? ((t.status === 'done' && t.firstFinishedAt != null) ? t.firstFinishedAt - t.startedAt : nowTs - t.startedAt) : 0);
-    const b = $('[data-big]', card); if (b) b.textContent = dur(big);
+    const big = bigTime(t, t.status, nowTs);
+    const b = $('[data-big]', card);
+    if (b) {
+      const bud = parseFloat(b.dataset.budget) || null;
+      const showCd = DISP.countdown && bud;
+      b.textContent = showCd ? durSigned(bud - big) : dur(big);
+      if (showCd && t.startedAt != null && t.status !== 'done') {
+        const ph = phaseOf(bud - big, bud);
+        b.className = 'bigt ' + timerStateCls(t.status) + ' ' + PHASE_CLS[ph] + (ph === 'over' ? ' blink' : '');
+      }
+      const bs = $('[data-bigsub]', card);
+      if (bs && bud) bs.textContent = 'verstreken ' + dur(big) + ' van ' + dur(bud);
+    }
     const w = $('[data-f="work"]', card); if (w) w.textContent = dur(tt.work);
     const q = $('[data-f="wait"]', card); if (q) q.textContent = dur(tt.wait);
     const r = $('[data-f="rework"]', card); if (r) r.textContent = dur(tt.rework);
@@ -6237,6 +7222,7 @@ function tick() {
    ========================================================================= */
 function init() {
   loadSyncCfg();
+  loadDisp();
   loadDB();
   $$('nav button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
   $('#btnNewRun').onclick = newRun;
