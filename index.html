@@ -7658,11 +7658,26 @@ async function readXlsx(buf) {
     return rows.filter(r => r.some(c => String(c).trim() !== ''));
   };
 
-  for (const sh of sheets) {
-    const rows = read(sh);
-    if (rows.length > 1) return { rows: rows, sheet: sh.name, sheets: sheets.map(s => s.name) };
+  /* Alle werkbladen inlezen, zodat de gebruiker in stap 2 kan wisselen als we
+     het verkeerde hebben gepakt. Veel echte bestanden beginnen met een
+     voorblad of een toelichting. */
+  const all = sheets.slice(0, 12).map(sh => ({ name: sh.name, rows: read(sh) }));
+  /* Welk blad bedoelt de gebruiker? Het blad waarvan de kopregel het meest op
+     onze kolommen lijkt. Een voorblad met wat losse tekst heeft namelijk ook
+     meerdere regels, dus alleen tellen is niet genoeg. */
+  const req = IMPORT_FIELDS.filter(f => f.req).map(f => f.key);
+  let pick = 0, best = -1;
+  all.forEach((s, i) => {
+    if (s.rows.length < 2) return;
+    const g = guessMapping((s.rows[0] || []).map(h => String(h == null ? '' : h).trim()));
+    const score = req.filter(k => g[k] >= 0).length;
+    if (score > best) { best = score; pick = i; }
+  });
+  if (best <= 0) {
+    const any = all.findIndex(s => s.rows.length > 1);
+    pick = any < 0 ? 0 : any;
   }
-  return { rows: sheets.length ? read(sheets[0]) : [], sheet: sheets.length ? sheets[0].name : '', sheets: sheets.map(s => s.name) };
+  return { all: all, pick: pick, rows: all.length ? all[pick].rows : [], sheet: all.length ? all[pick].name : '' };
 }
 
 /* --------------------------------------------------------- tijd inlezen */
@@ -7915,29 +7930,40 @@ function guessStation(label, stations) {
 /** Leest het bestand en zet de wizardtoestand klaar. */
 async function importReadFile(file) {
   const name = file.name || '';
-  let table, sheet = '', sheets = [];
+  let all, pick = 0;
   if (/\.xlsx$/i.test(name)) {
     const res = await readXlsx(await file.arrayBuffer());
-    table = res.rows; sheet = res.sheet; sheets = res.sheets;
+    all = res.all; pick = res.pick;
   } else if (/\.xls$/i.test(name)) {
     throw new Error('Het oude .xls-formaat kan de app niet lezen. Sla het bestand in Excel op als .xlsx of als CSV.');
   } else {
-    table = parseCSV(await file.text());
+    all = [{ name: '', rows: parseCSV(await file.text()) }];
   }
-  if (!table.length) throw new Error('Het bestand bevat geen rijen.');
-  if (table.length < 2) throw new Error('Het bestand bevat alleen een kopregel en geen metingen.');
-  const header = table[0].map(h => String(h == null ? '' : h).trim());
+  if (!all.length || !all.some(s => s.rows.length)) throw new Error('Het bestand bevat geen rijen.');
+  if (!all.some(s => s.rows.length > 1)) {
+    throw new Error('Het bestand bevat alleen een kopregel en geen metingen.');
+  }
   IMP = {
-    step: 1, fileName: name, sheet: sheet, sheets: sheets,
-    header: header, body: table.slice(1),
-    map: guessMapping(header),
-    stationMap: {}, stationLabels: [],
+    step: 1, fileName: name, sheets: all, sheetIdx: pick,
+    header: [], body: [],
+    map: {}, stationMap: {}, stationLabels: [],
     date: todayISO(), runName: '', week: isoWeek(new Date()),
     availableMin: 60, demand: 0, notes: '',
     conflict: 'new', targetRunId: null,
     rows: [], errors: 0, warns: 0
   };
+  importUseSheet(pick);
   return IMP;
+}
+/** Kiest een werkblad: kopregel en kolomherkenning opnieuw doen. */
+function importUseSheet(i) {
+  const sh = IMP.sheets[i]; if (!sh) return;
+  IMP.sheetIdx = i;
+  IMP.sheet = sh.name;
+  IMP.header = (sh.rows[0] || []).map(h => String(h == null ? '' : h).trim());
+  IMP.body = sh.rows.slice(1);
+  IMP.map = guessMapping(IMP.header);
+  IMP.stationMap = {}; IMP.stationLabels = [];
 }
 
 /* ----------------------------------------------------- controle per rij */
@@ -8291,6 +8317,15 @@ function importStep2(m) {
   $('#impBody', m).innerHTML =
     '<div class="hint" style="margin-bottom:10px"><b>' + esc(IMP.fileName) + '</b> · ' +
     IMP.body.length + ' regels' + (IMP.sheet ? ' · werkblad ' + esc(IMP.sheet) : '') + '</div>' +
+    /* meerdere werkbladen: de gebruiker moet kunnen zeggen welk blad de
+       metingen bevat, want veel bestanden beginnen met een voorblad */
+    (IMP.sheets.length > 1
+      ? '<label class="fld" style="max-width:320px"><span>Welk werkblad?</span>' +
+      '<select id="impSheet">' + IMP.sheets.map((sh, i) =>
+        '<option value="' + i + '"' + (i === IMP.sheetIdx ? ' selected' : '') + '>' +
+        esc(sh.name || 'blad ' + (i + 1)) + ' · ' + Math.max(0, sh.rows.length - 1) + ' regels' +
+        '</option>').join('') + '</select></label>'
+      : '') +
     '<label class="fld" style="max-width:280px"><span>Datum van de meting</span>' +
     '<input type="date" id="impDate" value="' + esc(IMP.date) + '"></label>' +
     '<div class="hint" style="margin:-4px 0 12px">Deze datum gebruiken we als in een cel alleen een kloktijd staat, ' +
@@ -8333,6 +8368,12 @@ function importStep2(m) {
     refresh();
   });
   $('#impDate', m).onchange = () => { IMP.date = $('#impDate', m).value || todayISO(); refresh(); };
+  if ($('#impSheet', m)) $('#impSheet', m).onchange = () => {
+    const d = IMP.date;
+    importUseSheet(+$('#impSheet', m).value);
+    IMP.date = d;
+    importStep2(m);
+  };
 
   setModalButtons(m, [
     { label: 'Terug', onClick: mm => { importStep1(mm); return false; } },

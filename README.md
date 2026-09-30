@@ -165,7 +165,9 @@ eerst het sjabloon (Excel of CSV): één regel per motor per werkstation, met st
 gereedtijd.
 
 De import gaat in drie stappen: bestand kiezen, kolommen koppelen met een controle per regel,
-en daarna de run opslaan. De controle meldt in gewoon Nederlands wat er mis is — ontbrekende
+en daarna de run opslaan. Heeft het bestand meerdere werkbladen, dan kiest de app zelf het blad
+waarvan de kopregel het meest op onze kolommen lijkt — een voorblad of een toelichtingsblad
+wordt dus overgeslagen — en je kunt in stap 2 alsnog een ander blad kiezen. De controle meldt in gewoon Nederlands wat er mis is — ontbrekende
 motor, gereed vóór de start, onleesbare tijd, onbekend werkstation, een wachttijd die langer is
 dan de handeling zelf. Regels met een fout worden overgeslagen, de rest wordt gewoon ingelezen.
 Tijden mogen als `09:15`, `9:15:30`, `09.15`, `2026-09-30 09:15`, `30-09-2026 09:15` of als
