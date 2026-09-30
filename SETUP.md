@@ -162,6 +162,15 @@ Staan er al runs in je localStorage van vóór deze versie? Ga naar
 **DATA → Back-up → Lokale runs uploaden naar de database**. Elke run krijgt een eigen
 runcode; de lokale kopie blijft gewoon staan.
 
+Metingen die helemaal buiten de app om zijn gedaan — op papier bijgehouden en later
+uitgetypt, of een spreadsheet van een groepsgenoot — lees je in bij
+**DATA → Data importeren uit Excel**. Download daar eerst het sjabloon, vul per motor per
+werkstation een start- en gereedtijd in, en doorloop de drie stappen van de wizard. De app
+controleert elke regel en zegt in gewoon Nederlands wat er nog niet klopt. Zo'n run krijgt
+overal het label **geïmporteerd**, zodat in je verslag zichtbaar blijft welke cijfers in de
+app gemeten zijn en welke zijn overgenomen. Importeren kan volledig offline; er is geen
+internet en geen externe bibliotheek voor nodig.
+
 ---
 
 ## Problemen oplossen

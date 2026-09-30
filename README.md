@@ -37,10 +37,14 @@ Per werkstation: **START** → **PAUZE/WACHTEN** (met reden) → **HERVATTEN** �
 
 Na GEREED schuift je station **vanzelf door** naar de volgende motor uit de wachtrij:
 
-- Kun je meteen verder, dan loopt de timer direct. Geen extra klik.
+- Is het dezelfde modelcode en kun je meteen verder, dan loopt de timer direct. Geen extra klik.
 - Kun je nog niet verder, dan gaat het station automatisch op **Wachten**. Die tijd telt als
   wachttijd en niet als werktijd, en de cycle time begint pas als je echt begint. Is de vorige
   processtap nog niet klaar, dan vult de app zelf de reden in en onthoudt op wie je wacht.
+- Komt er een **ander model**, dan wordt er niet meteen gestart maar gaat de motor op
+  *Omstellen naar ander model*. Je drukt zelf op START zodra je hebt omgesteld. Precies die
+  tussentijd is de omsteltijd, en de cycle time van de eerste motor van de nieuwe batch
+  blijft daardoor zuiver.
 - Is de wachtrij leeg, dan verschijnt "Alle motoren gereed".
 
 Fout getikt? **Ongedaan maken** draait de laatste actie terug, inclusief het doorschuiven.
@@ -90,17 +94,95 @@ worden ze automatisch verstuurd zodra er weer verbinding is.
 | Lijnbalans | Σ gemiddelde cycle times ÷ (aantal stations × hoogste gemiddelde cycle time) |
 | Flow-efficiëntie | werktijd ÷ (werktijd + wachttijd + rework) |
 | Control chart | gemiddelde, standaarddeviatie en gemiddelde ± 3σ over de gekozen meting |
+| Batch | opeenvolgende motoren met dezelfde modelcode in de wachtrij |
+| Omsteltijd | per station: gereed bij de laatste motor van een batch → start bij de eerste motor van het volgende model |
+| Opstartkosten | som van de cycle times van de eerste motor van een batch min het gemiddelde van de overige motoren in diezelfde batch |
+| Beschikbare tijd | de ingeplande productietijd van de run; de aftelklok loopt hierop |
+| Binnen de tijd gereed | motoren die vóór het einde van de beschikbare tijd zijn goedgekeurd |
 
 ## Pagina's
 
-**PRODUCTIE** meetscherm met tempobalk en orderwachtrij · **DASHBOARD** KPI's, bottleneck,
-takt, planning versus output, trends, uitsplitsing per motorvariant · **EINDRAPPORT**
-kwaliteitsoverzicht per motor, actielijst en verbeteradvies · **KWALITEIT** FPY, fouten,
-rework · **VERSPILLING** TIMWOOD, wachtredenen, overdrachtswachttijd ·
+**PRODUCTIE** meetscherm met aftelklok, tempobalk, batchstructuur en orderwachtrij ·
+**DASHBOARD** KPI's, bottleneck, takt, planning versus output, trends, omstellen en
+opstartkosten, uitsplitsing per motorvariant en per modelcode · **EINDRAPPORT**
+tijdsverantwoording, kwaliteitsoverzicht per motor, actielijst en verbeteradvies ·
+**KWALITEIT** FPY, fouten, rework · **VERSPILLING** TIMWOOD, wachtredenen,
+overdrachtswachttijd ·
 **PROCESSTABILITEIT** control chart ·
 **ORDERS & MATERIAAL** weekorders, BOM, materiaalbehoefte, picklijsten ·
-**VERGELIJK RUNS** week 1 t/m 9 naast elkaar · **DATA** export, back-up, eventlog ·
-**INSTELLINGEN** namen, redenen, foutcategorieën, orders, BOM, database.
+**VERGELIJK RUNS** week 1 t/m 9 naast elkaar, inclusief geïmporteerde metingen ·
+**DATA** export, import uit Excel/CSV, back-up, eventlog ·
+**INSTELLINGEN** namen, redenen, foutcategorieën, weergave en streeftijden, orders, BOM,
+database.
+
+## Batches en modelwissels
+
+Motoren met dezelfde modelcode staan automatisch achter elkaar in de wachtrij; zo'n groep heet
+een **batch**. Boven het productiescherm staat de batchstructuur met per batch de modelcode, de
+grootte en hoeveel motoren er al af zijn, en op elk stationkaartje en op elke telefoon staat
+"motor 3 van 5 in deze batch".
+
+Zodra een station aan de laatste motor van zijn batch begint, verschijnt een waarschuwing met
+**wat er per werkstation verandert** — het verschil tussen de twee stuklijsten, dus welke
+onderdelen erbij komen, vervallen of in een ander aantal nodig zijn. Zo kan iedereen alvast
+klaarleggen wat hij nodig heeft.
+
+De **omsteltijd** wordt apart gemeten en telt als eigen categorie mee in TIMWOOD (standaard
+onder *Waiting*, aan te passen bij INSTELLINGEN). Op het dashboard staan het aantal
+modelwissels, de totale en gemiddelde omsteltijd, de opstartkosten per batch, een uitsplitsing
+van alle KPI's per modelcode en een vergelijking van de eerste motor van een batch met de
+overige motoren — daarmee zie je het leereffect binnen een batch.
+
+De volgorde van de batches kies je bij het starten van de run (pijltjes omhoog/omlaag) en pas
+je tijdens de run aan met **Wachtrij beheren**. Een batch waarin al gewerkt is, staat vast.
+Verschuiven is een gewoon event: er wordt niets gewist en het is ongedaan te maken.
+
+## Aftellen in plaats van optellen
+
+De grote timer telt standaard **af** naar de streeftijd per motor: groen zolang er ruimte is,
+oranje in de laatste 20%, rood en knipperend zodra de tijd op is — daarna telt hij negatief
+door. Is de beschikbare productietijd van de hele run voorbij, dan verschijnt een
+schermvullend **TIJD IS OM – STOPPEN** met geluid en trilsignaal. Boven het productiescherm en
+op elke telefoon staat de resterende runtijd en hoeveel tijd er nog per nog te maken motor over
+is.
+
+De streeftijd per station stel je in bij **INSTELLINGEN → Weergave**; laat je die leeg, dan
+gebruikt de app de takt time. Daar zet je ook de aftelweergave uit als je liever oplopend meet.
+
+**De aftelweergave is puur presentatie.** Cycle time, actieve tijd, wachttijd en lead time
+worden altijd uit de echte start- en stoptimestamps berekend, dus alle KPI's en exports blijven
+hetzelfde of je nu aftelt of optelt. Motoren die pas ná de beschikbare tijd zijn afgemaakt
+worden wel apart geteld: het eindrapport laat zien hoeveel tijd er beschikbaar was, hoeveel is
+gebruikt, hoeveel over of overschreden is, en of het weekdoel binnen die tijd gehaald is.
+
+## Metingen importeren uit Excel of CSV
+
+Metingen die niet in de app zijn gedaan — een week die op papier is bijgehouden, of een
+spreadsheet van een groepsgenoot — lees je in bij **DATA → Data importeren uit Excel**. Download
+eerst het sjabloon (Excel of CSV): één regel per motor per werkstation, met start- en
+gereedtijd.
+
+De import gaat in drie stappen: bestand kiezen, kolommen koppelen met een controle per regel,
+en daarna de run opslaan. De controle meldt in gewoon Nederlands wat er mis is — ontbrekende
+motor, gereed vóór de start, onleesbare tijd, onbekend werkstation, een wachttijd die langer is
+dan de handeling zelf. Regels met een fout worden overgeslagen, de rest wordt gewoon ingelezen.
+Tijden mogen als `09:15`, `9:15:30`, `09.15`, `2026-09-30 09:15`, `30-09-2026 09:15` of als
+gewone Excel-tijdcel; wachttijd en rework als `90`, `1:30`, `2 min` of `1:01:30`.
+
+Bestaat er al een run met dezelfde naam of datum, dan kies je zelf: als nieuwe run toevoegen,
+samenvoegen met de bestaande run, of de bestaande run vervangen.
+
+Een geïmporteerde run wordt omgezet naar dezelfde events met dezelfde echte timestamps als een
+run die je zelf meet, dus alle KPI's, het eindrapport, de exports en de vergelijking tussen
+runs werken er onverkort op. Wat we niet letterlijk in het bestand zagen maar hebben afgeleid
+(het aanmaken van de motor, een wachtpauze uit een duurkolom, de kwaliteitscontrole) is in de
+eventlog gemarkeerd als *afgeleid*, en de run draagt overal het label **geïmporteerd**.
+
+**Keuze voor het lezen van .xlsx:** we gebruiken hiervoor geen externe bibliotheek. Een .xlsx
+is een ZIP met XML erin, en beide kan de browser zelf al (`DecompressionStream` en `DOMParser`).
+Zo blijft de app één bestand, werkt de import volledig offline — ook zonder CDN — en gaan onze
+meetgegevens niet door 900 kB vreemde code heen. Kan een browser geen deflate uitpakken, dan
+zegt de app dat en verwijst naar de CSV-variant, die we met een eigen parser lezen.
 
 ## Tempo en schema tijdens de run
 

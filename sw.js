@@ -1,7 +1,7 @@
 /* Service worker: de app blijft openen bij een slechte of ontbrekende
    verbinding. De meetgegevens staan in localStorage en in de wachtrij
    van de app zelf, niet in deze cache. */
-const CACHE = 'innovo-pm-v2';
+const CACHE = 'innovo-pm-v3';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

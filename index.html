@@ -130,6 +130,9 @@ input:focus,select:focus,textarea:focus{outline:2px solid #b9d6f5;border-color:v
 label.fld{display:block;margin-bottom:12px}
 label.fld>span{display:block;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
   color:var(--txt2);margin-bottom:4px}
+/* een toelichting ónder het veld is gewone tekst, geen tweede label */
+label.fld>span.hint{text-transform:none;letter-spacing:0;font-weight:400;font-size:12px;
+  margin:4px 0 0;color:var(--txt3)}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
 
 /* ---------- production ---------- */
@@ -454,6 +457,7 @@ b.cd-good{color:var(--green)} b.cd-warn{color:var(--amber)} b.cd-over{color:var(
   font-size:16px;font-weight:700;text-align:left;padding:10px 15px;cursor:pointer;display:flex;
   justify-content:space-between;align-items:center;gap:10px;touch-action:manipulation}
 .reasonlist button:active{background:var(--blue2);border-color:var(--blue)}
+.reasonlist button.on{background:var(--blue2);border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
 .reasonlist button small{font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em}
 .pickbig{display:flex;flex-direction:column;gap:10px}
 .pickbig button{min-height:70px;border-radius:14px;border:1.5px solid var(--line);background:#fff;
@@ -887,8 +891,16 @@ b.cd-good{color:var(--green)} b.cd-warn{color:var(--amber)} b.cd-over{color:var(
         <button class="btn" id="btnTplXlsx">Sjabloon downloaden (Excel)</button>
         <button class="btn" id="btnTplCsv">Sjablonen downloaden (CSV)</button>
       </div>
-      <input type="file" id="fileImport" accept=".xlsx,.csv,text/csv" style="display:none">
-      <div class="hint" style="margin-top:10px" id="importInfo"></div>
+      <div class="hint" style="margin-top:10px" id="importInfo">
+        De import gaat in drie stappen: bestand kiezen, kolommen koppelen en per regel controleren, en daarna de run
+        opslaan. Tijden mogen als 09:15, 09:15:30, 2026-09-30 09:15 of als gewone Excel-tijdcel worden ingevuld;
+        wachttijd en rework mogen als 90, 1:30 of "2 min". Een geïmporteerde run krijgt overal het label
+        <b>geïmporteerd</b> en doet verder gewoon mee in het dashboard, het eindrapport en de vergelijking.
+        <br><br><b>Over het lezen van .xlsx:</b> de app gebruikt hiervoor geen externe bibliotheek. Een .xlsx is een
+        ZIP met XML erin, en die pakt de browser zelf uit. Zo blijft de app één bestand, werkt de import ook zonder
+        internet en gaan onze meetgegevens niet door vreemde code heen. Lukt uitpakken niet, dan zegt de app dat en
+        kun je het bestand als CSV opslaan; die lezen we met een eigen parser.
+      </div>
     </div>
   </div>
 
@@ -1348,7 +1360,9 @@ function deriveRun(run) {
       case 'motor_create': {
         if (D.motors[ev.motorId]) break;
         const m = {
-          id: ev.motorId, nr: ev.nr, code: motorCode(ev.nr), createdAt: ev.ts,
+          /* bij een import staat de naam uit het bestand in ev.label; die
+             houden we aan, zodat de motoren herkenbaar blijven */
+          id: ev.motorId, nr: ev.nr, code: ev.label ? String(ev.label) : motorCode(ev.nr), createdAt: ev.ts,
           startedAt: null, completedAt: null, defects: [], sku: ev.sku || '',
           variant: ev.sku ? variantName(ev.sku) : (ev.variant || run.variant || ''),
           pos: ++maxPos, hold: false, holdReason: '', cancelled: false, fromQueue: false
@@ -3149,7 +3163,7 @@ function renderProduction() {
       '<div class="s">' + esc(st.name) + '</div></div>' +
       '<span class="pill ' + STATUS_PILL[status] + '">' + STATUS_LABEL[status] + '</span></div></div>' +
       '<div class="st-body">' + motorCtl + vLine +
-      '<div class="bigt ' + bigCls + (showCd ? ' ' + PHASE_CLS[cdPhase] + (cdPhase === 'over' ? ' blink' : '') : '') +
+      '<div class="bigt ' + bigCls + ((showCd && cdPhase !== 'neu') ? ' ' + PHASE_CLS[cdPhase] + (cdPhase === 'over' ? ' blink' : '') : '') +
       '" data-big data-budget="' + (budget || '') + '">' +
       (showCd ? durSigned(cdLeft) : dur(bigMs)) + '</div>' +
       (showCd ? '<div class="hint" style="text-align:center;margin-top:-6px" data-bigsub>verstreken ' + dur(bigMs) +
@@ -3498,9 +3512,25 @@ function autoAdvance(run, stationId, causeEv) {
     const held = D.queueOrder.filter(m => m.hold && !m.cancelled && !m.completedAt).length;
     return { done: true, held: held };
   }
-  if (canWorkNow(D, st, next)) {
+  /* Gaat het station over op een ander model, dan moet er eerst omgesteld
+     worden. We starten dan niet automatisch maar zetten de motor op wachten
+     met de omstelreden: de tijd tot de medewerker op START drukt is precies
+     de omsteltijd, en de cycle time van de eerste motor blijft zuiver. */
+  const prevM = causeEv && causeEv.motorId ? D.motors[causeEv.motorId] : null;
+  const switching = prevM && (prevM.sku || '') !== (next.sku || '');
+  if (canWorkNow(D, st, next) && !switching) {
     pushEvent(run, 'start', { motorId: next.id, stationId: stationId, auto: true, causedBy: causeEv.id });
     return { motor: next, waiting: false };
+  }
+  if (switching && canWorkNow(D, st, next)) {
+    const rc = DB.settings.reasons.find(x => x.id === 'r10') ||
+      { id: 'r10', label: 'Omstellen naar ander model', tim: 'Waiting' };
+    pushEvent(run, 'wait_start', {
+      motorId: next.id, stationId: stationId, reason: rc.label, reasonId: rc.id, tim: rc.tim,
+      changeover: true, fromSku: prevM.sku || '', toSku: next.sku || '',
+      auto: true, causedBy: causeEv.id
+    });
+    return { motor: next, waiting: true, changeover: true, fromSku: prevM.sku || '', toSku: next.sku || '' };
   }
   const blocker = blockerFor(D, st, next);
   const r = DB.settings.reasons.find(x => x.id === 'r1') ||
@@ -3550,6 +3580,11 @@ function advanceToast(D, fromId, res) {
   const from = D.motors[fromId];
   if (res.done) {
     toast(res.held ? 'Wachtrij staat stil: ' + res.held + ' motor(en) geblokkeerd' : 'Alle motoren gereed');
+    return;
+  }
+  if (res.changeover) {
+    toast((from ? from.code + ' → ' : '') + res.motor.code + '  ·  eerst omstellen naar ' +
+      (res.toSku || 'het volgende model') + ', druk op START zodra je klaar bent');
     return;
   }
   const bl = res.blocker ? (D.stationById[res.blocker] || {}).worker : null;
@@ -3857,7 +3892,7 @@ function renderMobile() {
       ? '<b>' + esc(mo.sku) + '</b> · ' + esc(variantShort(mo.sku)) +
       (mo.batchSize ? '<br>motor ' + mo.batchPos + ' van ' + mo.batchSize + ' in deze batch' : '')
       : esc(run.variant || '—')) + '</div>' +
-    '<div class="mtimer ' + cls + (showCd ? ' ' + PHASE_CLS[cdPhase] + (cdPhase === 'over' ? ' blink' : '') : '') +
+    '<div class="mtimer ' + cls + ((showCd && cdPhase !== 'neu') ? ' ' + PHASE_CLS[cdPhase] + (cdPhase === 'over' ? ' blink' : '') : '') +
     '" data-mbig data-budget="' + (budget || '') + '">' +
     (showCd ? durSigned(cdLeft) : dur(big)) + '</div>' +
     (showCd ? '<div class="hint" data-mbigsub>verstreken ' + dur(big) + ' van ' + dur(budget) + '</div>' : '') +
@@ -4225,7 +4260,9 @@ function renderChangeWarning(M, D, run) {
   const diff = bomDiff(up.from.sku, up.to.sku, D.stations);
   el.innerHTML =
     '<div class="banner warn" style="margin-bottom:0"><div>' +
-    '<b>Let op: na ' + esc(up.from.code) + ' wissel naar ' + esc(up.to.sku || 'ander model') + ' — ' + esc(up.to.batchSize ? up.to.batchSize + '× ' : '') + esc(variantShort(up.to.sku)) + '</b>' +
+    '<b>Let op: na ' + esc(up.from.code) + ' (' + esc(up.from.sku || 'geen modelcode') + ') wissel naar ' +
+    esc(up.to.sku || 'ander model') + ' — ' + esc(up.to.batchSize ? up.to.batchSize + '× ' : '') +
+    esc(variantShort(up.to.sku)) + '</b>' +
     (diff.perStation.length
       ? 'Zet deze onderdelen klaar voordat ' + esc(up.station.worker) + ' doorschuift:' +
       '<div class="chgrid">' + diff.perStation.map(p =>
@@ -4285,7 +4322,12 @@ function noRunBanner(id, page) {
     'Start een run op de PRODUCTIE-pagina; ' + page + ' vult zich dan automatisch tijdens het meten.</div></div>';
 }
 function demoBanner(run) {
-  return run.demo ? '<div class="banner demo"><div><b>DEMO-RUN</b>Voorbeelddata — geen echte meting.</div></div>' : '';
+  return (run.demo ? '<div class="banner demo"><div><b>DEMO-RUN</b>Voorbeelddata — geen echte meting.</div></div>' : '') +
+    (run.imported
+      ? '<div class="banner warn"><div><b>Geïmporteerde run</b>De tijden komen uit ' +
+      esc(run.importSource || 'een geïmporteerd bestand') + ' en zijn niet in deze app gemeten. ' +
+      'Alle KPI\'s zijn wel op dezelfde manier uit de start- en gereedtijden berekend.</div></div>'
+      : '');
 }
 
 function renderDashboard() {
@@ -5275,7 +5317,8 @@ function renderCompare() {
   $('#cmpPick').innerHTML = runs.map(r =>
     '<label class="chk"><input type="checkbox" value="' + r.id + '"' + (UI.cmp.indexOf(r.id) >= 0 ? ' checked' : '') + '>' +
     esc(r.name) + (r.week ? ' <span class="tag">week ' + esc(r.week) + '</span>' : '') +
-    (r.demo ? ' <span class="tag amber">DEMO</span>' : '') + '</label>').join('');
+    (r.demo ? ' <span class="tag amber">DEMO</span>' : '') +
+    (r.imported ? ' <span class="tag amber">GEÏMPORTEERD</span>' : '') + '</label>').join('');
   $$('#cmpPick input').forEach(c => c.onchange = () => {
     UI.cmp = $$('#cmpPick input:checked').map(x => x.value);
     renderCompare();
@@ -5340,7 +5383,8 @@ function renderCompare() {
   };
   $('#tblCompare').innerHTML =
     '<thead><tr><th>KPI</th>' + sel.map(s => '<th class="r">' + esc(s.name) +
-      (s.demo ? ' <span class="tag amber">DEMO</span>' : '') + '</th>').join('') +
+      (s.demo ? ' <span class="tag amber">DEMO</span>' : '') +
+      (s.imported ? ' <span class="tag amber">GEÏMPORTEERD</span>' : '') + '</th>').join('') +
     (sel.length > 1 ? '<th class="r">Verschil eerste → laatste</th>' : '') + '</tr></thead><tbody>' +
     rows.map(r => {
       const dir = r[2];
@@ -6214,6 +6258,7 @@ function renderData() {
       const s = runSummary(r);
       return '<tr' + (r.id === DB.activeRunId ? ' style="background:#e7f0fb"' : '') + '>' +
         '<td><b>' + esc(r.name) + '</b>' + (r.demo ? ' <span class="tag amber">DEMO</span>' : '') +
+        (r.imported ? ' <span class="tag amber">GEÏMPORTEERD</span>' : '') +
         (r.id === DB.activeRunId ? ' <span class="tag blue">ACTIEF</span>' : '') +
         (r.notes ? '<div class="hint">' + esc(r.notes) + '</div>' : '') + '</td>' +
         '<td class="mono">' + esc(r.date || '') + '</td>' +
@@ -7232,6 +7277,9 @@ function init() {
   $('#btnBackupExp').onclick = exportBackup;
   $('#btnBackupImp').onclick = () => $('#fileImp').click();
   $('#fileImp').onchange = e => { if (e.target.files[0]) importBackup(e.target.files[0]); e.target.value = ''; };
+  $('#btnImport').onclick = importWizard;
+  $('#btnTplXlsx').onclick = () => { downloadTemplateXlsx(); toast('Excel-sjabloon gedownload'); };
+  $('#btnTplCsv').onclick = () => { downloadTemplateCsv(); toast('CSV-sjablonen gedownload'); };
   $('#btnWipe').onclick = wipeAll;
   $('#btnMigrate').onclick = migrateAll;
   adviceActions();
@@ -7295,6 +7343,1012 @@ function registerPWA() {
   } catch (e) { }
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+
+/* =========================================================================
+   IMPORT — metingen uit Excel (.xlsx) of CSV
+
+   Keuze voor het lezen van .xlsx: we gebruiken GEEN externe bibliotheek.
+   Een .xlsx is een ZIP met XML erin, en beide kan de browser zelf al:
+   DecompressionStream('deflate-raw') pakt de ZIP-onderdelen uit en
+   DOMParser leest de XML. Zo blijft de app één bestand, werkt het volledig
+   offline (ook zonder CDN) en hoeven we geen 900 kB aan vreemde code te
+   vertrouwen met onze meetgegevens. Kan de browser geen deflate uitpakken
+   (heel oude browser), dan zeggen we dat eerlijk en verwijzen we naar de
+   CSV-variant, die we met een eigen parser lezen.
+
+   Alles wat hier binnenkomt wordt omgezet naar gewone events met echte
+   timestamps, precies zoals de app ze zelf zou maken. Events die we uit een
+   ingevulde kolom hebben afgeleid (bijvoorbeeld een wachttijd in minuten
+   in plaats van een gemeten pauze) krijgen de vlag derived:true, zodat in
+   het logboek en de export zichtbaar blijft wat gemeten is en wat ingevuld.
+   ========================================================================= */
+
+const IMPORT_FIELDS = [
+  { key: 'motor', label: 'Motor', req: true, hint: 'nummer of naam van de motor, bijv. 1 of Motor 001' },
+  { key: 'sku', label: 'Modelcode', req: false, hint: 'bijv. M-148030; mag leeg blijven' },
+  { key: 'station', label: 'Werkstation of medewerker', req: true, hint: 'bijv. Viggo of Voorwiel + stuur' },
+  { key: 'start', label: 'Starttijd', req: true, hint: 'bijv. 09:15, 09:15:30 of 2026-09-30 09:15' },
+  { key: 'done', label: 'Gereed', req: true, hint: 'tijdstip waarop het station klaar was' },
+  { key: 'wait', label: 'Wachttijd', req: false, hint: 'duur binnen deze handeling, bijv. 90, 1:30 of 2 min' },
+  { key: 'waitReason', label: 'Reden van wachten', req: false, hint: 'bijv. wachten op vorige werkstation' },
+  { key: 'rework', label: 'Reworktijd', req: false, hint: 'duur die aan herstel is besteed' },
+  { key: 'qc', label: 'Kwaliteit', req: false, hint: 'goed / afgekeurd (leeg = goed)' },
+  { key: 'part', label: 'Onderdeel', req: false, hint: 'onderdeel waar de fout zat' },
+  { key: 'dtype', label: 'Fouttype', req: false, hint: 'bijv. Verkeerd onderdeel' },
+  { key: 'desc', label: 'Omschrijving', req: false, hint: 'vrije toelichting' }
+];
+
+/* Koppen die we automatisch herkennen. Alles wordt kleingemaakt en ontdaan
+   van spaties en leestekens voordat we vergelijken. */
+const IMPORT_ALIASES = {
+  motor: ['motor', 'motornr', 'motornummer', 'nr', 'nummer', 'unit', 'product', 'motorcode'],
+  sku: ['modelcode', 'model', 'sku', 'productid', 'productcode', 'variant', 'type', 'artikelnummer'],
+  station: ['werkstation', 'station', 'medewerker', 'werkplek', 'naam', 'wie', 'persoon', 'operator'],
+  start: ['start', 'starttijd', 'begin', 'begintijd', 'gestart', 'van', 'starttijdstip'],
+  done: ['gereed', 'eind', 'eindtijd', 'klaar', 'klaartijd', 'stop', 'stoptijd', 'tot', 'gereedom', 'einde'],
+  wait: ['wachttijd', 'wachten', 'wacht', 'stilstand', 'wachttijdsec', 'wachttijdmin'],
+  waitReason: ['redenvanwachten', 'wachtreden', 'reden', 'oorzaak'],
+  rework: ['reworktijd', 'rework', 'hersteltijd', 'herstel', 'herstellen'],
+  qc: ['kwaliteit', 'qc', 'kwaliteitscontrole', 'goedafgekeurd', 'resultaat', 'controle', 'okenok'],
+  part: ['onderdeel', 'part', 'component'],
+  dtype: ['fouttype', 'soortfout', 'type fout', 'defect', 'defecttype', 'fout'],
+  desc: ['omschrijving', 'toelichting', 'opmerking', 'notitie', 'beschrijving', 'commentaar']
+};
+
+const normHead = s => String(s == null ? '' : s).toLowerCase()
+  .replace(/[\s_\-.()\/]+/g, '').replace(/[^a-z0-9]/g, '');
+
+/* de toestand van de importwizard; leeft alleen zolang het scherm open is */
+let IMP = null;
+
+/* ------------------------------------------------------------------ CSV */
+/** Leest CSV met automatische keuze tussen , ; en tab, inclusief
+    aanhalingstekens en regeleindes binnen een veld. */
+function parseCSV(text) {
+  text = String(text).replace(/^﻿/, '');
+  const head = text.slice(0, text.indexOf('\n') < 0 ? text.length : text.indexOf('\n'));
+  const counts = { ';': (head.match(/;/g) || []).length, ',': (head.match(/,/g) || []).length, '\t': (head.match(/\t/g) || []).length };
+  let sep = ';';
+  if (counts[','] > counts[';'] && counts[','] >= counts['\t']) sep = ',';
+  else if (counts['\t'] > counts[';'] && counts['\t'] > counts[',']) sep = '\t';
+  const rows = [];
+  let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; }
+      else cur += c;
+      continue;
+    }
+    if (c === '"') { q = true; continue; }
+    if (c === sep) { row.push(cur); cur = ''; continue; }
+    if (c === '\r') continue;
+    if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; continue; }
+    cur += c;
+  }
+  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(c => String(c).trim() !== ''));
+}
+function toCSVLine(arr) {
+  return arr.map(v => {
+    const s = v == null ? '' : String(v);
+    return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }).join(';');
+}
+
+/* ------------------------------------------------------------------ ZIP */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(bytes) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+async function inflateRaw(bytes) {
+  if (typeof DecompressionStream !== 'function') throw new Error('nodeflate');
+  const ds = new DecompressionStream('deflate-raw');
+  const stream = new Blob([bytes]).stream().pipeThrough(ds);
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+/** Leest een ZIP-bestand en geeft {naam: Uint8Array} terug. Alleen de twee
+    methodes die Excel gebruikt: opgeslagen (0) en deflate (8). */
+async function unzip(buf) {
+  const u8 = new Uint8Array(buf), dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+  /* End of central directory achteraan opzoeken */
+  let eo = -1;
+  for (let i = u8.length - 22; i >= 0 && i > u8.length - 66000; i--) {
+    if (dv.getUint32(i, true) === 0x06054b50) { eo = i; break; }
+  }
+  if (eo < 0) throw new Error('Dit is geen geldig Excel-bestand (geen ZIP-structuur gevonden).');
+  const n = dv.getUint16(eo + 10, true);
+  let p = dv.getUint32(eo + 16, true);
+  const out = {};
+  const dec = new TextDecoder();
+  for (let i = 0; i < n; i++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const method = dv.getUint16(p + 10, true);
+    const csize = dv.getUint32(p + 20, true);
+    const nameLen = dv.getUint16(p + 28, true);
+    const extraLen = dv.getUint16(p + 30, true);
+    const cmtLen = dv.getUint16(p + 32, true);
+    const lho = dv.getUint32(p + 42, true);
+    const name = dec.decode(u8.subarray(p + 46, p + 46 + nameLen));
+    /* bij de local header staat de echte lengte van naam en extra veld */
+    const lNameLen = dv.getUint16(lho + 26, true), lExtraLen = dv.getUint16(lho + 28, true);
+    const dataStart = lho + 30 + lNameLen + lExtraLen;
+    const raw = u8.subarray(dataStart, dataStart + csize);
+    if (method === 0) out[name] = raw;
+    else if (method === 8) out[name] = await inflateRaw(raw);
+    p += 46 + nameLen + extraLen + cmtLen;
+  }
+  return out;
+}
+/** Schrijft een ZIP zonder compressie (methode 0). Genoeg voor een sjabloon
+    van een paar kilobyte en het scheelt ons een deflate-implementatie. */
+function zipStore(files) {
+  const enc = new TextEncoder();
+  const parts = [], central = [];
+  let offset = 0;
+  files.forEach(f => {
+    const name = enc.encode(f.name);
+    const data = typeof f.data === 'string' ? enc.encode(f.data) : f.data;
+    const crc = crc32(data);
+    const lh = new Uint8Array(30 + name.length);
+    const ldv = new DataView(lh.buffer);
+    ldv.setUint32(0, 0x04034b50, true); ldv.setUint16(4, 20, true); ldv.setUint16(6, 0, true);
+    ldv.setUint16(8, 0, true); ldv.setUint16(10, 0, true); ldv.setUint16(12, 0x21, true);
+    ldv.setUint32(14, crc, true); ldv.setUint32(18, data.length, true); ldv.setUint32(22, data.length, true);
+    ldv.setUint16(26, name.length, true); ldv.setUint16(28, 0, true);
+    lh.set(name, 30);
+    parts.push(lh, data);
+    const ch = new Uint8Array(46 + name.length);
+    const cdv = new DataView(ch.buffer);
+    cdv.setUint32(0, 0x02014b50, true); cdv.setUint16(4, 20, true); cdv.setUint16(6, 20, true);
+    cdv.setUint16(8, 0, true); cdv.setUint16(10, 0, true); cdv.setUint16(12, 0, true);
+    cdv.setUint16(14, 0x21, true);
+    cdv.setUint32(16, crc, true); cdv.setUint32(20, data.length, true); cdv.setUint32(24, data.length, true);
+    cdv.setUint16(28, name.length, true);
+    cdv.setUint32(42, offset, true);
+    ch.set(name, 46);
+    central.push(ch);
+    offset += lh.length + data.length;
+  });
+  const cdSize = central.reduce((a, c) => a + c.length, 0);
+  const eo = new Uint8Array(22);
+  const edv = new DataView(eo.buffer);
+  edv.setUint32(0, 0x06054b50, true);
+  edv.setUint16(8, files.length, true); edv.setUint16(10, files.length, true);
+  edv.setUint32(12, cdSize, true); edv.setUint32(16, offset, true);
+  return new Blob(parts.concat(central, [eo]), { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+
+/* ----------------------------------------------------------------- XLSX */
+const colNum = ref => {
+  let n = 0;
+  for (let i = 0; i < ref.length; i++) {
+    const c = ref.charCodeAt(i);
+    if (c < 65 || c > 90) break;
+    n = n * 26 + (c - 64);
+  }
+  return n - 1;
+};
+/** Leest het eerste werkblad met inhoud uit een .xlsx en geeft een tabel van
+    strings terug. Getallen en datums komen als ruwe waarde mee; de
+    tijdherkenning verderop maakt er een tijdstip van. */
+async function readXlsx(buf) {
+  let files;
+  try { files = await unzip(buf); }
+  catch (e) {
+    if (e && e.message === 'nodeflate') {
+      throw new Error('Deze browser kan .xlsx niet zelf uitpakken. Sla het bestand in Excel op als CSV en probeer het opnieuw.');
+    }
+    throw e;
+  }
+  const dec = new TextDecoder();
+  const xml = name => files[name] ? new DOMParser().parseFromString(dec.decode(files[name]), 'application/xml') : null;
+
+  /* gedeelde teksten */
+  const shared = [];
+  const ss = xml('xl/sharedStrings.xml');
+  if (ss) Array.prototype.forEach.call(ss.getElementsByTagName('si'), si => {
+    let s = '';
+    Array.prototype.forEach.call(si.getElementsByTagName('t'), t => s += t.textContent);
+    shared.push(s);
+  });
+
+  /* welke bladen zijn er, en in welk bestand staan ze */
+  const wb = xml('xl/workbook.xml');
+  const rels = xml('xl/_rels/workbook.xml.rels');
+  const relMap = {};
+  if (rels) Array.prototype.forEach.call(rels.getElementsByTagName('Relationship'), r => {
+    relMap[r.getAttribute('Id')] = r.getAttribute('Target');
+  });
+  const sheets = [];
+  if (wb) Array.prototype.forEach.call(wb.getElementsByTagName('sheet'), sh => {
+    const rid = sh.getAttribute('r:id') || sh.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id');
+    let target = relMap[rid] || '';
+    if (target && target.charAt(0) !== '/') target = 'xl/' + target.replace(/^\.\//, '');
+    sheets.push({ name: sh.getAttribute('name') || ('Blad' + (sheets.length + 1)), path: target.replace(/^\//, '') });
+  });
+  if (!sheets.length) Object.keys(files).forEach(k => {
+    if (/^xl\/worksheets\/sheet\d+\.xml$/.test(k)) sheets.push({ name: k, path: k });
+  });
+
+  const read = sh => {
+    const doc = xml(sh.path); if (!doc) return [];
+    const rows = [];
+    Array.prototype.forEach.call(doc.getElementsByTagName('row'), r => {
+      const arr = [];
+      Array.prototype.forEach.call(r.getElementsByTagName('c'), c => {
+        const ref = c.getAttribute('r') || '';
+        const idx = ref ? colNum(ref) : arr.length;
+        const type = c.getAttribute('t');
+        let v = '';
+        if (type === 'inlineStr') {
+          const is = c.getElementsByTagName('is')[0];
+          if (is) Array.prototype.forEach.call(is.getElementsByTagName('t'), t => v += t.textContent);
+        } else {
+          const vEl = c.getElementsByTagName('v')[0];
+          v = vEl ? vEl.textContent : '';
+          if (type === 's') v = shared[parseInt(v, 10)] != null ? shared[parseInt(v, 10)] : '';
+        }
+        while (arr.length < idx) arr.push('');
+        arr[idx] = v;
+      });
+      rows.push(arr);
+    });
+    return rows.filter(r => r.some(c => String(c).trim() !== ''));
+  };
+
+  for (const sh of sheets) {
+    const rows = read(sh);
+    if (rows.length > 1) return { rows: rows, sheet: sh.name, sheets: sheets.map(s => s.name) };
+  }
+  return { rows: sheets.length ? read(sheets[0]) : [], sheet: sheets.length ? sheets[0].name : '', sheets: sheets.map(s => s.name) };
+}
+
+/* --------------------------------------------------------- tijd inlezen */
+/** Excel bewaart een datum als dagen sinds 1900. Een tijd zonder datum is
+    daardoor een getal tussen 0 en 1. */
+function excelSerialToMs(n, baseDate) {
+  if (n < 1) {                                     // alleen een tijd
+    const ms = Math.round(n * 86400000);
+    return dayStart(baseDate) + ms;
+  }
+  const days = Math.floor(n);
+  const frac = n - days;
+  /* dag 1 is 1 januari 1900; Excel telt 29 februari 1900 mee die niet bestond,
+     vandaar 30 december 1899 als nulpunt voor alles ná die datum */
+  const epoch = Date.UTC(1899, 11, 30) + days * 86400000;
+  const d = new Date(epoch + Math.round(frac * 86400000));
+  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(),
+    d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds()).getTime();
+}
+function dayStart(dateStr) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateStr || ''));
+  const d = m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date();
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+/** Leest een tijdstip in allerlei schrijfwijzen en geeft epoch-ms terug.
+    `baseDate` (jjjj-mm-dd) is de dag van de run; die gebruiken we als in de
+    cel alleen een kloktijd staat. */
+function parseTimeCell(v, baseDate) {
+  if (v == null) return null;
+  if (v instanceof Date) return v.getTime();
+  let s = String(v).trim();
+  if (!s) return null;
+  /* "9.15" of "09.15": een kloktijd met een punt, geen kommagetal. Twee
+     decimalen en een uur tussen 1 en 23 kan geen Excel-serienummer zijn dat
+     hier bedoeld wordt; 0.15 laten we wél als serienummer staan. */
+  let cm = /^(\d{1,2})[.,](\d{2})$/.exec(s);
+  if (cm && +cm[1] >= 1 && +cm[1] <= 23 && +cm[2] <= 59) {
+    return dayStart(baseDate) + (+cm[1] * 60 + +cm[2]) * 60000;
+  }
+  /* puur getal: Excel-serienummer */
+  if (/^-?\d+([.,]\d+)?$/.test(s)) {
+    const n = parseFloat(s.replace(',', '.'));
+    if (!isFinite(n)) return null;
+    /* een groot getal is eerder een epoch in ms of seconden dan een Exceldatum */
+    if (n > 1e11) return n;
+    if (n > 1e9) return n * 1000;
+    return excelSerialToMs(n, baseDate);
+  }
+  /* ISO of "jjjj-mm-dd uu:mm[:ss]" */
+  let m = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{1,2}):(\d{2})(?::(\d{2})(?:[.,](\d{1,3}))?)?)?/.exec(s);
+  if (m) {
+    return new Date(+m[1], +m[2] - 1, +m[3], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0), +(m[7] || 0)).getTime();
+  }
+  /* "dd-mm-jjjj uu:mm[:ss]" of met schuine strepen */
+  m = /^(\d{1,2})[-\/](\d{1,2})[-\/](\d{2,4})(?:[T ]+(\d{1,2})[:.](\d{2})(?:[:.](\d{2}))?)?/.exec(s);
+  if (m) {
+    let y = +m[3]; if (y < 100) y += 2000;
+    return new Date(y, +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0)).getTime();
+  }
+  /* alleen een kloktijd: uu:mm[:ss], ook met een punt als scheiding */
+  m = /^(\d{1,2})[:.h](\d{1,2})(?:[:.](\d{1,2}))?\s*(?:uur)?$/i.exec(s);
+  if (m) {
+    const h = +m[1], mi = +m[2], se = +(m[3] || 0);
+    if (h > 23 || mi > 59 || se > 59) return null;
+    return dayStart(baseDate) + ((h * 60 + mi) * 60 + se) * 1000;
+  }
+  const t = Date.parse(s);
+  return isNaN(t) ? null : t;
+}
+/** Leest een duur (wachttijd, rework) en geeft milliseconden terug.
+    Kaal getal = seconden, tenzij er min/uur bij staat. */
+function parseDurCell(v) {
+  if (v == null) return null;
+  let s = String(v).trim().toLowerCase().replace(',', '.');
+  if (!s) return null;
+  if (/^0(\.0+)?$/.test(s)) return 0;
+  let m = /^(\d+):([0-5]?\d)(?::([0-5]?\d))?$/.exec(s);
+  if (m) {
+    return m[3] != null
+      ? ((+m[1] * 60 + +m[2]) * 60 + +m[3]) * 1000        // uu:mm:ss
+      : (+m[1] * 60 + +m[2]) * 1000;                       // mm:ss
+  }
+  m = /^(\d+(?:\.\d+)?)\s*(u|uur|h|hr|uren)$/.exec(s);
+  if (m) return Math.round(parseFloat(m[1]) * 3600000);
+  m = /^(\d+(?:\.\d+)?)\s*(m|min|minuten|minuut)$/.exec(s);
+  if (m) return Math.round(parseFloat(m[1]) * 60000);
+  m = /^(\d+(?:\.\d+)?)\s*(s|sec|seconden|seconde)$/.exec(s);
+  if (m) return Math.round(parseFloat(m[1]) * 1000);
+  m = /^(\d+)\s*m(?:in)?\s*(\d+)\s*s?$/.exec(s);
+  if (m) return (+m[1] * 60 + +m[2]) * 1000;
+  if (/^-?\d+(\.\d+)?$/.test(s)) {
+    const n = parseFloat(s);
+    if (!isFinite(n) || n < 0) return null;
+    /* een Excel-tijdcel komt als breuk van een dag binnen */
+    if (n > 0 && n < 1) return Math.round(n * 86400000);
+    return Math.round(n * 1000);
+  }
+  return null;
+}
+
+/* ------------------------------------------------------------- sjablonen */
+const TPL_HEAD = ['Motor', 'Modelcode', 'Werkstation', 'Starttijd', 'Gereed', 'Wachttijd',
+  'Reden van wachten', 'Reworktijd', 'Kwaliteit', 'Onderdeel', 'Fouttype', 'Omschrijving'];
+function tplRows() {
+  const st = DB.settings.stations.filter(s => s.active !== false);
+  const w = i => (st[i] ? st[i].worker : ['Viggo', 'Noah', 'Pepijn', 'Stan'][i]);
+  return [
+    ['Motor 001', 'M-148030', w(0), '09:00:00', '09:02:30', '0', '', '0', 'goed', '', '', ''],
+    ['Motor 001', 'M-148030', w(1), '09:00:10', '09:01:55', '0', '', '0', 'goed', '', '', ''],
+    ['Motor 001', 'M-148030', w(2), '09:03:00', '09:06:20', '0:45', 'wachten op vorige werkstation', '0', 'goed', '', '', ''],
+    ['Motor 001', 'M-148030', w(3), '09:06:30', '09:08:00', '0', '', '1:10', 'afgekeurd', 'Zadel', 'Verkeerd onderdeel', 'zadel van het andere model gemonteerd'],
+    ['Motor 002', 'M-148036', w(0), '09:02:40', '09:04:50', '0', '', '0', 'goed', '', '', '']
+  ];
+}
+function downloadTemplateCsv() {
+  const lines = [toCSVLine(TPL_HEAD)].concat(tplRows().map(toCSVLine));
+  download('innovo_importsjabloon.csv', '﻿' + lines.join('\r\n'), 'text/csv');
+  const uitleg = [
+    ['Kolom', 'Verplicht', 'Uitleg'],
+    ['Motor', 'ja', 'Nummer of naam van de motor. Dezelfde motor mag meerdere regels hebben, één per werkstation.'],
+    ['Modelcode', 'nee', 'Bijvoorbeeld M-148030. Hiermee kan de app per model en per batch rekenen.'],
+    ['Werkstation', 'ja', 'De naam van de medewerker of van het werkstation.'],
+    ['Starttijd', 'ja', 'Tijdstip waarop het station begon. 09:15, 09:15:30, 2026-09-30 09:15 of een Excel-tijdcel.'],
+    ['Gereed', 'ja', 'Tijdstip waarop het station klaar was. Moet ná de starttijd liggen.'],
+    ['Wachttijd', 'nee', 'Duur van het wachten binnen deze handeling. 90 = 90 seconden, 1:30 = anderhalve minuut, ook "2 min" mag.'],
+    ['Reden van wachten', 'nee', 'Bijvoorbeeld: wachten op vorige werkstation, onderdeel zoeken, uitleg vragen.'],
+    ['Reworktijd', 'nee', 'Duur die aan herstel is besteed, in dezelfde schrijfwijze als de wachttijd.'],
+    ['Kwaliteit', 'nee', 'goed of afgekeurd. Leeg betekent goed.'],
+    ['Onderdeel', 'nee', 'Alleen invullen bij afgekeurd.'],
+    ['Fouttype', 'nee', 'Alleen invullen bij afgekeurd.'],
+    ['Omschrijving', 'nee', 'Vrije toelichting.']
+  ];
+  download('innovo_importsjabloon_uitleg.csv', '﻿' + uitleg.map(toCSVLine).join('\r\n'), 'text/csv');
+}
+function sheetXml(rows) {
+  const esx = s => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const colRef = i => {
+    let s = '', n = i + 1;
+    while (n > 0) { const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = Math.floor((n - 1) / 26); }
+    return s;
+  };
+  const body = rows.map((r, ri) =>
+    '<row r="' + (ri + 1) + '">' + r.map((c, ci) =>
+      '<c r="' + colRef(ci) + (ri + 1) + '" t="inlineStr"><is><t xml:space="preserve">' + esx(c) + '</t></is></c>'
+    ).join('') + '</row>').join('');
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<sheetData>' + body + '</sheetData></worksheet>';
+}
+function downloadTemplateXlsx() {
+  const sheets = [
+    { name: 'Metingen', rows: [TPL_HEAD].concat(tplRows()) },
+    {
+      name: 'Uitleg', rows: [
+        ['Kolom', 'Verplicht', 'Uitleg'],
+        ['Motor', 'ja', 'Nummer of naam van de motor. Eén regel per werkstation per motor.'],
+        ['Modelcode', 'nee', 'Bijvoorbeeld M-148030, zodat de app per model en per batch kan rekenen.'],
+        ['Werkstation', 'ja', 'Naam van de medewerker of van het werkstation.'],
+        ['Starttijd', 'ja', '09:15, 09:15:30, 2026-09-30 09:15 of een gewone Excel-tijdcel.'],
+        ['Gereed', 'ja', 'Moet later zijn dan de starttijd.'],
+        ['Wachttijd', 'nee', '90 = 90 seconden, 1:30 = anderhalve minuut, "2 min" mag ook.'],
+        ['Reden van wachten', 'nee', 'Bijvoorbeeld: wachten op vorige werkstation.'],
+        ['Reworktijd', 'nee', 'Zelfde schrijfwijze als de wachttijd.'],
+        ['Kwaliteit', 'nee', 'goed of afgekeurd; leeg betekent goed.'],
+        ['Onderdeel', 'nee', 'Alleen bij afgekeurd.'],
+        ['Fouttype', 'nee', 'Alleen bij afgekeurd.'],
+        ['Omschrijving', 'nee', 'Vrije toelichting.'],
+        [], ['Let op', '', 'De app rekent alles terug uit start- en gereedtijden. Vul dus echte tijdstippen in, ' +
+          'geen opgetelde duur.']
+      ]
+    }
+  ];
+  const ct = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+    '<Default Extension="xml" ContentType="application/xml"/>' +
+    '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+    sheets.map((s, i) => '<Override PartName="/xl/worksheets/sheet' + (i + 1) +
+      '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join('') +
+    '</Types>';
+  const rootRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
+    '</Relationships>';
+  const workbook = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ' +
+    'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' +
+    sheets.map((s, i) => '<sheet name="' + s.name + '" sheetId="' + (i + 1) + '" r:id="rId' + (i + 1) + '"/>').join('') +
+    '</sheets></workbook>';
+  const wbRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+    sheets.map((s, i) => '<Relationship Id="rId' + (i + 1) +
+      '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' +
+      (i + 1) + '.xml"/>').join('') + '</Relationships>';
+  const files = [
+    { name: '[Content_Types].xml', data: ct },
+    { name: '_rels/.rels', data: rootRels },
+    { name: 'xl/workbook.xml', data: workbook },
+    { name: 'xl/_rels/workbook.xml.rels', data: wbRels }
+  ].concat(sheets.map((s, i) => ({ name: 'xl/worksheets/sheet' + (i + 1) + '.xml', data: sheetXml(s.rows) })));
+  const blob = zipStore(files);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'innovo_importsjabloon.xlsx';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/* =========================================================================
+   IMPORTWIZARD — drie stappen: bestand, kolommen + controle, run + opslaan
+   ========================================================================= */
+
+/** Raadt per interne kolom welke kolom uit het bestand erbij hoort. */
+function guessMapping(header) {
+  const norm = header.map(normHead);
+  const map = {};
+  IMPORT_FIELDS.forEach(f => {
+    let idx = -1;
+    const al = IMPORT_ALIASES[f.key] || [];
+    for (let i = 0; i < norm.length && idx < 0; i++) if (al.indexOf(norm[i]) >= 0) idx = i;
+    for (let i = 0; i < norm.length && idx < 0; i++) {
+      if (!norm[i]) continue;
+      if (al.some(a => norm[i].indexOf(a) === 0 || a.indexOf(norm[i]) === 0)) idx = i;
+    }
+    map[f.key] = idx;
+  });
+  /* dezelfde kolom mag niet twee keer gekozen zijn */
+  const used = {};
+  IMPORT_FIELDS.forEach(f => {
+    if (map[f.key] < 0) return;
+    if (used[map[f.key]]) map[f.key] = -1; else used[map[f.key]] = f.key;
+  });
+  return map;
+}
+
+/** Zoekt bij een naam uit het bestand het bijbehorende werkstation. */
+function guessStation(label, stations) {
+  const n = normHead(label);
+  if (!n) return null;
+  let s = stations.find(x => normHead(x.worker) === n || normHead(x.name) === n);
+  if (s) return s.id;
+  s = stations.find(x => normHead(x.worker + x.name) === n || normHead(x.worker + ' - ' + x.name) === n);
+  if (s) return s.id;
+  s = stations.find(x => n.indexOf(normHead(x.worker)) >= 0 || normHead(x.name).indexOf(n) >= 0 || n.indexOf(normHead(x.name)) >= 0);
+  return s ? s.id : null;
+}
+
+/** Leest het bestand en zet de wizardtoestand klaar. */
+async function importReadFile(file) {
+  const name = file.name || '';
+  let table, sheet = '', sheets = [];
+  if (/\.xlsx$/i.test(name)) {
+    const res = await readXlsx(await file.arrayBuffer());
+    table = res.rows; sheet = res.sheet; sheets = res.sheets;
+  } else if (/\.xls$/i.test(name)) {
+    throw new Error('Het oude .xls-formaat kan de app niet lezen. Sla het bestand in Excel op als .xlsx of als CSV.');
+  } else {
+    table = parseCSV(await file.text());
+  }
+  if (!table.length) throw new Error('Het bestand bevat geen rijen.');
+  if (table.length < 2) throw new Error('Het bestand bevat alleen een kopregel en geen metingen.');
+  const header = table[0].map(h => String(h == null ? '' : h).trim());
+  IMP = {
+    step: 1, fileName: name, sheet: sheet, sheets: sheets,
+    header: header, body: table.slice(1),
+    map: guessMapping(header),
+    stationMap: {}, stationLabels: [],
+    date: todayISO(), runName: '', week: isoWeek(new Date()),
+    availableMin: 60, demand: 0, notes: '',
+    conflict: 'new', targetRunId: null,
+    rows: [], errors: 0, warns: 0
+  };
+  return IMP;
+}
+
+/* ----------------------------------------------------- controle per rij */
+/** Loopt alle rijen na, zet ze om naar interne waarden en verzamelt per rij
+    de meldingen in gewoon Nederlands. */
+function importValidate() {
+  const stations = DB.settings.stations.filter(s => s.active !== false);
+  const cell = (r, key) => {
+    const i = IMP.map[key];
+    return i == null || i < 0 ? '' : String(r[i] == null ? '' : r[i]).trim();
+  };
+
+  /* eerst alle stationsnamen verzamelen zodat de gebruiker ze kan koppelen */
+  const labels = [];
+  IMP.body.forEach(r => {
+    const l = cell(r, 'station');
+    if (l && labels.indexOf(l) < 0) labels.push(l);
+  });
+  IMP.stationLabels = labels;
+  labels.forEach(l => {
+    if (IMP.stationMap[l] === undefined) IMP.stationMap[l] = guessStation(l, stations) || '';
+  });
+
+  const skus = (DB.settings.catalog || CATALOG).map(p => p.sku);
+  const rows = [];
+  const perStation = {};                 // stationId -> [{start, end, rij}] voor overlapcontrole
+  IMP.body.forEach((r, i) => {
+    const row = {
+      line: i + 2, raw: r, errs: [], warns: [],
+      motor: cell(r, 'motor'), sku: cell(r, 'sku').toUpperCase(),
+      stationLabel: cell(r, 'station'), stationId: '',
+      start: null, done: null, wait: null, rework: null,
+      waitReason: cell(r, 'waitReason'), qcFail: false,
+      part: cell(r, 'part'), dtype: cell(r, 'dtype'), desc: cell(r, 'desc')
+    };
+    if (!row.motor) row.errs.push('Geen motor ingevuld.');
+    if (!row.stationLabel) row.errs.push('Geen werkstation ingevuld.');
+    else {
+      row.stationId = IMP.stationMap[row.stationLabel] || '';
+      if (!row.stationId) row.errs.push('Werkstation "' + row.stationLabel + '" is nog niet gekoppeld aan een station in de app.');
+    }
+    if (row.sku && skus.indexOf(row.sku) < 0) row.warns.push('Modelcode "' + row.sku + '" staat niet in de productlijst; hij wordt wel overgenomen.');
+
+    const rawStart = cell(r, 'start'), rawDone = cell(r, 'done');
+    row.start = parseTimeCell(rawStart, IMP.date);
+    row.done = parseTimeCell(rawDone, IMP.date);
+    if (!rawStart) row.errs.push('Starttijd ontbreekt.');
+    else if (row.start == null) row.errs.push('Starttijd "' + rawStart + '" is niet te lezen als tijdstip.');
+    if (!rawDone) row.errs.push('Gereedtijd ontbreekt.');
+    else if (row.done == null) row.errs.push('Gereedtijd "' + rawDone + '" is niet te lezen als tijdstip.');
+    if (row.start != null && row.done != null) {
+      if (row.done < row.start) {
+        /* een nachtdienst is hier niet aan de orde: dit is gewoon een fout */
+        row.errs.push('Gereed (' + clock(row.done) + ') ligt vóór de start (' + clock(row.start) + ').');
+      } else if (row.done === row.start) {
+        row.warns.push('Start en gereed zijn gelijk; de cycle time wordt 0.');
+      }
+    }
+
+    const rawWait = cell(r, 'wait');
+    if (rawWait) {
+      row.wait = parseDurCell(rawWait);
+      if (row.wait == null) row.errs.push('Wachttijd "' + rawWait + '" is niet te lezen als duur.');
+    }
+    const rawRw = cell(r, 'rework');
+    if (rawRw) {
+      row.rework = parseDurCell(rawRw);
+      if (row.rework == null) row.errs.push('Reworktijd "' + rawRw + '" is niet te lezen als duur.');
+    }
+    if (row.start != null && row.done != null && row.done > row.start) {
+      const cyc = row.done - row.start;
+      if (row.wait > 0 && row.wait > cyc) {
+        row.warns.push('De wachttijd (' + dur(row.wait) + ') is langer dan de hele handeling (' + dur(cyc) +
+          '); er wordt ' + dur(cyc) + ' aan wachttijd geboekt.');
+        row.wait = cyc;
+      }
+      if (cyc > 4 * 3600000) row.warns.push('Deze handeling duurt ' + durH(cyc) + '. Klopt de tijdnotatie wel?');
+    }
+
+    const q = cell(r, 'qc').toLowerCase();
+    if (q) {
+      if (/^(afgekeurd|nok|niet goed|fout|nee|fail|n)$/.test(q)) row.qcFail = true;
+      else if (/^(goed|ok|oké|ja|pass|y|j|akkoord|in orde)$/.test(q)) row.qcFail = false;
+      else { row.warns.push('Kwaliteit "' + cell(r, 'qc') + '" is niet herkend; de regel telt als goed.'); }
+    }
+    if (!row.qcFail && (row.part || row.dtype)) {
+      row.warns.push('Er staat een onderdeel of fouttype ingevuld terwijl de regel niet is afgekeurd.');
+    }
+    if (row.qcFail && !row.dtype) row.dtype = 'Anders';
+
+    if (row.stationId && row.start != null && row.done != null && row.done >= row.start) {
+      const list = perStation[row.stationId] || (perStation[row.stationId] = []);
+      const clash = list.find(x => row.start < x.end && x.start < row.done);
+      if (clash) row.warns.push('Overlapt met regel ' + clash.line + ': dit station werkt dan aan twee motoren tegelijk.');
+      list.push({ start: row.start, end: row.done, line: row.line });
+    }
+    rows.push(row);
+  });
+
+  /* dubbele combinatie motor + station */
+  const seen = {};
+  rows.forEach(r => {
+    if (!r.motor || !r.stationId) return;
+    const k = r.motor + '|' + r.stationId;
+    if (seen[k]) r.warns.push('Deze motor staat al op regel ' + seen[k] + ' bij hetzelfde werkstation; beide regels worden overgenomen.');
+    else seen[k] = r.line;
+  });
+  /* één modelcode per motor */
+  const byMotor = {};
+  rows.forEach(r => {
+    if (!r.motor || !r.sku) return;
+    if (byMotor[r.motor] && byMotor[r.motor] !== r.sku) {
+      r.warns.push('Motor ' + r.motor + ' heeft eerder modelcode ' + byMotor[r.motor] + '; de eerste blijft staan.');
+    } else byMotor[r.motor] = r.sku;
+  });
+
+  IMP.rows = rows;
+  IMP.errors = rows.filter(r => r.errs.length).length;
+  IMP.warns = rows.filter(r => r.warns.length).length;
+  IMP.motorsFound = Object.keys(rows.reduce((a, r) => { if (r.motor) a[r.motor] = 1; return a; }, {})).length;
+  return IMP;
+}
+
+/* -------------------------------------------------- omzetten naar events */
+/** Bouwt uit de gecontroleerde regels een lijst events met echte timestamps.
+    Alles wat we niet letterlijk in het bestand zagen maar hebben afgeleid
+    (het aanmaken van de motor, een wachtpauze uit een duurkolom, de
+    kwaliteitscontrole) krijgt derived:true. */
+function importBuildEvents(run) {
+  const good = IMP.rows.filter(r => !r.errs.length);
+  const evs = [];
+  let seq = 0;
+  const push = (ts, type, data, derived) => {
+    evs.push(Object.assign({
+      id: uuid(), ts: ts, seq: ++seq, type: type, actor: 'import',
+      source: 'import', derived: !!derived
+    }, data));
+  };
+
+  /* motoren in volgorde van hun eerste starttijd */
+  const motors = {};
+  good.forEach(r => {
+    if (!motors[r.motor]) motors[r.motor] = { label: r.motor, sku: r.sku || '', first: r.start, rows: [] };
+    const m = motors[r.motor];
+    if (r.sku && !m.sku) m.sku = r.sku;
+    if (r.start < m.first) m.first = r.start;
+    m.rows.push(r);
+  });
+  const list = Object.keys(motors).map(k => motors[k]).sort((a, b) => a.first - b.first);
+  const idOf = {};
+  list.forEach((m, i) => {
+    m.id = uid(); m.nr = i + 1;
+    idOf[m.label] = m.id;
+    push(m.first, 'motor_create', { motorId: m.id, nr: m.nr, sku: m.sku, label: m.label }, true);
+  });
+
+  good.forEach(r => {
+    const mid = idOf[r.motor];
+    const cyc = r.done - r.start;
+    push(r.start, 'start', { motorId: mid, stationId: r.stationId });
+    /* een ingevulde wachttijd zetten we als pauze neer, vlak vóór het einde,
+       zodat de gemeten cycle time klopt en de wachttijd apart zichtbaar is */
+    if (r.wait > 0 && cyc > 0) {
+      const wStart = r.done - Math.min(r.wait, cyc);
+      const reason = r.waitReason || 'Wachttijd overgenomen uit het bestand';
+      const known = DB.settings.reasons.find(x => normHead(x.label) === normHead(reason));
+      push(wStart, 'pause', {
+        motorId: mid, stationId: r.stationId, reason: reason,
+        reasonId: known ? known.id : '', tim: known ? known.tim : 'Waiting',
+        note: 'ingevoerd bij de import'
+      }, true);
+    }
+    push(r.done, 'done', { motorId: mid, stationId: r.stationId });
+    if (r.qcFail) {
+      const defId = uuid();
+      push(r.done, 'qc', {
+        motorId: mid, stationId: r.stationId, result: 'fail', defectId: defId,
+        part: r.part, dtype: r.dtype || 'Anders', desc: r.desc,
+        rework: r.rework > 0, reworkSec: r.rework > 0 ? Math.round(r.rework / 1000) : 0, measured: false
+      }, true);
+      /* een ingevuld herstel beschouwen we als afgerond: anders zou de run
+         eeuwig "nog te herstellen" blijven staan terwijl de week al voorbij is */
+      push(r.done, 'defect_resolve', {
+        motorId: mid, stationId: r.stationId, defectId: defId,
+        note: 'hersteld volgens het geïmporteerde bestand'
+      }, true);
+    } else {
+      push(r.done, 'qc', { motorId: mid, stationId: r.stationId, result: 'pass' }, true);
+    }
+  });
+
+  evs.sort((a, b) => a.ts - b.ts || a.seq - b.seq);
+  return { events: evs, motors: list };
+}
+
+/** Maakt of vult de run en schrijft hem weg. */
+function importCommit() {
+  const good = IMP.rows.filter(r => !r.errs.length);
+  if (!good.length) { toast('Er is geen enkele bruikbare regel.', true); return null; }
+  const stations = DB.settings.stations.filter(s => s.active !== false)
+    .filter(s => good.some(r => r.stationId === s.id))
+    .map(s => ({ id: s.id, worker: s.worker, name: s.name }));
+
+  let run;
+  if (IMP.conflict === 'merge' && IMP.targetRunId) {
+    run = DB.runs.find(r => r.id === IMP.targetRunId);
+    if (!run) { toast('De gekozen run bestaat niet meer.', true); return null; }
+  } else {
+    if (IMP.conflict === 'replace' && IMP.targetRunId) {
+      const i = DB.runs.findIndex(r => r.id === IMP.targetRunId);
+      if (i >= 0) DB.runs.splice(i, 1);
+    }
+    run = {
+      id: uid(), createdAt: now(), startedAt: null, endedAt: null, demo: false,
+      imported: true, importedAt: now(), importSource: IMP.fileName,
+      name: IMP.runName || ('Import ' + IMP.date), date: IMP.date, week: IMP.week,
+      target: IMP.motorsFound, availableMin: IMP.availableMin, demand: IMP.demand || IMP.motorsFound,
+      variant: '', orderWeek: null, queueMix: 'grouped', strictOrder: false,
+      notes: IMP.notes, stations: stations, queue: [], events: []
+    };
+    DB.runs.push(run);
+  }
+  if (!run.stations || !run.stations.length) run.stations = stations;
+  else stations.forEach(s => { if (!run.stations.some(x => x.id === s.id)) run.stations.push(s); });
+
+  const built = importBuildEvents(run);
+  run.events = run.events.concat(built.events);
+  run.events.sort((a, b) => a.ts - b.ts || (a.seq || 0) - (b.seq || 0));
+  run.startedAt = run.events.length ? run.events[0].ts : null;
+  run.endedAt = run.events.length ? run.events[run.events.length - 1].ts : null;
+  run.endedEarly = false;
+  run.imported = true;
+  run.importedAt = run.importedAt || now();
+  run.importSource = run.importSource || IMP.fileName;
+  run.importRows = (run.importRows || 0) + good.length;
+  DB.activeRunId = run.id;
+  saveDB(true);
+  return { run: run, motors: built.motors.length, rows: good.length };
+}
+
+/* ------------------------------------------------------------- de wizard */
+function importWizard() {
+  openModal({
+    title: 'Metingen importeren', wide: true, noFocus: true,
+    sub: 'Stap 1 van 3 — bestand kiezen',
+    body: '<div class="impsteps"><span class="impstep on">1 · Bestand</span>' +
+      '<span class="impstep">2 · Kolommen en controle</span><span class="impstep">3 · Run en opslaan</span></div>' +
+      '<div id="impBody"></div>',
+    buttons: [{ label: 'Sluiten', value: true }],
+    onOpen: m => { IMP = null; importStep1(m); }
+  });
+}
+function impSetStep(m, n, sub) {
+  $$('.impstep', m).forEach((el, i) => el.className = 'impstep' + (i === n - 1 ? ' on' : i < n - 1 ? ' done' : ''));
+  const s = $('.mdl-h small', m); if (s) s.textContent = 'Stap ' + n + ' van 3 — ' + sub;
+}
+
+function importStep1(m) {
+  impSetStep(m, 1, 'bestand kiezen');
+  $('#impBody', m).innerHTML =
+    '<div class="hint" style="margin-bottom:12px">Kies een Excel-bestand (.xlsx) of een CSV-bestand met één regel per ' +
+    'motor per werkstation. Weet je niet hoe het eruit moet zien? Download dan eerst het sjabloon.</div>' +
+    '<div class="btnrow" style="margin-bottom:14px">' +
+    '<button class="btn" id="impTplX">Sjabloon downloaden (Excel)</button>' +
+    '<button class="btn" id="impTplC">Sjablonen downloaden (CSV)</button></div>' +
+    '<label class="fld"><span>Bestand</span><input type="file" id="impFile" accept=".xlsx,.csv,text/csv"></label>' +
+    '<div id="impMsg" style="margin-top:12px"></div>';
+  $('#impTplX', m).onclick = () => { downloadTemplateXlsx(); toast('Sjabloon gedownload'); };
+  $('#impTplC', m).onclick = () => { downloadTemplateCsv(); toast('Sjablonen gedownload'); };
+  $('#impFile', m).onchange = async () => {
+    const f = $('#impFile', m).files[0]; if (!f) return;
+    $('#impMsg', m).innerHTML = '<div class="hint">Bezig met lezen…</div>';
+    try {
+      await importReadFile(f);
+      importStep2(m);
+    } catch (e) {
+      $('#impMsg', m).innerHTML = '<div class="banner red"><div><b>Het bestand kan niet gelezen worden</b>' +
+        esc(e.message || String(e)) + '</div></div>';
+    }
+  };
+}
+
+function importStep2(m) {
+  impSetStep(m, 2, 'kolommen en controle');
+  const opts = i => '<option value="-1"' + (i < 0 ? ' selected' : '') + '>— niet aanwezig —</option>' +
+    IMP.header.map((h, j) => '<option value="' + j + '"' + (i === j ? ' selected' : '') + '>' +
+      esc(h || ('kolom ' + (j + 1))) + '</option>').join('');
+  const stations = DB.settings.stations.filter(s => s.active !== false);
+
+  $('#impBody', m).innerHTML =
+    '<div class="hint" style="margin-bottom:10px"><b>' + esc(IMP.fileName) + '</b> · ' +
+    IMP.body.length + ' regels' + (IMP.sheet ? ' · werkblad ' + esc(IMP.sheet) : '') + '</div>' +
+    '<label class="fld" style="max-width:280px"><span>Datum van de meting</span>' +
+    '<input type="date" id="impDate" value="' + esc(IMP.date) + '"></label>' +
+    '<div class="hint" style="margin:-4px 0 12px">Deze datum gebruiken we als in een cel alleen een kloktijd staat, ' +
+    'bijvoorbeeld 09:15.</div>' +
+    '<h3 style="font-size:15px;margin:6px 0 8px">Welke kolom is wat?</h3>' +
+    '<div class="fgrid">' + IMPORT_FIELDS.map(f =>
+      '<label class="fld"><span>' + esc(f.label) + (f.req ? ' *' : '') + '</span>' +
+      '<select data-impmap="' + f.key + '">' + opts(IMP.map[f.key]) + '</select>' +
+      '<span class="hint">' + esc(f.hint) + '</span></label>').join('') + '</div>' +
+    '<h3 style="font-size:15px;margin:14px 0 8px">Welke naam hoort bij welk werkstation?</h3>' +
+    '<div id="impStations"></div>' +
+    '<h3 style="font-size:15px;margin:14px 0 8px">Controle van de regels</h3>' +
+    '<div id="impCheck"></div>';
+
+  const stationBlock = () => '<div class="fgrid">' + (IMP.stationLabels.length
+    ? IMP.stationLabels.map(l => '<label class="fld"><span>' + esc(l) + '</span>' +
+      '<select data-impst="' + esc(l) + '"><option value="">— overslaan —</option>' +
+      stations.map(s => '<option value="' + s.id + '"' + (IMP.stationMap[l] === s.id ? ' selected' : '') + '>' +
+        esc(s.worker + ' – ' + s.name) + '</option>').join('') + '</select></label>').join('')
+    : '<div class="hint">Nog geen werkstations gevonden — kies eerst de juiste kolom hierboven.</div>') + '</div>';
+
+  const refresh = () => {
+    importValidate();
+    $('#impStations', m).innerHTML = stationBlock();
+    $$('[data-impst]', m).forEach(sel => sel.onchange = () => {
+      IMP.stationMap[sel.dataset.impst] = sel.value; refresh();
+    });
+    $('#impCheck', m).innerHTML = importCheckBlock();
+    const btn = $('#impNext', m);
+    if (btn) btn.disabled = IMP.rows.length === IMP.errors;
+  };
+
+  $$('[data-impmap]', m).forEach(sel => sel.onchange = () => {
+    const key = sel.dataset.impmap, val = +sel.value;
+    /* een kolom mag maar één keer gekozen worden */
+    if (val >= 0) IMPORT_FIELDS.forEach(f => { if (f.key !== key && IMP.map[f.key] === val) IMP.map[f.key] = -1; });
+    IMP.map[key] = val;
+    IMP.stationMap = {};
+    $$('[data-impmap]', m).forEach(s2 => { s2.value = IMP.map[s2.dataset.impmap]; });
+    refresh();
+  });
+  $('#impDate', m).onchange = () => { IMP.date = $('#impDate', m).value || todayISO(); refresh(); };
+
+  setModalButtons(m, [
+    { label: 'Terug', onClick: mm => { importStep1(mm); return false; } },
+    { label: 'Verder', cls: 'pri', id: 'impNext', onClick: mm => { importStep3(mm); return false; } }
+  ]);
+  refresh();
+}
+
+function importCheckBlock() {
+  const okRows = IMP.rows.length - IMP.errors;
+  const bad = IMP.rows.filter(r => r.errs.length || r.warns.length).slice(0, 60);
+  const missing = IMPORT_FIELDS.filter(f => f.req && IMP.map[f.key] < 0);
+  return (missing.length
+    ? '<div class="banner red"><div><b>Nog niet alle verplichte kolommen gekozen</b>' +
+    'Ontbreekt: ' + missing.map(f => esc(f.label)).join(', ') + '.</div></div>'
+    : '') +
+    '<div class="grid g4" style="margin-bottom:10px">' +
+    kpi('Regels in het bestand', IMP.rows.length, 'zonder de kopregel') +
+    kpi('Bruikbaar', okRows, okRows === IMP.rows.length ? 'alles kan worden ingelezen' : 'deze regels worden ingelezen',
+      okRows ? 'ok' : 'bad') +
+    kpi('Fouten', IMP.errors, IMP.errors ? 'deze regels slaan we over' : 'geen fouten gevonden', IMP.errors ? 'bad' : 'ok') +
+    kpi('Waarschuwingen', IMP.warns, IMP.warns ? 'kijk ze even na' : 'niets bijzonders', IMP.warns ? 'warn' : 'ok') +
+    '</div>' +
+    (bad.length
+      ? '<div class="tblwrap" style="max-height:320px;overflow:auto"><table class="tbl"><thead><tr>' +
+      '<th>Regel</th><th>Motor</th><th>Werkstation</th><th>Melding</th></tr></thead><tbody>' +
+      bad.map(r => '<tr><td class="mono">' + r.line + '</td><td>' + esc(r.motor || '—') + '</td>' +
+        '<td>' + esc(r.stationLabel || '—') + '</td><td>' +
+        r.errs.map(e => '<div class="imperr">✖ ' + esc(e) + '</div>').join('') +
+        r.warns.map(w => '<div class="impwarn">⚠ ' + esc(w) + '</div>').join('') +
+        '</td></tr>').join('') + '</tbody></table></div>' +
+      (IMP.rows.filter(r => r.errs.length || r.warns.length).length > 60
+        ? '<div class="hint">Alleen de eerste 60 meldingen worden getoond.</div>' : '')
+      : '<div class="banner ok"><div><b>Alle regels zijn in orde</b>Er zijn geen fouten of waarschuwingen gevonden.</div></div>');
+}
+
+function importStep3(m) {
+  importValidate();
+  if (IMP.rows.length === IMP.errors) { toast('Er is geen enkele bruikbare regel.', true); return; }
+  impSetStep(m, 3, 'run en opslaan');
+  const good = IMP.rows.filter(r => !r.errs.length);
+  const span = good.reduce((a, r) => ({
+    min: a.min == null || r.start < a.min ? r.start : a.min,
+    max: a.max == null || r.done > a.max ? r.done : a.max
+  }), { min: null, max: null });
+  const spanMs = span.min != null ? span.max - span.min : 0;
+  if (!IMP.runName) IMP.runName = 'Meting ' + IMP.date;
+  if (!IMP.availableMin || IMP.availableMin === 60) IMP.availableMin = Math.max(1, Math.round(spanMs / 60000)) || 60;
+  if (!IMP.demand) IMP.demand = IMP.motorsFound;
+
+  const same = DB.runs.filter(r => !r.demo && (normHead(r.name) === normHead(IMP.runName) || r.date === IMP.date));
+  IMP.conflict = same.length ? IMP.conflict : 'new';
+  if (!same.some(r => r.id === IMP.targetRunId)) IMP.targetRunId = same.length ? same[0].id : null;
+
+  $('#impBody', m).innerHTML =
+    '<div class="banner info"><div><b>' + good.length + ' regels · ' + IMP.motorsFound + ' motoren · ' +
+    (span.min != null ? clock(span.min) + ' tot ' + clock(span.max) + ' (' + durH(spanMs) + ')' : 'geen tijden') + '</b>' +
+    'De app rekent alle KPI\'s opnieuw uit deze start- en gereedtijden, precies zoals bij een run die je zelf meet. ' +
+    'De run krijgt het label "geïmporteerd", zodat in de vergelijking altijd zichtbaar blijft waar de cijfers vandaan komen.' +
+    '</div></div>' +
+    '<div class="fgrid">' +
+    '<label class="fld"><span>Naam van de run</span><input type="text" id="impName" value="' + esc(IMP.runName) + '"></label>' +
+    '<label class="fld"><span>Datum</span><input type="date" id="impDate3" value="' + esc(IMP.date) + '"></label>' +
+    '<label class="fld"><span>Weeknummer</span><input type="number" id="impWeek" min="1" max="53" value="' + esc(IMP.week) + '"></label>' +
+    '<label class="fld"><span>Beschikbare productietijd (minuten)</span><input type="number" id="impAvail" min="1" value="' + esc(IMP.availableMin) + '"></label>' +
+    '<label class="fld"><span>Klantvraag (aantal motoren)</span><input type="number" id="impDemand" min="0" value="' + esc(IMP.demand) + '"></label>' +
+    '</div>' +
+    '<label class="fld"><span>Opmerkingen</span><textarea id="impNotes" rows="2" placeholder="waar komt deze meting vandaan?">' + esc(IMP.notes) + '</textarea></label>' +
+    (same.length
+      ? '<div class="sec" style="margin-top:6px"><h3 style="font-size:15px;margin-bottom:6px">Er bestaat al een run met deze naam of datum</h3>' +
+      '<label class="fld" style="max-width:420px"><span>Welke run bedoel je?</span><select id="impTarget">' +
+      same.map(r => '<option value="' + r.id + '"' + (IMP.targetRunId === r.id ? ' selected' : '') + '>' +
+        esc(r.name) + ' · ' + esc(r.date) + ' · ' + r.events.length + ' events</option>').join('') +
+      '</select></label>' +
+      '<div class="reasonlist" id="impConf">' +
+      [['new', 'Als nieuwe run toevoegen', 'De bestaande run blijft ongewijzigd staan.'],
+      ['merge', 'Samenvoegen met de bestaande run', 'De regels worden als extra events toegevoegd; niets wordt gewist.'],
+      ['replace', 'De bestaande run vervangen', 'De bestaande run wordt verwijderd en opnieuw opgebouwd uit dit bestand.']]
+        .map(o => '<button type="button" data-conf="' + o[0] + '"' + (IMP.conflict === o[0] ? ' class="on"' : '') + '>' +
+          o[1] + '<small>' + o[2] + '</small></button>').join('') + '</div></div>'
+      : '') +
+    '<div id="impResult" style="margin-top:12px"></div>';
+
+  const bind = (id, key, num) => {
+    const el = $('#' + id, m); if (!el) return;
+    el.oninput = () => { IMP[key] = num ? (parseFloat(el.value) || 0) : el.value; };
+  };
+  bind('impName', 'runName'); bind('impWeek', 'week', true);
+  bind('impAvail', 'availableMin', true); bind('impDemand', 'demand', true); bind('impNotes', 'notes');
+  $('#impDate3', m).onchange = () => { IMP.date = $('#impDate3', m).value || todayISO(); importStep3(m); };
+  if ($('#impTarget', m)) $('#impTarget', m).onchange = () => { IMP.targetRunId = $('#impTarget', m).value; };
+  $$('[data-conf]', m).forEach(b => b.onclick = () => {
+    IMP.conflict = b.dataset.conf;
+    $$('[data-conf]', m).forEach(x => x.className = x === b ? 'on' : '');
+  });
+
+  setModalButtons(m, [
+    { label: 'Terug', onClick: mm => { importStep2(mm); return false; } },
+    {
+      label: 'Importeren', cls: 'pri', onClick: mm => {
+        const res = importCommit();
+        if (!res) return false;
+        closeModal(true);
+        showTab('productie');
+        renderAll();
+        alertBox('Import gelukt',
+          '<b>' + esc(res.run.name) + '</b> bevat nu ' + res.motors + ' motoren uit ' + res.rows + ' regels. ' +
+          'De run staat gemarkeerd als <b>geïmporteerd</b> en doet gewoon mee in het dashboard, het eindrapport ' +
+          'en de vergelijking tussen runs.');
+        return false;
+      }
+    }
+  ]);
+}
+
+/** Vervangt de knoppenbalk van een openstaande modal. */
+function setModalButtons(m, buttons) {
+  const f = $('.mdl-f', m); if (!f) return;
+  f.innerHTML = '';
+  buttons.forEach(b => {
+    const el = document.createElement('button');
+    el.className = 'btn' + (b.cls ? ' ' + b.cls : '');
+    el.textContent = b.label;
+    if (b.id) el.id = b.id;
+    el.onclick = () => { if (b.onClick) b.onClick(m); else closeModal(b.value); };
+    f.appendChild(el);
+  });
+}
 </script>
 </body>
 </html>
