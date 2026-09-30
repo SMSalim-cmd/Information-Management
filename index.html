@@ -1058,6 +1058,12 @@ b.cd-good{color:var(--green)} b.cd-warn{color:var(--amber)} b.cd-over{color:var(
 const LSKEY = 'innovo_pm_v1';
 const APPVER = 1;
 
+/* Versie van de app zelf. Staat zichtbaar bij DATA en INSTELLINGEN, zodat je
+   na het publiceren kunt controleren of je telefoon de nieuwe versie heeft. */
+const APP_VERSION = '7.0';
+const APP_BUILD = '2026-09-30';
+const APP_WHATS_NEW = 'batches per modelcode, omsteltijd, afteltimer en import uit Excel/CSV';
+
 /* ---------------------------------------------------------------- helpers */
 const $  = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
@@ -4327,7 +4333,10 @@ function renderDispSettings() {
   const el = $('#setDisp'); if (!el) return;
   const run = activeRun();
   el.innerHTML =
-    '<div class="hint" style="margin-bottom:12px">Deze keuze geldt alleen voor dit apparaat. De metingen veranderen er niet van: ' +
+    '<div class="banner info" style="margin-bottom:12px"><div><b>App-versie ' + APP_VERSION +
+    ' · ' + APP_BUILD + '</b>Deze versie bevat ' + esc(APP_WHATS_NEW) + '. ' +
+    'Ziet iemand anders een andere versie staan, dan heeft zijn telefoon de pagina nog uit de cache.</div></div>' +
+    '<div class="hint" style="margin-bottom:12px">De keuze hieronder geldt alleen voor dit apparaat. De metingen veranderen er niet van: ' +
     'cycle time, wachttijd en lead time worden altijd uit de echte timestamps berekend.</div>' +
     '<div class="wrapchk" style="margin-bottom:14px">' +
     '<label class="chk"><input type="checkbox" id="dispCd"' + (DISP.countdown ? ' checked' : '') + '>Tijd aftellen in plaats van optellen</label>' +
@@ -5991,7 +6000,8 @@ function exportData(kind) {
   if (kind === 'json') {
     const Mj = computeMetrics(run);
     download(base + 'ruwe-data.json', JSON.stringify({
-      exported: new Date().toISOString(), settings: DB.settings, run: run,
+      exported: new Date().toISOString(), appVersie: APP_VERSION, appBuild: APP_BUILD,
+      settings: DB.settings, run: run,
       batches: Mj.batchStats,
       modelwissels: Mj.changeovers.map(c => ({
         tijdstip: new Date(c.at).toISOString(), medewerker: c.worker,
@@ -6295,7 +6305,9 @@ function updateStoreInfo() {
   try { bytes = (localStorage.getItem(LSKEY) || '').length; } catch (e) { }
   const evs = DB.runs.reduce((t, r) => t + r.events.length, 0);
   el.innerHTML = (lastSaveOk ? '✔ Automatisch opgeslagen in deze browser' : '⚠ Opslaan mislukt — exporteer direct een back-up!') +
-    ' · ' + DB.runs.length + ' runs · ' + evs + ' events · ' + (bytes / 1024).toFixed(1) + ' kB';
+    ' · ' + DB.runs.length + ' runs · ' + evs + ' events · ' + (bytes / 1024).toFixed(1) + ' kB' +
+    '<br><b>App-versie ' + APP_VERSION + '</b> (' + APP_BUILD + ') — ' + esc(APP_WHATS_NEW) +
+    '. Ziet een telefoon een oudere versie, ververs die pagina dan één keer hard.';
 }
 
 function renderData() {

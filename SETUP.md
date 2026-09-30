@@ -143,6 +143,17 @@ Een nieuwe versie zetten? Sleep de map opnieuw naar hetzelfde project via
 > Belangrijk: open de app via `https://…`, niet als bestand vanaf de laptop. Alleen dan
 > werken de service worker, "toevoegen aan beginscherm" en het wakker houden van het scherm.
 
+### Controleren welke versie er op de site staat
+
+Ga naar **DATA** en kijk onderaan bij *Back-up*: daar staat de **app-versie** met de datum en
+wat er in die versie zit. Ook bij **INSTELLINGEN → Weergave** staat het. Zie je een oudere
+versie dan je net hebt gepubliceerd, dan kijkt die browser nog naar de cache: ververs één keer
+hard (Ctrl+Shift+R), of haal op de telefoon de app van het beginscherm en zet hem opnieuw neer.
+
+Sleep je de map met de hand naar Netlify, neem dan je eigen ingevulde `config.js` mee. Netlify
+vervangt de site door precies wat je erin gooit, dus met de lege `config.js` uit de repository
+zouden de databasegegevens verdwijnen.
+
 ## Stap 6 — Op het beginscherm zetten (PWA)
 
 - **Android/Chrome**: menu (drie puntjes) → *App installeren* of *Toevoegen aan startscherm*.
