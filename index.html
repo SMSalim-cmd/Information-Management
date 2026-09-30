@@ -1095,6 +1095,18 @@ function isoWeek(d) {
 }
 function todayISO() { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
 function motorCode(nr) { return 'Motor ' + pad(nr, 3); }
+/** Is deze run geïmporteerd in plaats van in de app gemeten? De vlag staat
+    lokaal op de run én als event in de log, zodat het label ook klopt bij wie
+    later met de runcode meedoet. */
+function runIsImported(run) {
+  return !!(run && (run.imported || (run.events || []).some(e => e.type === 'run_import')));
+}
+function runImportSource(run) {
+  if (!run) return '';
+  if (run.importSource) return run.importSource;
+  const e = (run.events || []).find(x => x.type === 'run_import');
+  return e ? (e.file || '') : '';
+}
 
 /* ------------------------------------------------------------ standaarden */
 const TIMWOOD = {
@@ -1254,6 +1266,11 @@ function deriveRun(run) {
     motorList: [],
     defects: [],
     log: [],
+    /* streeftijd per station en de herkomst van de meting: staan in de
+       eventlog, zodat ze met de run meereizen naar de andere apparaten */
+    stationTargets: Object.assign({}, run.stationTargets || {}),
+    imported: !!run.imported,
+    importSource: run.importSource || '',
     lastEvent: run.events.length ? run.events[run.events.length - 1] : null
   };
   run.stations.forEach((s, i) => { D.stationById[s.id] = Object.assign({ order: i }, s); });
@@ -1357,6 +1374,23 @@ function deriveRun(run) {
       case 'run_end':
         logit(ev, 'Productierun afgesloten');
         break;
+      /* Herkomst en streeftijden gaan als event mee, niet als kolom in de
+         database. Zo ziet ieder apparaat dat met de runcode meedoet hetzelfde,
+         zonder dat er iets aan het databaseschema hoeft te veranderen. */
+      case 'run_import':
+        D.imported = true;
+        D.importSource = ev.file || '';
+        logit(ev, 'Metingen geïmporteerd uit ' + (ev.file || 'een bestand') +
+          (ev.rows ? ' (' + ev.rows + ' regels)' : ''));
+        break;
+      case 'station_target': {
+        if (ev.ms > 0) D.stationTargets[ev.stationId] = Number(ev.ms);
+        else delete D.stationTargets[ev.stationId];
+        logit(ev, sName(ev.stationId) + (ev.ms > 0
+          ? ' streeftijd ' + dur(ev.ms) + ' per motor'
+          : ' streeftijd terug naar de takt time'));
+        break;
+      }
       case 'motor_create': {
         if (D.motors[ev.motorId]) break;
         const m = {
@@ -2359,7 +2393,7 @@ function runSummary(run) {
     startupCostAvg: M.startupCostAvg, batches: M.D.batches.length,
     availableMs: M.availableMs, timeLeft: M.timeLeft, overtime: M.overtime,
     withinTime: M.withinTime.length, outsideTime: M.outsideTime.length, targetMet: M.targetMet,
-    imported: !!run.imported,
+    imported: M.D.imported || runIsImported(run),
     models: M.models.map(g => ({ sku: g.sku, name: g.name, n: g.motors.length, leadAvg: g.leadAvg, cycleAvg: g.cycleAvg, fpy: g.fpy })),
     advice: run.advice || null, early: !!run.endedEarly,
     lineBalance: M.lineBalance, flowEff: M.flowEff,
@@ -3619,6 +3653,9 @@ function undoLast(stationId) {
   const D = deriveRun(run);
   const cands = run.events.filter(e =>
     e.type !== 'undo' && e.type !== 'run_start' && !D.voided[e.id] && !e.causedBy &&
+    /* geïmporteerde regels draai je niet per stuk terug; die vervang je door
+       het bestand opnieuw te importeren of de run te verwijderen */
+    e.source !== 'import' &&
     (!stationId || e.stationId === stationId));
   const ev = cands.length ? cands[cands.length - 1] : null;
   if (!ev) { toast('Er is niets om ongedaan te maken.', true); return; }
@@ -4108,7 +4145,7 @@ function timerStateCls(status) {
 
 /** Streeftijd per motor voor een station: eigen streeftijd, anders de takt time. */
 function stationBudget(run, M, stationId) {
-  const t = (run.stationTargets || {})[stationId];
+  const t = (M && M.D ? M.D.stationTargets : run.stationTargets || {})[stationId];
   if (t > 0) return t;
   return M.takt != null ? M.takt : null;
 }
@@ -4160,7 +4197,7 @@ function showTimeUp(run, M) {
 
 /** Wordt elke tick aangeroepen; slaat één keer per run aan. */
 function checkTimeUp(run, M) {
-  if (!run || run.endedAt || run.demo || run.imported) return;
+  if (!run || run.endedAt || run.demo || runIsImported(run)) return;
   if (M.timeLeft == null || M.timeLeft > 0) return;
   if (DISP.shownTimeUp[run.id]) return;
   DISP.shownTimeUp[run.id] = true; saveDisp();
@@ -4290,19 +4327,23 @@ function renderDispSettings() {
       ? '<div class="hint" style="margin-bottom:8px">Streeftijd per motor per werkstation. Laat je een veld leeg, dan gebruikt de app de takt time' +
       (activeRunTakt() != null ? ' (' + dur(activeRunTakt()) + ')' : '') + '.</div>' +
       '<div class="srow" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">' +
-      run.stations.map(s => '<label class="fld" style="margin:0"><span>' + esc(s.worker) + '</span>' +
-        '<input type="number" min="0" step="1" data-tgt="' + s.id + '" placeholder="takt time" value="' +
-        (((run.stationTargets || {})[s.id] || 0) ? Math.round((run.stationTargets || {})[s.id] / 1000) : '') + '"></label>').join('') +
+      (() => {
+        const tg = deriveRun(run).stationTargets;
+        return run.stations.map(s => '<label class="fld" style="margin:0"><span>' + esc(s.worker) + '</span>' +
+          '<input type="number" min="0" step="1" data-tgt="' + s.id + '" placeholder="takt time" value="' +
+          (tg[s.id] > 0 ? Math.round(tg[s.id] / 1000) : '') + '"></label>').join('');
+      })() +
       '</div><div class="hint" style="margin-top:6px">In seconden per motor.</div>'
       : '<div class="hint">Er is geen actieve run, dus er zijn geen streeftijden in te stellen.</div>');
   $('#dispCd').onchange = () => { DISP.countdown = $('#dispCd').checked; saveDisp(); renderAll(); };
   $('#dispSnd').onchange = () => { DISP.sound = $('#dispSnd').checked; saveDisp(); };
   $$('[data-tgt]').forEach(inp => inp.onchange = () => {
     const r = activeRun(); if (!r) return;
-    r.stationTargets = r.stationTargets || {};
     const v = parseFloat(inp.value);
-    if (v > 0) r.stationTargets[inp.dataset.tgt] = v * 1000; else delete r.stationTargets[inp.dataset.tgt];
-    saveDB(true); toast('Streeftijd bijgewerkt'); renderAll();
+    /* als event, zodat de telefoons van de anderen dezelfde streeftijd
+       krijgen zonder dat er iets aan de database hoeft te veranderen */
+    pushEvent(r, 'station_target', { stationId: inp.dataset.tgt, ms: v > 0 ? v * 1000 : 0 });
+    toast('Streeftijd bijgewerkt'); renderAll();
   });
 }
 function activeRunTakt() {
@@ -4323,9 +4364,9 @@ function noRunBanner(id, page) {
 }
 function demoBanner(run) {
   return (run.demo ? '<div class="banner demo"><div><b>DEMO-RUN</b>Voorbeelddata — geen echte meting.</div></div>' : '') +
-    (run.imported
+    (runIsImported(run)
       ? '<div class="banner warn"><div><b>Geïmporteerde run</b>De tijden komen uit ' +
-      esc(run.importSource || 'een geïmporteerd bestand') + ' en zijn niet in deze app gemeten. ' +
+      esc(runImportSource(run) || 'een geïmporteerd bestand') + ' en zijn niet in deze app gemeten. ' +
       'Alle KPI\'s zijn wel op dezelfde manier uit de start- en gereedtijden berekend.</div></div>'
       : '');
 }
@@ -5318,7 +5359,7 @@ function renderCompare() {
     '<label class="chk"><input type="checkbox" value="' + r.id + '"' + (UI.cmp.indexOf(r.id) >= 0 ? ' checked' : '') + '>' +
     esc(r.name) + (r.week ? ' <span class="tag">week ' + esc(r.week) + '</span>' : '') +
     (r.demo ? ' <span class="tag amber">DEMO</span>' : '') +
-    (r.imported ? ' <span class="tag amber">GEÏMPORTEERD</span>' : '') + '</label>').join('');
+    (runIsImported(r) ? ' <span class="tag amber">GEÏMPORTEERD</span>' : '') + '</label>').join('');
   $$('#cmpPick input').forEach(c => c.onchange = () => {
     UI.cmp = $$('#cmpPick input:checked').map(x => x.value);
     renderCompare();
@@ -6258,7 +6299,7 @@ function renderData() {
       const s = runSummary(r);
       return '<tr' + (r.id === DB.activeRunId ? ' style="background:#e7f0fb"' : '') + '>' +
         '<td><b>' + esc(r.name) + '</b>' + (r.demo ? ' <span class="tag amber">DEMO</span>' : '') +
-        (r.imported ? ' <span class="tag amber">GEÏMPORTEERD</span>' : '') +
+        (runIsImported(r) ? ' <span class="tag amber">GEÏMPORTEERD</span>' : '') +
         (r.id === DB.activeRunId ? ' <span class="tag blue">ACTIEF</span>' : '') +
         (r.notes ? '<div class="hint">' + esc(r.notes) + '</div>' : '') + '</td>' +
         '<td class="mono">' + esc(r.date || '') + '</td>' +
@@ -8113,6 +8154,13 @@ function importCommit() {
   else stations.forEach(s => { if (!run.stations.some(x => x.id === s.id)) run.stations.push(s); });
 
   const built = importBuildEvents(run);
+  /* de herkomst als event, zodat het label "geïmporteerd" ook meereist naar
+     de apparaten die later met de runcode meedoen */
+  built.events.push({
+    id: uuid(), ts: built.events.length ? built.events[0].ts : now(), seq: 0,
+    type: 'run_import', actor: 'import', source: 'import', derived: true,
+    file: IMP.fileName, rows: good.length, motors: built.motors.length
+  });
   run.events = run.events.concat(built.events);
   run.events.sort((a, b) => a.ts - b.ts || (a.seq || 0) - (b.seq || 0));
   run.startedAt = run.events.length ? run.events[0].ts : null;

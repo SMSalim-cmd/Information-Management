@@ -10,7 +10,7 @@ Werkt ook volledig zelfstandig op één laptop.
 |---|---|
 | `index.html` | de volledige applicatie — open of publiceer alleen dit bestand |
 | `SETUP.md` | stappenplan om online samen te werken en de app te publiceren |
-| `supabase.sql` | databaseschema en beveiligingsregels, in één keer te draaien |
+| `supabase.sql` | databaseschema en beveiligingsregels, in één keer te draaien — sinds de eerste keer onveranderd |
 | `config.js` | de Supabase-gegevens van de gepubliceerde site — één keer invullen, dan hoeft niemand ze op zijn telefoon in te typen |
 | `netlify.toml` | zorgt dat Netlify de map zonder build publiceert |
 | `sw.js`, `manifest.webmanifest`, `icon-*.png` | maken er een installeerbare app (PWA) van |
@@ -147,7 +147,9 @@ op elke telefoon staat de resterende runtijd en hoeveel tijd er nog per nog te m
 is.
 
 De streeftijd per station stel je in bij **INSTELLINGEN → Weergave**; laat je die leeg, dan
-gebruikt de app de takt time. Daar zet je ook de aftelweergave uit als je liever oplopend meet.
+gebruikt de app de takt time. Die streeftijd wordt als event opgeslagen en reist dus mee naar
+de telefoons van de anderen. De keuze tussen aftellen en optellen staat per apparaat: iedereen
+mag dat zelf instellen zonder dat het de meting of de anderen beïnvloedt.
 
 **De aftelweergave is puur presentatie.** Cycle time, actieve tijd, wachttijd en lead time
 worden altijd uit de echte start- en stoptimestamps berekend, dus alle KPI's en exports blijven

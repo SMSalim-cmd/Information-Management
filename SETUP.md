@@ -64,6 +64,12 @@ Dat scheelt een externe afhankelijkheid, dus de applicatie blijft ook offline we
 Dit maakt twee tabellen (`runs` en `events`), de beveiligingsregels en twee functies:
 `join_run` (meedoen met een runcode) en `server_now` (klokcorrectie).
 
+**Heb je dit script al eens gedraaid? Dan hoef je niets opnieuw te doen.** Het schema is sinds
+de eerste versie niet gewijzigd en dat blijft ook zo: alles wat er later bijkomt — batches,
+omsteltijd, streeftijden per station, de herkomst van een geïmporteerde meting — gaat als
+gewoon event door de bestaande `events`-tabel. Er komen dus geen kolommen of policies bij en
+een update van de app vraagt nooit om een databasewijziging.
+
 ## Stap 3 — De sleutels ophalen
 
 1. Ga naar **Project Settings** → **API** (of **Data API**).
